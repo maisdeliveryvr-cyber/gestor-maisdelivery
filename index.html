@@ -847,7 +847,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 3"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 4"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("gfmd:m-")) months[k.slice(7)]=JSON.parse(localStorage.getItem(k)); } }catch(e){}
@@ -1839,6 +1839,18 @@ $("bkImp").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(
     if(!await uiConfirm(`Restaurar este backup? Ele traz ${n} mês(es) de lançamentos e as configurações, e substitui o que estiver nesses meses agora.`)) return;
     Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ cfg={...DEFAULT_CFG,...cfg,...v}; save("config",cfg); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
     ensureCash(); renderAll(); uiAlert("Backup restaurado ✅"); }catch(err){ uiAlert("Não consegui ler o backup: "+err.message); } };
+// ---------- Máscara de dinheiro: digita só números, vírgula e milhar automáticos ----------
+const SEM_MASCARA=new Set(["aRes","aPct","aMeses","aDin","pN","rDia"]);
+function ehDinheiro(el){ return el && el.tagName==="INPUT" && el.getAttribute("inputmode")==="decimal" && !SEM_MASCARA.has(el.id); }
+function mascararDinheiro(el){
+  const v=el.value, neg=/^\s*-/.test(v), dig=v.replace(/\D/g,"").replace(/^0+/,"");
+  if(!dig){ el.value=neg?"-":""; return; }
+  const n=parseInt(dig.slice(-15),10)/100;
+  el.value=(neg?"-":"")+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  try{ el.setSelectionRange(el.value.length,el.value.length); }catch(e){}
+}
+document.addEventListener("input",e=>{ if(ehDinheiro(e.target)) mascararDinheiro(e.target); },true);
+document.addEventListener("focusin",e=>{ if(ehDinheiro(e.target)){ const el=e.target; setTimeout(()=>{ try{ el.setSelectionRange(el.value.length,el.value.length); }catch(_){} },0); } });
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
 loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); initDb(); getAssets().then(()=>renderAll());
