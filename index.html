@@ -1030,7 +1030,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 7"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 8"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
@@ -2302,14 +2302,48 @@ function boletoArrecadacao(d){
   const SEG={"1":"Prefeitura / taxas","2":"Água e saneamento","3":"Energia","4":"Telefone e internet","5":"Guia de imposto","6":"Carnê","7":"Multa de trânsito","9":"Boleto"};
   return {tipo:"arrecadacao",linha:d,ok,valor,venc,segmento:SEG[barra[1]]||"Conta"};
 }
+function boletoPlausivel(r){ if(!r||!r.ok) return false;
+  if(r.tipo==="bancario"){ if(r.banco==="000") return false;
+    if(r.venc){ const dias=(new Date(r.venc)-hojeLocal())/864e5; if(dias<-400||dias>400) r.venc=null; } }
+  return true; }
+function tentaBoleto(d){ if(d.length===47&&d[0]!=="8") return boletoBancario(d); if(d.length===48&&d[0]==="8") return boletoArrecadacao(d); if(d.length===44) return d[0]==="8"? boletoArrecadacao(d) : boletoBancario(d); return null; }
 function acharBoleto(text){
-  const lines=String(text||"").replace(/[Oo](?=\d)|(?<=\d)[Oo]/g,"0").split(/\n/);
-  const tenta=d=>{ if(d.length===47&&d[0]!=="8") return boletoBancario(d); if(d.length===48&&d[0]==="8") return boletoArrecadacao(d); if(d.length===44) return d[0]==="8"? boletoArrecadacao(d) : boletoBancario(d); return null; };
-  let melhor=null;
-  for(let i=0;i<lines.length;i++){ for(let k=1;k<=3&&i+k<=lines.length;k++){ const d=soDig(lines.slice(i,i+k).join(" ")); if(d.length<44) continue;
-      for(const L of [48,47,44]){ for(let s=0;s+L<=d.length;s++){ const r=tenta(d.slice(s,s+L)); if(r&&r.ok) return r; if(r&&!melhor&&(r.valor||r.venc)&&L===d.length) melhor=r; } } } }
-  return melhor;
+  let t=String(text||"").replace(/[Oo](?=\d)|(?<=\d)[Oo]/g,"0");
+  const px=acharPix(t); if(px) t=t.split(px.code).join(" ");
+  t=t.replace(/000201\S{20,}/g," ");
+  // 1) linha digitável no formato impresso
+  const FMT=[/\d{5}[.\s]?\d{5}\s+\d{5}[.\s]?\d{6}\s+\d{5}[.\s]?\d{6}\s+\d\s+\d{14}/g,/\d{11}[\s-]*\d\s+\d{11}[\s-]*\d\s+\d{11}[\s-]*\d\s+\d{11}[\s-]*\d/g];
+  for(const re of FMT) for(const m of t.matchAll(re)){ const r=tentaBoleto(soDig(m[0])); if(boletoPlausivel(r)) return r; }
+  // 2) linhas que só têm números (código colado ou lido por foto)
+  const lines=t.split(/\n/), soNum=l=>/^[\d\s.\-]+$/.test(l.trim())&&soDig(l).length>=10;
+  for(let i=0;i<lines.length;i++){ if(!soNum(lines[i])) continue;
+    for(let k=1;k<=4&&i+k<=lines.length;k++){ const grupo=lines.slice(i,i+k); if(!grupo.every(soNum)) break; const d=soDig(grupo.join(""));
+      if([44,47,48].includes(d.length)){ const r=tentaBoleto(d); if(boletoPlausivel(r)) return r; }
+      if(d.length>48&&d.length<=60) for(const L of [48,47]) for(let s=0;s+L<=d.length;s++){ const r=tentaBoleto(d.slice(s,s+L)); if(boletoPlausivel(r)) return r; } } }
+  return null;
 }
+// --- Pix copia e cola dentro da conta ---
+function lerTLV(s){ const o={}; let i=0; while(i+4<=s.length){ const id=s.slice(i,i+2), n=+s.slice(i+2,i+4); if(isNaN(n)) break; o[id]=s.slice(i+4,i+4+n); i+=4+n; } return o; }
+function pixValido(v){ for(const m of v.matchAll(/000201/g)){ const ini=m.index; let p=ini;
+    while((p=v.indexOf("6304",p+1))!==-1&&p-ini<700){ const cand=v.slice(ini,p+8); if(/^[0-9A-Fa-f]{4}$/.test(cand.slice(-4))&&crc16(cand.slice(0,-4))===cand.slice(-4).toUpperCase()&&/br\.gov\.bcb\.pix/i.test(cand)){ const tl=lerTLV(cand); return {code:cand,valor:tl["54"]?parseFloat(tl["54"]):null,nome:tl["59"]||""}; } } }
+  return null; }
+function acharPix(text){
+  const t=String(text||""); if(!/000201/.test(t.replace(/\s+/g,""))) return null;
+  for(const v of [t.replace(/\r?\n/g,""),t.replace(/\s*\n\s*/g,""),t.replace(/\s+/g,"")]){ const r=pixValido(v); if(r) return r; }
+  // o leitor de PDF pode quebrar o código em pedaços com espaço: testa as junções
+  const ini=t.search(/0\s*0\s*0\s*2\s*0\s*1/); if(ini<0) return null;
+  const tk=t.slice(ini,ini+900).split(/\s+/).filter(Boolean).slice(0,12);
+  for(let mask=0;mask<(1<<(tk.length-1));mask++){ let v=tk[0]; for(let k=1;k<tk.length;k++) v+=((mask>>(k-1))&1?" ":"")+tk[k]; const r=pixValido(v); if(r) return r; }
+  return null;
+}
+// --- datas e valores em documentos ---
+const DT_RE=/(\d{2})[\/.](\d{2})[\/.](\d{4}|\d{2})(?!\d)/g;
+function isoDeBR(d,m,y){ y=+y; if(y<100) y+=2000; d=+d; m=+m; if(m<1||m>12||d<1||d>31) return null; return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+function dataPerto(t,re){ for(const m of t.matchAll(re)){ const trecho=t.slice(m.index+m[0].length,m.index+m[0].length+160); const d=[...trecho.matchAll(DT_RE)][0]; if(d){ const iso=isoDeBR(d[1],d[2],d[3]); if(iso) return iso; } } return null; }
+function valorPerto(t,re){ for(const m of t.matchAll(re)){ const trecho=t.slice(m.index+m[0].length,m.index+m[0].length+160); const v=trecho.match(/(\d{1,3}(?:\.\d{3})*,\d{2})(?!\d)/); if(v&&valorMoney(v[1])>0) return valorMoney(v[1]); } return null; }
+const KW_VENC=/(data\s+de\s+vencimento|vencimento|vence\s+em|pagar\s+(?:este\s+documento\s+|esta\s+guia\s+)?at[eé]|pag[aá]vel\s+at[eé]|data\s+limite(?:\s+para\s+pagamento)?|v[aá]lid[oa]\s+(?:para\s+pagamento\s+)?at[eé])/gi;
+const KW_VALOR=/(valor\s+total\s+do\s+documento|valor\s+do\s+documento|valor\s+cobrado|total\s+a\s+pagar|valor\s+a\s+pagar|valor\s+a\s+recolher|total\s+a\s+recolher|total\s+da\s+fatura|valor\s+total|total\s+geral|valor\s+l[ií]quido)/gi;
+function ehHolerite(n){ return /recibo de pagamento de salario|recibo de pagamento|holerite|demonstrativo de pagamento|contracheque/.test(n) && /liquido|vencimentos|proventos/.test(n) && !/documento de arrecadacao|fgts digital|guia do fgts/.test(n); }
 // --- textos ---
 const MONEY=/(?:R\$\s*)?(\d{1,3}(?:\.\d{3})+,\d{2}|\d+,\d{2})/;
 function valorMoney(s){ return parseFloat(s.replace(/\./g,"").replace(",",".")); }
@@ -2350,17 +2384,27 @@ function parseLinha(line){
 }
 function parseTexto(text){ return String(text||"").split(/\n+/).map(parseLinha).filter(Boolean); }
 function parseDocumento(text,nome){
-  const t=String(text||""); const b=acharBoleto(t);
-  let valor=b&&b.valor, venc=b&&b.venc, m;
-  if(!valor){ const re=/(valor\s+(?:do\s+)?documento|valor\s+cobrado|total\s+a\s+pagar|valor\s+a\s+pagar|total\s+da\s+fatura|valor\s+total|total\s+geral)[^\d]{0,40}?(\d{1,3}(?:\.\d{3})*,\d{2})/i;
-    if((m=t.match(re))) valor=valorMoney(m[2]); else { const all=[...t.matchAll(/R\$\s*(\d{1,3}(?:\.\d{3})*,\d{2})/g)].map(x=>valorMoney(x[1])); if(all.length) valor=Math.max(...all); } }
-  if(!venc){ if((m=t.match(/venc[a-zç]*[^\d]{0,30}?(\d{2}[\/.]\d{2}[\/.]\d{2,4})/i))){ const r=achaData(m[1]); if(r) venc=r.iso; } }
-  let desc=""; if((m=t.match(/(?:benefici[aá]rio|cedente|raz[aã]o social|empresa)\s*:?\s*\n?\s*([A-Za-zÀ-ú][^\n\d]{2,50})/i))) desc=m[1].replace(/\b(cnpj|cpf|ag[eê]ncia).*$/i,"").trim();
-  const n=normTxt(t);
-  const K=[["documento de arrecadacao do simples|simples nacional","DAS do Simples"],["fgts","FGTS"],["darf","DARF"],["energisa","Energia (Energisa)"],["\\bvivo\\b","Vivo"],["\\bclaro\\b","Claro"],["\\btim\\b","TIM"],["aluguel","Aluguel"],["internet","Internet"]];
-  if(!desc) for(const [re,d] of K) if(new RegExp(re).test(n)){ desc=d; break; }
-  if(!desc) desc=(b&&b.segmento)||String(nome||"Conta").replace(/\.[a-z0-9]+$/i,"").replace(/[_-]+/g," ");
-  return {tipo:"conta",desc:cap(desc.toLowerCase()==desc?desc:desc),valor:valor||null,venc:venc||null,codigo:b?b.linha:null,codigoOk:b?b.ok:null,cat:sugerirCatTexto(desc+" "+n.slice(0,400))};
+  const t=String(text||""), n=normTxt(t);
+  if(ehHolerite(n)) return {tipo:"holerite",nome};
+  const b=acharBoleto(t), px=acharPix(t);
+  let valor=null, venc=null, chute=false;
+  if(b&&b.valor) valor=b.valor; else if(px&&px.valor) valor=px.valor; else valor=valorPerto(t,KW_VALOR);
+  if(!valor){ const all=[...t.matchAll(/R\$\s*(\d{1,3}(?:\.\d{3})*,\d{2})/g)].map(x=>valorMoney(x[1])); if(all.length){ valor=Math.max(...all); chute=true; } }
+  venc=dataPerto(t,KW_VENC)||(b&&b.venc)||null;
+  if(!venc){ const hoje=hojeLocal(); const ds=[...t.matchAll(DT_RE)].map(d=>isoDeBR(d[1],d[2],d[3])).filter(Boolean).filter(iso=>{ const k=(new Date(iso+"T12:00")-hoje)/864e5; return k>=-15&&k<=90; }).sort(); if(ds.length){ venc=ds[ds.length-1]; chute=true; } }
+  // competência (09/2026)
+  let comp=""; const mc=t.match(/(?:compet[eê]ncia|per[ií]odo\s+de\s+apura[cç][aã]o|refer[eê]ncia|m[eê]s\s+de\s+refer[eê]ncia)[^\d]{0,60}?(?:\d{2}\/)?(\d{2})\/(\d{4})/i); if(mc) comp=mc[1]+"/"+mc[2]; else { const mm=normTxt(t).match(/(?:competencia|periodo de apuracao|referencia)[^a-z\d]{0,20}(janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s*\/?\s*(?:de\s*)?(\d{4})/); if(mm) comp=String(["janeiro","fevereiro","marco","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"].indexOf(mm[1])+1).padStart(2,"0")+"/"+mm[2]; }
+  const TIPOS=[["documento de arrecadacao do simples|\\bpgdas|simples nacional","DAS do Simples","DAS"],["fgts digital|guia do fgts|\\bgfd\\b|\\bfgts\\b","FGTS","FGTS"],["dctfweb|contribuicoes previdenciarias|previdenciari|\\binss\\b|\\bgps\\b","INSS (DCTFWeb)","INSS"],["documento de arrecadacao de receitas federais|\\bdarf\\b","DARF","Outra despesa"],["energisa","Energia (Energisa)","Energia"]];
+  let desc="", cat="";
+  for(const [re,d,c] of TIPOS) if(new RegExp(re).test(n)){ desc=d+(comp?" "+comp:""); cat=c; break; }
+  if(!desc){ const mb=t.match(/(?:benefici[aá]rio(?:\s+final)?|cedente|favorecido)\s*:?\s*\n?\s*([A-Za-zÀ-ú][^\n\d]{2,60})/i);
+    if(mb){ let x=mb[1].replace(/\b(cnpj|cpf|ag[eê]ncia|c[oó]digo|endere[cç]o|data|nosso).*$/i,"").replace(/^\s*(final|:)\s*/i,"").replace(/[\/\-:;,.]+\s*$/,"").trim(); if(/[A-Za-zÀ-ú]{3,}/.test(x)&&!/^(janeiro|fevereiro|mar[cç]o|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b/i.test(x)) desc=x; } }
+  if(!desc&&px&&px.nome) desc=px.nome;
+  const arq=String(nome||"").replace(/\.[a-z0-9]+$/i,"").replace(/[_]+/g," ").replace(/\s*\(\d+\)\s*$/,"").trim();
+  if(!desc){ const K=[["\\bvivo\\b","Vivo"],["\\bclaro\\b","Claro"],["\\btim\\b","TIM"],["aluguel","Aluguel"],["internet","Internet"]]; for(const [re,d] of K) if(new RegExp(re).test(n)){ desc=d; break; } }
+  if(!desc) desc=arq&&!/^(boleto|documento|download|fatura|arquivo|scan|img|image|whatsapp)/i.test(arq)? arq : ((b&&b.segmento)||arq||"Conta");
+  if(!cat&&desc===desc.toUpperCase()&&desc.length>4) desc=desc.toLowerCase().replace(/\b\p{L}/gu,c=>c.toUpperCase()).replace(/\bLtda\b/i,"Ltda");
+  return {tipo:"conta",desc:cap(desc),valor:valor||null,venc:venc||null,chute,codigo:b?b.linha:null,codigoOk:b?b.ok:null,pix:px?px.code:null,cat:cat||sugerirCatTexto(desc+" "+arq+" "+n.slice(0,400))};
 }
 // --- leitura de arquivos ---
 const PDFJS_URL="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", PDFJS_W="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js", TESS_URL="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
@@ -2396,6 +2440,7 @@ function renderSecPrev(){
       <label>Vencimento<input type="date" data-pf="venc" data-i="${i}" value="${p.venc||""}"></label>
       <label>Categoria<select data-pf="cat" data-i="${i}">${catOptsSaida(p.cat)}</select></label>
       <label>Pagar pelo banco<select data-pf="banco" data-i="${i}">${bancoOpts(p.banco||b0())}</select></label></div>
+      ${p.pix?`<p class="note">💠 Pix copia e cola encontrado na guia ✅. Fica salvo para você copiar na hora de pagar.</p>`:""}
       ${p.codigo?`<p class="note" style="overflow-wrap:anywhere">🔢 Código de barras: <b>${p.codigoOk?"lido e conferido ✅":"lido, mas confira ⚠️"}</b> · ${esc(p.codigo)}</p>`:""}`
     :`<div class="form">
       <label>O que é<input data-pf="titulo" data-i="${i}" value="${esc(p.titulo||"")}"></label>
@@ -2408,14 +2453,17 @@ function renderSecPrev(){
 }
 async function secLer(){
   const txt=$("secTxt").value.trim(), files=[...$("secFile").files]; if(!txt&&!files.length){ secStatus("Escreva uma mensagem ou envie uma conta.","warn"); return; }
-  $("secLer").disabled=true; const novos=[];
+  $("secLer").disabled=true; const novos=[], holer=[];
   try{
     if(txt) parseTexto(txt).forEach(p=>novos.push(p));
-    for(const f of files){ try{ const texto=await lerArquivo(f,t=>secStatus(t)); const p=parseDocumento(texto,f.name); p.arquivo=f;
+    for(const f of files){ try{ const texto=await lerArquivo(f,t=>secStatus(t)); const p=parseDocumento(texto,f.name); if(p.tipo==="holerite"){ holer.push(f.name); continue; } p.arquivo=f;
+        if(p.valor&&p.venc&&p.chute) p.aviso="Confira o valor e o vencimento: achei no documento, mas sem a palavra \"vencimento\" perto.";
         if(!p.valor||!p.venc) p.aviso=`Não consegui ler ${!p.valor&&!p.venc?"o valor e o vencimento":!p.valor?"o valor":"o vencimento"}. Preencha abaixo.`; novos.push(p); }
       catch(err){ novos.push({tipo:"conta",desc:f.name.replace(/\.[a-z0-9]+$/i,""),valor:null,venc:null,cat:"Outra despesa",arquivo:f,aviso:"Não consegui ler este arquivo ("+(err.message||"erro")+"). Preencha à mão."}); } }
     novos.forEach(p=>{ if(p.tipo==="conta"&&!p.banco) p.banco=(cfg.secBanco||b0()); });
-    secPrev=secPrev.concat(novos); renderSecPrev(); secStatus(novos.length?`✅ Li ${novos.length} ${novos.length>1?"itens":"item"}. Confira abaixo.`:"Não encontrei nada para agendar.",novos.length?"ok":"warn");
+    secPrev=secPrev.concat(novos); renderSecPrev();
+    const hTxt=holer.length?` 👷 ${holer.map(esc).join(", ")} ${holer.length>1?"são holerites":"é holerite"} (recibo de pagamento de funcionário): envie na aba <b>Folha</b>, em "Importar folha do contador".`:"";
+    secStatus((novos.length?`✅ Li ${novos.length} ${novos.length>1?"itens":"item"}. Confira abaixo.`:holer.length?"":"Não encontrei nada para agendar.")+hTxt,novos.length?"ok":"warn");
     $("secTxt").value=""; $("secFile").value=""; $("secFileN").textContent="";
   }finally{ $("secLer").disabled=false; }
 }
@@ -2423,7 +2471,7 @@ async function secSalvar(i){
   const p=secPrev[i]; if(!p||p.salvando) return;
   if(p.tipo==="conta"){ if(!p.desc||!num(p.valor)||!p.venc){ uiAlert("Preencha descrição, valor e vencimento."); return; }
     p.salvando=true; let anexo=null; if(p.arquivo&&await getAssets()){ try{ const pr=await prepararArquivo(p.arquivo); const r=await assetsNS.upload(pr.blob,{type:pr.type}); anexo={id:r.id,nome:pr.nome,tipo:r.contentType||pr.type,tam:r.sizeBytes||pr.blob.size}; }catch(e){} }
-    SEC.contas.push({id:uid(),desc:p.desc,valor:num(p.valor),venc:p.venc,cat:p.cat||"Outra despesa",banco:p.banco||b0(),codigo:p.codigo||null,anexo,pago:null,criado:new Date().toISOString()});
+    SEC.contas.push({id:uid(),desc:p.desc,valor:num(p.valor),venc:p.venc,cat:p.cat||"Outra despesa",banco:p.banco||b0(),codigo:p.codigo||null,pix:p.pix||null,anexo,pago:null,criado:new Date().toISOString()});
     cfg.secBanco=p.banco; }
   else { if(!p.titulo){ uiAlert("Escreva o que é o compromisso."); return; }
     SEC.agenda.push({id:uid(),titulo:p.titulo,data:p.data||null,hora:p.hora||null,local:p.local||"",feito:false,criado:new Date().toISOString()}); }
@@ -2463,6 +2511,7 @@ function renderSec(){
       return `<div class="vitem ${cl}"><div class="vdata"><b>${String(d).padStart(2,"0")}</b><span>${DIAS_SEM[dt.getDay()]} · ${mesCurto(c.venc.slice(0,7))}</span></div>
         <div class="vmid"><b>${catEmo(c.cat)} ${esc(c.desc)}</b><span>${brl(c.valor)} · ${esc(c.cat)} · ${esc(bankName(c.banco))}${c.pago?` · pago em ${dataBR(c.pago.data)}`:""}</span></div>
         <div class="vfim"><span class="vbadge ${cl}">${tx}</span><div class="acts">
+          ${c.pix&&!c.pago?`<button class="btn ghost small" data-spix="${c.id}" title="Copiar Pix copia e cola">💠 Copiar Pix</button>`:""}
           ${c.codigo&&!c.pago?`<button class="btn ghost small" data-scod="${c.id}" title="Copiar código de barras">🔢 Copiar código</button>`:""}
           ${c.anexo?`<button class="ebtn" data-sanx="${c.id}" title="Ver conta">📎</button>`:""}
           ${!c.pago?`<a class="ebtn" target="_blank" rel="noopener" href="${linkGoogle("Pagar: "+c.desc+" "+brl(c.valor),c.venc,null,"Conta a pagar no GE$TOR. Valor "+brl(c.valor)+(c.codigo?"\nCódigo: "+c.codigo:""))}" title="Adicionar ao Google Agenda">📅</a><button class="ebtn" data-sics="${c.id}" title="Baixar para a agenda do celular (.ics)">🔔</button><button class="btn small" data-spag="${c.id}">✅ Paguei</button>`
@@ -2601,9 +2650,10 @@ $("secPrev").addEventListener("input",e=>{ const f=e.target.dataset.pf, i=e.targ
 $("secPrev").addEventListener("change",e=>{ const f=e.target.dataset.pf, i=e.target.dataset.i; if(!f||i==null) return; secPrev[+i][f]= f==="valor"? num(e.target.value) : e.target.value; });
 $("secVerPagas").onchange=renderSec;
 document.addEventListener("click",async e=>{
-  const el=e.target.closest&&e.target.closest("[data-scod],[data-sanx],[data-sics],[data-spag],[data-sdesf],[data-sdel],[data-aics],[data-afeito],[data-adesf],[data-adel],[data-vpag],[data-vag],[data-vfol]"); if(!el) return;
+  const el=e.target.closest&&e.target.closest("[data-scod],[data-spix],[data-sanx],[data-sics],[data-spag],[data-sdesf],[data-sdel],[data-aics],[data-afeito],[data-adesf],[data-adel],[data-vpag],[data-vag],[data-vfol]"); if(!el) return;
   const d=el.dataset, C=SEC.contas, A=SEC.agenda;
   if(d.scod){ const c=C.find(x=>x.id===d.scod); if(c) copiar(c.codigo,"🔢 Código de barras copiado. Cole no app do banco em \"Pagar boleto\"."); }
+  if(d.spix){ const c=C.find(x=>x.id===d.spix); if(c) copiar(c.pix,"💠 Pix copiado. No app do banco: Pix > Pix Copia e Cola."); }
   if(d.sanx){ const c=C.find(x=>x.id===d.sanx); if(c&&c.anexo) baixarComp(c.anexo); }
   if(d.sics){ const c=C.find(x=>x.id===d.sics); if(c) baixarIcs("Pagar: "+c.desc+" "+brl(c.valor),c.venc,null,"Conta a pagar. Valor "+brl(c.valor)+(c.codigo?"\nCódigo: "+c.codigo:"")); }
   if(d.spag||d.vpag){ const id=d.spag||d.vpag; const c=C.find(x=>x.id===id); if(c&&await uiConfirm(`Marcar "${c.desc}" (${brl(c.valor)}) como paga hoje? Ela vira uma saída em ${bankName(c.banco)}.`)) pagarConta(id); }
@@ -2661,7 +2711,7 @@ $("ffList").addEventListener("click",async e=>{ const ed=e.target.dataset.ffed, 
   if(ed){ const f=FOL.funcs.find(x=>x.id===ed); ffEdit=ed; $("ffNome").value=f.nome; $("ffCargo").value=f.cargo||""; $("ffChave").value=f.chave; $("ffTipo").value=f.tipoChave||tipoChave(f.chave); $("ffSal").value=f.salario?fmtIn(f.salario):""; $("ffValeTipo").value=f.valeTipo||"pct"; $("ffVale").value=f.valeValor===""||f.valeValor==null?"":String(f.valeValor).replace(".",","); $("ffAdd").textContent="Salvar alterações"; $("ffNome").scrollIntoView({behavior:"smooth",block:"center"}); }
   if(dl){ const f=FOL.funcs.find(x=>x.id===dl); if(await uiConfirm(`Excluir ${f.nome} do cadastro? Os pagamentos já lançados continuam.`)){ FOL.funcs=FOL.funcs.filter(x=>x!==f); saveFol(); renderAll(); } } });
 ["fcDia","fcPct","fcCard","fcCid","fcBanco"].forEach(id=>$(id).addEventListener("change",()=>{ FOL.cfg={...fcfg(),diaVale:Math.min(31,Math.max(1,parseInt($("fcDia").value,10)||20)),pctVale:num($("fcPct").value)||0,valorCardapio:num($("fcCard").value)||0,cidade:$("fcCid").value.trim()||"VILA RICA",banco:$("fcBanco").value}; saveFol(); renderAll(); }));
-window.__gestorTeste={parseTexto,parseDocumento,acharBoleto,pixCode,crc16,lerHolerites,tipoChave,calcFunc};
+window.__gestorTeste={acharPix,parseTexto,parseDocumento,acharBoleto,pixCode,crc16,lerHolerites,tipoChave,calcFunc};
 
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
