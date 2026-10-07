@@ -218,6 +218,23 @@ input.rv{width:110px;text-align:right;padding:6px 8px;font-size:14px}
 :root[data-theme="dark"] .eyebtn{background:#FDE68A!important;color:#18213A}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .eyebtn{background:#FDE68A!important;color:#18213A} }
 @media (max-width:820px){ .eyebtn .eyl{display:none} }
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vitem{display:grid;grid-template-columns:58px 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px 12px;background:var(--surface)}
+.vitem.atras{border-color:var(--c-coral);background:var(--bad-bg)}.vitem.hoje{border-color:var(--c-orange);background:var(--warn-bg)}.vitem.breve{background:var(--warn-bg)}
+.vitem.pago{opacity:.55}
+.vdata{text-align:center;line-height:1.05;border-radius:10px;padding:6px 0;background:linear-gradient(160deg,var(--c-blue),var(--c-purple));color:#fff}
+.vitem.atras .vdata{background:linear-gradient(160deg,#F87171,#DC2626)}.vitem.hoje .vdata,.vitem.breve .vdata{background:linear-gradient(160deg,#FB923C,#F97316)}.vitem.pago .vdata{background:linear-gradient(160deg,#34D399,#16A34A)}
+.vdata b{display:block;font:800 21px var(--display)}.vdata span{font-size:10.5px;font-weight:600;opacity:.9}
+.vmid{display:grid;min-width:0}.vmid b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vmid span{font-size:12.5px;color:var(--muted)}
+.vfim{display:grid;gap:4px;justify-items:end}
+.vbadge{font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 9px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.vbadge.atras{background:var(--c-coral);color:#fff}.vbadge.hoje{background:var(--c-orange);color:#fff}.vbadge.breve{background:#FDE68A;color:#78350F}.vbadge.pago{background:var(--ok-bg);color:var(--c-money)}
+.lblist{display:grid;gap:6px}
+.lbrow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.5fr) auto;gap:10px;align-items:center;background:var(--sunk);border-radius:12px;padding:8px 12px}
+.lbrow.off{opacity:.5}
+.h3{font:700 15px var(--display);margin:18px 0 4px}
+#alerts a{color:inherit;font-weight:700}
+@media (max-width:900px){.vmid b{white-space:normal}.vitem{grid-template-columns:52px 1fr auto;gap:10px}.vgrid{grid-template-columns:1fr}.lbrow{grid-template-columns:1fr auto}.lbrow .status{grid-column:1/-1;order:3}}
 .hidden{display:none!important}
 @media (max-width:1100px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:820px){
@@ -481,6 +498,7 @@ main{padding-bottom:110px}
       <div class="parts" id="hParts"></div>
     </section>
     <div class="kpis s12" id="kpis"></div>
+    <section class="card s12" id="vencCard"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>🗓️ Próximos vencimentos</h2><span class="status" id="vencResumo"></span></div><div id="vencBox" style="margin-top:10px"></div></section>
     <section class="card s8"><h2>📈 <span id="comboT">Evolução em 12 meses</span></h2><p class="sub">Comissão, gastos e sobra mês a mês.</p><div id="combo"></div></section>
     <section class="card s4"><h2>🛟 Reserva da empresa</h2><p class="sub">Quantos meses o caixa livre sustenta.</p><div id="gauge"></div></section>
     <section class="card s7"><h2>🍩 Para onde vai o dinheiro</h2><p class="sub">Gastos do mês por grupo.</p><div id="donut"></div></section>
@@ -711,8 +729,27 @@ main{padding-bottom:110px}
       <p class="note">Antes de zerar, use "Exportar tudo" em Lançamentos se quiser guardar uma cópia.</p>
     </section>
     <section class="card"><h2>👤 Sua conta</h2><p class="sub" id="contaInfo">Conectado.</p><button class="btn ghost" id="sairBtn">Sair do gestor</button></section>
-    <section class="card"><h2>💾 Backup</h2><p class="sub">Guarde uma cópia completa (lançamentos, bancos, parcelamentos, recorrentes e regras) ou traga dados de outra versão do gestor.</p>
-      <div class="row"><button class="btn ghost" id="bkExp">Baixar backup completo (.json)</button><label class="btn ghost" style="cursor:pointer;color:var(--ink)">Restaurar backup<input type="file" id="bkImp" accept=".json,application/json" class="hidden"></label></div>
+    <section class="card"><h2>🗓️ Lembretes de vencimento</h2><p class="sub">Aparecem em "Próximos vencimentos" no Dashboard, com aviso 2 dias antes. Quando você lança a categoria ligada ao lembrete, ele some sozinho.</p>
+      <div id="lbList"></div>
+      <div class="form" style="margin-top:14px">
+        <label>Nome<input id="lbNome" placeholder="Ex.: Aluguel da central"></label>
+        <label>Emoji<select id="lbEmo"><option>🔔</option><option>🏠</option><option>🧮</option><option>💡</option><option>📶</option><option>🧾</option><option>🏛️</option><option>🛵</option><option>🍕</option><option>💳</option><option>📣</option><option>👷</option><option>📲</option><option>🛡️</option></select></label>
+        <label>Repete<select id="lbFreq"><option value="mensal">Todo mês</option><option value="semanal">Toda semana</option><option value="quinzenal">Dia 15 e último dia</option></select></label>
+        <label id="lbDiaL">Dia do mês<input id="lbDia" inputmode="numeric" placeholder="1 a 31 ou ultimo"></label>
+        <label id="lbSemL" class="hidden">Dia da semana<select id="lbSem"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="0">Domingo</option></select></label>
+        <label>Se cair no fim de semana<select id="lbAj"><option value="nenhum">Mantém a data</option><option value="antecipa">Antecipa para sexta</option><option value="prorroga">Adia para segunda</option></select></label>
+        <label>Some quando eu lançar<select id="lbCat"></select></label>
+        <button class="btn" id="lbAdd">Criar lembrete</button>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn ghost small" id="lbPadrao">Voltar ao padrão</button></div>
+      <p class="note">Contas fixas cadastradas como recorrentes e as parcelas já aparecem sozinhas no calendário. Feriados não são considerados: confira as datas dos impostos com o contador.</p>
+    </section>
+    <section class="card"><h2>💾 Backup</h2><p class="sub">Guarde uma cópia completa (lançamentos, bancos, parcelamentos, recorrentes, lembretes e regras) fora do gestor. O gestor lembra você toda semana.</p>
+      <p id="bkInfo" style="margin:0 0 10px"></p>
+      <div class="row"><button class="btn" id="bkExp">Baixar backup completo (.json)</button><label class="btn ghost" style="cursor:pointer;color:var(--ink)">Restaurar backup<input type="file" id="bkImp" accept=".json,application/json" class="hidden"></label></div>
+      <h3 class="h3">📦 Cópias automáticas</h3>
+      <p class="note" style="margin-top:0">Todo mês o gestor guarda sozinho uma cópia online (ficam as 6 últimas) e faz outra antes de zerar ou restaurar dados.</p>
+      <div id="bkAuto"></div>
       <p class="status" id="storeStatus" style="margin-top:10px"></p></section>
   </div>
 </main>
@@ -896,7 +933,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 5"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 6"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("gfmd:m-")) months[k.slice(7)]=JSON.parse(localStorage.getItem(k)); } }catch(e){}
@@ -910,14 +947,14 @@ async function initDb(){
     const snap=await db.collection("data/users/"+uidUser).get();
     if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); }
     else { Object.keys(months).forEach(k=>delete months[k]);
-      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } }); }
-    ensureCash(); setStatus(); renderAll();
+      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
+    ensureCash(); setStatus(); renderAll(); setTimeout(autoSnapshot,4000); setTimeout(vencToast,2500);
     // mantém aberto em vários aparelhos sem um desfazer o que o outro apagou
     db.collection("data/users/"+uidUser).onSnapshot(s2=>{
       let changed=false;
       s2.docChanges().forEach(ch=>{ const id=ch.doc.id, q=queues[id]; if(q&&(q.running||q.pending)) return;
         if(ch.type==="removed"){ if(id.startsWith("m-")){ delete months[id.slice(2)]; changed=true; } return; }
-        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } });
+        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
       if(changed && $("modal").classList.contains("hidden") && !editId) renderAll();
     }, err=>{ setStatus("Sincronização pausada ("+(err.code||"erro")+"). Recarregue a página."); });
   }catch(e){ mode="local"; setStatus("("+(e.message||e.code||"sem conexão")+")"); }
@@ -1027,7 +1064,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -1122,6 +1159,7 @@ function renderAlerts(r,s,ps){
   const t=topParceiros(); if(t&&t.share3>0.5) al.push(["warn",`Os 3 maiores parceiros somam ${pct(t.share3)} da comissão. Dependência alta.`]);
   { const P=recPendentes(cur); if(P.length) al.push(["warn",`${P.length} recorrente${P.length>1?"s":""} de ${label(cur)} ainda a confirmar em Lançamentos.`]); }
   if(!r.temSaldo) al.push(["warn","Saldo inicial do mês não informado. Lance o saldo do banco em Lançamentos."]);
+  alertasExtras(al);
   if(!al.length) al.push(["ok", s.n?"Nada fora do normal neste mês.":"Comece lançando o saldo do banco e as movimentações do mês."]);
   $("alerts").innerHTML=al.map(([c,t])=>`<div class="alert ${c}"><span class="ai">${c==="ok"?"✓":"!"}</span><span>${t}</span></div>`).join("");
 }
@@ -1397,11 +1435,11 @@ $("tCalc").onclick=calcImp;
 function zerarMes(k){ const old=(months[k]&&months[k].lancamentos)||[]; apagarAssets(old.flatMap(l=>l.comp||[])); months[k]={lancamentos:[]}; save("m-"+k,months[k]); }
 $("zMes").onclick=async()=>{ const n=lancsRaw(cur).length;
   if(!await uiConfirm(`Apagar as ${n} movimentações e os saldos iniciais de ${label(cur)}? Não dá para desfazer.`)) return;
-  zerarMes(cur); cancelEdit(); renderAll(); fillImpostos(true); uiAlert(label(cur)+" foi zerado."); };
+  await snapshotAgora("bk-antes","antes de zerar"); zerarMes(cur); cancelEdit(); renderAll(); fillImpostos(true); uiAlert(label(cur)+" foi zerado."); };
 $("zTudo").onclick=async()=>{ const parc=$("zParc").checked;
   const t=await uiPrompt(`Isso apaga todas as movimentações e saldos de todos os meses${parc?", e também os parcelamentos":""}. Para confirmar, digite ZERAR.`);
   if(!t||t.trim().toUpperCase()!=="ZERAR") return;
-  Object.keys(months).forEach(zerarMes); if(parc){ cfg.parcelamentos=[]; save("config",cfg); }
+  await snapshotAgora("bk-antes","antes de zerar"); Object.keys(months).forEach(zerarMes); if(parc){ cfg.parcelamentos=[]; save("config",cfg); }
   cancelEdit(); renderAll(); fillImpostos(true); uiAlert("Tudo zerado. Comece informando o saldo inicial de cada banco na aba Bancos."); };
 $("prevM").onclick=()=>{cur=shift(cur,-1); $("dData").value=""; $("fData").value=defaultDate(); renderAll(); fillImpostos(true);};
 $("nextM").onclick=()=>{cur=shift(cur,1); $("dData").value=""; $("fData").value=defaultDate(); renderAll(); fillImpostos(true);};
@@ -1880,14 +1918,7 @@ aplicarOlho();
 // ---------- Conta e backup (versão web) ----------
 (async()=>{ const sb=window.__sb; if(!sb) return; try{ const r=await sb.auth.getUser(); if(r.data&&r.data.user) $("contaInfo").textContent="Conectado como "+r.data.user.email+"."; }catch(e){} })();
 $("sairBtn").onclick=async()=>{ if(!await uiConfirm("Sair do gestor neste aparelho?")) return; try{ Object.keys(localStorage).filter(k=>k.startsWith("gfmd:")).forEach(k=>localStorage.removeItem(k)); }catch(e){} await window.__sb.auth.signOut(); location.reload(); };
-$("bkExp").onclick=async()=>{ const data={app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}};
-  await saveBlob(`backup-gestor-${new Date().toISOString().slice(0,10)}.json`,new Blob([JSON.stringify(data,null,1)],{type:"application/json"})); };
-$("bkImp").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return;
-  try{ const d=JSON.parse(await f.text()); const docs=d.docs||d; if(!docs||typeof docs!=="object") throw new Error("arquivo inválido");
-    const n=Object.keys(docs).filter(k=>k.startsWith("m-")).length;
-    if(!await uiConfirm(`Restaurar este backup? Ele traz ${n} mês(es) de lançamentos e as configurações, e substitui o que estiver nesses meses agora.`)) return;
-    Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ cfg={...DEFAULT_CFG,...cfg,...v}; save("config",cfg); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
-    ensureCash(); renderAll(); uiAlert("Backup restaurado ✅"); }catch(err){ uiAlert("Não consegui ler o backup: "+err.message); } };
+
 // ---------- Máscara de dinheiro: digita só números, vírgula e milhar automáticos ----------
 const SEM_MASCARA=new Set(["aRes","aPct","aMeses","aDin","pN","rDia"]);
 function ehDinheiro(el){ return el && el.tagName==="INPUT" && el.getAttribute("inputmode")==="decimal" && !SEM_MASCARA.has(el.id); }
@@ -1983,9 +2014,154 @@ function renderCortes(){
 function salvarCons(){ cfg.consultor={anexo:$("cAnexo").value,iss:Math.max(0,num($("cIss").value)),rat:Math.max(0,num($("cRat").value))}; save("config",cfg); renderConsultor(); }
 $("cAnexo").onchange=salvarCons; $("cIss").onchange=salvarCons; $("cRat").onchange=salvarCons;
 
+// ---------- Calendário de vencimentos ----------
+const DIAS_SEM=["dom","seg","ter","qua","qui","sex","sáb"];
+const DEF_LEMB=[
+ {id:"das",nome:"DAS do Simples",emo:"🧾",freq:"mensal",dia:20,ajuste:"prorroga",cat:"DAS",ativo:true},
+ {id:"fgts",nome:"FGTS",emo:"🏛️",freq:"mensal",dia:20,ajuste:"antecipa",cat:"FGTS",ativo:true},
+ {id:"inss",nome:"INSS dos funcionários (DCTFWeb)",emo:"🏛️",freq:"mensal",dia:20,ajuste:"antecipa",cat:"INSS",ativo:true},
+ {id:"entreg",nome:"Repasse aos entregadores",emo:"🛵",freq:"semanal",dia:1,ajuste:"nenhum",cat:"Repasse a entregadores",ativo:true},
+ {id:"quinz",nome:"Fechar acerto quinzenal dos parceiros",emo:"🍕",freq:"quinzenal",dia:15,ajuste:"nenhum",cat:"",ativo:true},
+ {id:"mensal",nome:"Fechar acerto mensal dos parceiros",emo:"🍕",freq:"mensal",dia:"ultimo",ajuste:"nenhum",cat:"",ativo:true}
+];
+function lembretes(){ return Array.isArray(cfg.lembretes)? cfg.lembretes : DEF_LEMB.map(x=>({...x})); }
+const pad2=n=>String(n).padStart(2,"0");
+const isoD=d=>d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+function hojeD(){ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
+function ajustarFds(d,aj){ const w=d.getDay(); if(aj==="antecipa"){ if(w===6) d.setDate(d.getDate()-1); else if(w===0) d.setDate(d.getDate()-2); } else if(aj==="prorroga"){ if(w===6) d.setDate(d.getDate()+2); else if(w===0) d.setDate(d.getDate()+1); } return d; }
+function diaNoMes(y,m,dia){ const last=new Date(y,m+1,0).getDate(); return new Date(y,m,dia==="ultimo"?last:Math.min(Number(dia)||1,last)); }
+function catNoMes(cat,key){ return lancs(key).filter(l=>catOf(l).n===cat).reduce((a,l)=>a+num(l.valor),0); }
+function feitoAuto(lb,dt){
+  if(!lb.cat) return false; const ds=isoD(dt);
+  if(lb.freq==="semanal"){ const a=new Date(dt); a.setDate(a.getDate()-3); const b=new Date(dt); b.setDate(b.getDate()+3); const ia=isoD(a), ib=isoD(b);
+    return [ia.slice(0,7),ib.slice(0,7)].filter((v,i,x)=>x.indexOf(v)===i).some(k=>lancs(k).some(l=>catOf(l).n===lb.cat&&l.data>=ia&&l.data<=ib)); }
+  return catNoMes(lb.cat,ds.slice(0,7))>0;
+}
+function ocorrencias(){
+  const hoje=hojeD(), ini=new Date(hoje), fim=new Date(hoje); ini.setDate(ini.getDate()-31); fim.setDate(fim.getDate()+21);
+  if(!cfg.vencInicio){ cfg.vencInicio=isoD(hoje); save("config",cfg); }
+  const [vy,vm,vd]=cfg.vencInicio.split("-").map(Number), comeco=new Date(vy,vm-1,vd); if(comeco>ini) ini.setTime(comeco.getTime());
+  const out=[], push=o=>{ if(o.dt>=ini&&o.dt<=fim) out.push(o); };
+  const meses=[-1,0,1].map(i=>new Date(hoje.getFullYear(),hoje.getMonth()+i,1));
+  lembretes().filter(lb=>lb.ativo!==false).forEach(lb=>{
+    const add=dt=>{ const ds=isoD(dt), key=ds.slice(0,7), id=lb.id+"@"+ds, m=months[key];
+      const manual=!!(m&&m.feitos&&m.feitos.includes(id));
+      let est=0; if(lb.cat){ est=catNoMes(lb.cat,shift(key,-1)); if(lb.freq==="semanal") est=0; }
+      push({id,dt,ds,key,emo:lb.emo||"🔔",nome:lb.nome,tipo:"lemb",feito:manual||feitoAuto(lb,dt),valor:est,est:true}); };
+    if(lb.freq==="semanal"){ const d=new Date(ini); while(d<=fim){ if(d.getDay()===Number(lb.dia)) add(new Date(d)); d.setDate(d.getDate()+1); } }
+    else meses.forEach(m0=>{ const y=m0.getFullYear(), mo=m0.getMonth();
+      if(lb.freq==="quinzenal"){ add(ajustarFds(diaNoMes(y,mo,15),lb.ajuste)); add(ajustarFds(diaNoMes(y,mo,"ultimo"),lb.ajuste)); }
+      else add(ajustarFds(diaNoMes(y,mo,lb.dia),lb.ajuste)); });
+  });
+  (cfg.recorrentes||[]).filter(r=>r.tipo==="saida").forEach(r=>meses.forEach(m0=>{ const key=mKey(m0.getFullYear(),m0.getMonth()+1);
+    if(r.inicio>key||(r.fim&&r.fim<key)) return; const st=recStatus(key,r); if(st==="pulo") return;
+    push({id:"rec-"+r.id+"@"+key,dt:diaNoMes(m0.getFullYear(),m0.getMonth(),r.dia),key,emo:catEmo(r.categoria),nome:r.descricao||r.categoria,tipo:"rec",rec:r,feito:st==="ok",valor:r.valor}); }));
+  (cfg.parcelamentos||[]).forEach(p=>meses.forEach(m0=>{ const key=mKey(m0.getFullYear(),m0.getMonth()+1), i=mdiff(p.data.slice(0,7),key);
+    if(i<0||i>=p.n) return; const dt=diaNoMes(m0.getFullYear(),m0.getMonth(),Number(p.data.slice(8,10))||1);
+    push({id:"par-"+p.id+"@"+key,dt,key,emo:"💳",nome:`${p.descricao} (${i+1}/${p.n})`,tipo:"par",feito:dt<hoje,valor:p.valor}); }));
+  out.forEach(o=>{ o.ds=isoD(o.dt); o.dias=Math.round((o.dt-hoje)/864e5); });
+  return out.sort((a,b)=>a.dt-b.dt);
+}
+function quando(o){ if(o.feito) return ["pago","✓ feito"]; if(o.dias<0) return ["atras",`atrasado ${-o.dias} dia${o.dias<-1?"s":""}`]; if(o.dias===0) return ["hoje","hoje"]; if(o.dias===1) return ["breve","amanhã"]; if(o.dias<=2) return ["breve",`em ${o.dias} dias`]; return ["depois",`em ${o.dias} dias`]; }
+function vencRelevantes(){ return ocorrencias().filter(o=> o.feito? (o.dias>=-3&&o.dias<=14) : (o.dias>=-31&&o.dias<=14)); }
+function renderVenc(){
+  if(!$("vencBox")) return;
+  const L=vencRelevantes(), abertos=L.filter(o=>!o.feito);
+  const atras=abertos.filter(o=>o.dias<0).length, prox=abertos.filter(o=>o.dias>=0&&o.dias<=2).length;
+  $("vencResumo").innerHTML= !abertos.length? "Tudo em dia nos próximos 14 dias 🎉" : `${atras?`<b class="neg">${atras} atrasado${atras>1?"s":""}</b> · `:""}${prox?`<b style="color:var(--c-orange)">${prox} vencendo até 2 dias</b> · `:""}${abertos.length} em aberto nos próximos 14 dias`;
+  $("vencBox").innerHTML= !L.length? '<div class="empty">Nenhum vencimento nos próximos 14 dias.</div>' :
+   `<div class="vgrid">${L.slice(0,14).map(o=>{ const [cl,tx]=quando(o);
+     const btn=o.feito? "" : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>` : "";
+     return `<div class="vitem ${cl}"><div class="vdata"><b>${pad2(o.dt.getDate())}</b><span>${DIAS_SEM[o.dt.getDay()]} · ${mesCurto(o.key)}</span></div>
+       <div class="vmid"><b>${o.emo} ${esc(o.nome)}</b><span>${o.valor?(o.est&&o.tipo==="lemb"?"≈ ":"")+brl(o.valor)+(o.est&&o.tipo==="lemb"?" (mês passado)":""):o.tipo==="par"?"débito automático da parcela":""}</span></div>
+       <div class="vfim"><span class="vbadge ${cl}">${tx}</span>${btn}</div></div>`; }).join("")}</div>`;
+}
+function alertasExtras(al){
+  const abertos=vencRelevantes().filter(o=>!o.feito), atras=abertos.filter(o=>o.dias<0), prox=abertos.filter(o=>o.dias>=0&&o.dias<=2);
+  if(atras.length) al.push(["bad",`🗓️ ${atras.length} vencimento${atras.length>1?"s":""} atrasado${atras.length>1?"s":""}: ${atras.slice(0,3).map(o=>esc(o.nome)).join(", ")}.`]);
+  if(prox.length) al.push(["warn",`🗓️ Vence até 2 dias: ${prox.slice(0,4).map(o=>`${esc(o.nome)} (${pad2(o.dt.getDate())}/${pad2(o.dt.getMonth()+1)})`).join(", ")}.`]);
+  const dias=diasDesdeBackup(); if(temDados()&&(dias===null||dias>=7)) al.push(["warn",`💾 ${dias===null?"Você ainda não baixou nenhum backup.":`Faz ${dias} dias que você não baixa um backup.`} <a href="#" data-bkagora>Baixar agora</a>`]);
+}
+let vencToastFeito=false;
+function vencToast(){ if(vencToastFeito) return; vencToastFeito=true;
+  const prox=vencRelevantes().filter(o=>!o.feito&&o.dias<=2); if(!prox.length) return;
+  let k=""; try{ k=localStorage.getItem("gfmd-venc-aviso")||""; }catch(e){}
+  const hoje=isoD(hojeD()); if(k===hoje) return; try{ localStorage.setItem("gfmd-venc-aviso",hoje); }catch(e){}
+  const at=prox.filter(o=>o.dias<0).length, br=prox.length-at;
+  uiAlert(`🔔 ${[at?`${at} vencimento${at>1?"s":""} atrasado${at>1?"s":""}`:"",br?`${br} vencendo até 2 dias`:""].filter(Boolean).join(" e ")}. Veja em "Próximos vencimentos" no Dashboard.`); }
+document.addEventListener("click",e=>{
+  const ok=e.target.closest&&e.target.closest("[data-vok]"), rc=e.target.closest&&e.target.closest("[data-vrec]"), bk=e.target.closest&&e.target.closest("[data-bkagora]");
+  if(ok){ const m=mes(ok.dataset.vkey); m.feitos=(m.feitos||[]).concat([ok.dataset.vok]); save("m-"+ok.dataset.vkey,m); renderAll(); uiAlert("Marcado como feito ✅"); }
+  if(rc){ const r=(cfg.recorrentes||[]).find(x=>x.id===rc.dataset.vrec); if(r){ confirmarRec(r,r.valor,rc.dataset.vkey); renderAll(); uiAlert("Lançado ✅"); } }
+  if(bk){ e.preventDefault(); baixarBackup(); }
+});
+// lembretes em Ajustes
+function descFreq(lb){ const aj={antecipa:", antecipa se cair no fim de semana",prorroga:", adia se cair no fim de semana",nenhum:""}[lb.ajuste||"nenhum"];
+  return (lb.freq==="semanal"?`Toda ${["domingo","segunda","terça","quarta","quinta","sexta","sábado"][lb.dia]}`:lb.freq==="quinzenal"?"Dia 15 e último dia":lb.dia==="ultimo"?"Último dia do mês":`Todo dia ${lb.dia}`)+aj+(lb.cat?` · some quando lançar "${lb.cat}"`:""); }
+function renderLembretes(){
+  if(!$("lbList")) return;
+  const L=lembretes();
+  $("lbList").innerHTML=`<div class="lblist">${L.map((lb,i)=>`<div class="lbrow ${lb.ativo===false?"off":""}"><label class="chk"><input type="checkbox" data-lbon="${i}" ${lb.ativo!==false?"checked":""}> <span>${lb.emo||"🔔"} <b>${esc(lb.nome)}</b></span></label><span class="status">${esc(descFreq(lb))}</span><button class="xbtn" data-lbdel="${i}" aria-label="Excluir lembrete">×</button></div>`).join("")||'<p class="note">Nenhum lembrete.</p>'}</div>`;
+  const sel=$("lbCat"), v=sel.value; sel.innerHTML='<option value="">Nenhuma (marco como feito na mão)</option>'+allCats().filter(c=>c[2]==="saida").map(c=>`<option value="${esc(c[0])}">${catEmo(c[0])} ${esc(c[0])}</option>`).join(""); sel.value=v;
+  const f=$("lbFreq").value; $("lbDiaL").classList.toggle("hidden",f!=="mensal"); $("lbSemL").classList.toggle("hidden",f!=="semanal");
+}
+function salvarLemb(L){ cfg.lembretes=L; save("config",cfg); renderAll(); }
+$("lbFreq").onchange=renderLembretes;
+$("lbAdd").onclick=()=>{ const nome=$("lbNome").value.trim(); if(!nome){ $("lbNome").focus(); return; }
+  const f=$("lbFreq").value, d=$("lbDia").value.trim().toLowerCase();
+  const dia= f==="semanal"? Number($("lbSem").value) : f==="quinzenal"? 15 : (d.startsWith("u")?"ultimo":Math.min(31,Math.max(1,parseInt(d,10)||1)));
+  salvarLemb(lembretes().concat([{id:"l"+uid().slice(0,8),nome,emo:$("lbEmo").value||"🔔",freq:f,dia,ajuste:$("lbAj").value,cat:$("lbCat").value,ativo:true}]));
+  $("lbNome").value=""; $("lbDia").value=""; uiAlert("Lembrete criado ✅"); };
+$("lbList").addEventListener("change",e=>{ const i=e.target.dataset.lbon; if(i==null) return; const L=lembretes(); L[+i].ativo=e.target.checked; salvarLemb(L); });
+$("lbList").addEventListener("click",async e=>{ const i=e.target.dataset.lbdel; if(i==null) return; const L=lembretes(); if(!await uiConfirm(`Excluir o lembrete "${L[+i].nome}"?`)) return; L.splice(+i,1); salvarLemb(L); });
+$("lbPadrao").onclick=async()=>{ if(!await uiConfirm("Voltar os lembretes para o padrão (DAS, FGTS, INSS, repasse de segunda e acertos dos parceiros)? Os que você criou serão apagados.")) return; salvarLemb(DEF_LEMB.map(x=>({...x}))); };
+
+// ---------- Backup: lembrete semanal e cópias automáticas ----------
+const snaps={};
+function temDados(){ return Object.values(months).some(m=>(m.lancamentos||[]).length); }
+function diasDesdeBackup(){ if(!cfg.ultimoBackup) return null; return Math.floor((Date.now()-new Date(cfg.ultimoBackup).getTime())/864e5); }
+function pacoteDados(){ return {app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}}; }
+async function baixarBackup(){
+  const ok=await saveBlob(`backup-gestor-${isoD(hojeD())}.json`,new Blob([JSON.stringify(pacoteDados(),null,1)],{type:"application/json"}));
+  if(ok){ cfg.ultimoBackup=new Date().toISOString(); save("config",cfg); renderAll(); uiAlert("Backup baixado ✅ Guarde o arquivo num lugar seguro (Google Drive, e-mail ou pendrive)."); }
+}
+async function restaurarDocs(docs){
+  const n=Object.keys(docs).filter(k=>k.startsWith("m-")).length;
+  if(!await uiConfirm(`Restaurar esta cópia? Ela traz ${n} mês(es) de lançamentos e as configurações, e substitui o que estiver nesses meses agora.`)) return false;
+  await snapshotAgora("bk-antes","antes de restaurar");
+  Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ const keep=cfg.ultimoBackup; cfg={...DEFAULT_CFG,...v}; if(keep) cfg.ultimoBackup=keep; save("config",cfg); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
+  ensureCash(); renderAll(); uiAlert("Cópia restaurada ✅"); return true;
+}
+async function gz(str){ if(typeof CompressionStream==="undefined") return {gz:false,dados:str};
+  const b=await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer(); let s=""; const u=new Uint8Array(b); for(let i=0;i<u.length;i+=8192) s+=String.fromCharCode.apply(null,u.subarray(i,i+8192)); return {gz:true,dados:btoa(s)}; }
+async function ungz(sn){ if(!sn.gz) return sn.dados; const bin=Uint8Array.from(atob(sn.dados),c=>c.charCodeAt(0)); return await new Response(new Blob([bin]).stream().pipeThrough(new DecompressionStream("gzip"))).text(); }
+async function snapshotAgora(slot,motivo){
+  if(mode!=="db"||!db||!temDados()) return false;
+  try{ const p=pacoteDados(); const c=await gz(JSON.stringify(p.docs)); const n=Object.values(months).reduce((a,m)=>a+(m.lancamentos||[]).length,0);
+    const doc={mes:isoD(hojeD()).slice(0,7),criado:new Date().toISOString(),motivo:motivo||"automática",n,...c};
+    await db.collection("data/users/"+uidUser).doc(slot).set(doc); snaps[slot]=doc; renderBackup(); return true; }catch(e){ return false; }
+}
+async function autoSnapshot(){ if(mode!=="db") return; const mk=isoD(hojeD()).slice(0,7), [y,m]=mk.split("-").map(Number), slot="bk-"+((y*12+m)%6);
+  if(snaps[slot]&&snaps[slot].mes===mk) return; await snapshotAgora(slot,"automática do mês"); }
+function renderBackup(){
+  if(!$("bkInfo")) return;
+  const d=diasDesdeBackup();
+  $("bkInfo").innerHTML= d===null? "💾 Você ainda não baixou nenhum backup." : `💾 Último backup baixado ${d===0?"hoje":d===1?"ontem":`há ${d} dias`} (${new Date(cfg.ultimoBackup).toLocaleDateString("pt-BR")}).${d>=7?' <b class="neg">Hora de baixar outro.</b>':""}`;
+  const L=Object.entries(snaps).filter(([,s])=>s&&s.criado).sort((a,b)=>b[1].criado.localeCompare(a[1].criado));
+  $("bkAuto").innerHTML= mode!=="db"? '<p class="note">As cópias automáticas ficam disponíveis quando os dados estão salvos online.</p>' : !L.length? '<p class="note">A primeira cópia automática é feita sozinha logo que houver lançamentos.</p>' :
+    `<div class="lblist">${L.map(([id,s])=>`<div class="lbrow"><span>📦 <b>${s.motivo==="automática do mês"?"Cópia de "+label(s.mes):"Cópia "+esc(s.motivo)}</b></span><span class="status">${new Date(s.criado).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"})} · ${s.n} lançamentos</span><span class="row" style="gap:4px"><button class="btn ghost small" data-snapdl="${id}">Baixar</button><button class="btn ghost small" data-snaprs="${id}">Restaurar</button></span></div>`).join("")}</div>`;
+}
+$("bkExp").onclick=baixarBackup;
+$("bkImp").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return;
+  try{ const d=JSON.parse(await f.text()); const docs=d.docs||d; if(!docs||typeof docs!=="object") throw new Error("arquivo inválido"); await restaurarDocs(docs); }catch(err){ uiAlert("Não consegui ler o backup: "+err.message); } };
+$("bkAuto").addEventListener("click",async e=>{ const dl=e.target.dataset?.snapdl, rs=e.target.dataset?.snaprs; const id=dl||rs; if(!id||!snaps[id]) return;
+  try{ const docs=JSON.parse(await ungz(snaps[id]));
+    if(dl) await saveBlob(`backup-gestor-${snaps[id].criado.slice(0,10)}.json`,new Blob([JSON.stringify({app:"gestor-financeiro-md",versao:1,gerado:snaps[id].criado,docs},null,1)],{type:"application/json"}));
+    else await restaurarDocs(docs); }catch(err){ uiAlert("Não consegui abrir esta cópia: "+err.message); } });
+
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
-loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); initDb(); getAssets().then(()=>renderAll());
+loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); setTimeout(vencToast,3500); initDb(); getAssets().then(()=>renderAll());
 })();
 </script>
 </body>
