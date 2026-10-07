@@ -1030,7 +1030,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 10.1"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 11.1"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
@@ -2145,7 +2145,7 @@ function ocorrencias(){
     const add=dt=>{ const ds=isoD(dt), key=ds.slice(0,7), id=lb.id+"@"+ds, m=months[key];
       const manual=!!(m&&m.feitos&&m.feitos.includes(id));
       let est=0; if(lb.cat){ est=catNoMes(lb.cat,shift(key,-1)); if(lb.freq==="semanal") est=0; }
-      push({id,dt,ds,key,emo:lb.emo||"🔔",nome:lb.nome,tipo:"lemb",feito:manual||feitoAuto(lb,dt),valor:est,est:true}); };
+      push({id,dt,ds,key,emo:lb.emo||"🔔",nome:lb.nome,tipo:"lemb",lb,feito:manual||feitoAuto(lb,dt),valor:est,est:true}); };
     if(lb.freq==="semanal"){ const d=new Date(ini); while(d<=fim){ if(d.getDay()===Number(lb.dia)) add(new Date(d)); d.setDate(d.getDate()+1); } }
     else meses.forEach(m0=>{ const y=m0.getFullYear(), mo=m0.getMonth();
       if(lb.freq==="quinzenal"){ add(ajustarFds(diaNoMes(y,mo,15),lb.ajuste)); add(ajustarFds(diaNoMes(y,mo,"ultimo"),lb.ajuste)); }
@@ -2165,6 +2165,12 @@ function ocorrencias(){
   if(funcsAtivos().length){ const cf=fcfg(); [-1,0,1].forEach(i=>{ const c0=new Date(hoje.getFullYear(),hoje.getMonth()+i,1), k=mKey(c0.getFullYear(),c0.getMonth()+1), m=fmesRO(k), F=funcsAtivos();
       const ds=quintoDiaUtil(c0.getFullYear(),c0.getMonth()+1);
       push({id:"fsal@"+k,dt:ds,key:k,emo:"👷",nome:"Salário de "+label(k).split(" ")[0].toLowerCase()+" (5º dia útil)",tipo:"fol",feito:F.every(f=>((m.pagos||{})[f.id]||{}).saldo),valor:F.reduce((a,f)=>a+(calcFunc(f,k).aPagar||0),0)}); }); }
+  // conta enviada à Secretária substitui o lembrete/recorrente igual do mesmo mês (evita repetir FGTS, INSS, DAS...)
+  const KWS=["fgts","inss","dctf","das","simples","aluguel","energia","energisa","internet","contador","contabilidade","cdl","agua"], kwDe=s=>{ const w=normTxt(s).split(/[^a-z0-9]+/); return KWS.filter(k=>w.includes(k)); };
+  const contasOc=out.filter(o=>o.tipo==="conta");
+  if(contasOc.length) for(let i=out.length-1;i>=0;i--){ const o=out[i]; if(o.tipo!=="lemb"&&o.tipo!=="rec") continue;
+    const cat=o.tipo==="lemb"? (o.lb&&o.lb.cat) : o.rec.categoria, k1=kwDe(o.nome+" "+(cat||""));
+    if(contasOc.some(c=>c.key===o.key&&((o.tipo==="lemb"&&cat&&c.conta.cat===cat)||kwDe(c.nome+" "+(c.conta.cat||"")).some(k=>k1.includes(k))))) out.splice(i,1); }
   out.forEach(o=>{ o.ds=isoD(o.dt); o.dias=Math.round((o.dt-hoje)/864e5); });
   return out.sort((a,b)=>a.dt-b.dt);
 }
