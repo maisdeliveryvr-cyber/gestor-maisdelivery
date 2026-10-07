@@ -1030,7 +1030,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 10"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 10.1"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
@@ -2630,15 +2630,27 @@ function liqDoHolerite(seg){
   if(liq==null&&venc!=null&&desc!=null&&venc>desc) liq=Math.round((venc-desc)*100)/100;
   return {liq,venc,desc,ok};
 }
-function lerHolerites(texto){
+// acha o nome do funcionário no texto já normalizado (posição ou -1)
+function idxNome(N,f){ const tk=nomeTokens(f.nome); if(!tk.length) return -1; const primeiro=tk[0], ultimo=tk[tk.length-1];
+  const re=new RegExp("\\b"+primeiro+"\\b","g"); let mm; while((mm=re.exec(N))){ const trecho=N.slice(mm.index,mm.index+80); if(tk.length===1||trecho.includes(ultimo)||tk.slice(1).some(w=>trecho.includes(w))) return mm.index; }
+  return -1; }
+// holerite: "Total de Vencimentos", "Total de Descontos" e o "Valor Líquido" (a seta) vêm em sequência e líquido = vencimentos − descontos
+function trincaLiquido(txt){ const ns=numsDe(txt).map(n=>n.v), ig=(a,b)=>Math.abs(a-b)<0.015; let best=null;
+  for(let i=0;i+2<ns.length;i++){ const a=ns[i],b=ns[i+1],c=ns[i+2]; if(a>0&&b>0&&c>0&&ig(a-b,c)&&(!best||a>best.venc)) best={venc:a,desc:b,liq:c}; }
+  return best; }
+// texto de cada página separado (o PDF do contador costuma ter um holerite por página)
+async function paginasPDF(pdf,maxPag){ const out=[]; for(let i=1;i<=Math.min(pdf.numPages,maxPag||5);i++){ const tc=await (await pdf.getPage(i)).getTextContent(); out.push(tc.items.map(it=>it.str).join("\n")); } return out; }
+function lerHolerites(texto,paginas){
   const T=String(texto), N=normTxt(T); const achados=[];
-  funcsAtivos().forEach(f=>{ const tk=nomeTokens(f.nome); if(!tk.length) return; const primeiro=tk[0], ultimo=tk[tk.length-1];
-    let idx=-1; const re=new RegExp("\\b"+primeiro+"\\b","g"); let mm; while((mm=re.exec(N))){ const trecho=N.slice(mm.index,mm.index+80); if(tk.length===1||trecho.includes(ultimo)||tk.slice(1).some(w=>trecho.includes(w))){ idx=mm.index; break; } }
-    if(idx>=0) achados.push({f,idx}); });
+  // 1º: página com um só funcionário -> pega a trinca vencimentos / descontos / líquido daquela página
+  const viaPag={}, pags=(paginas||[]).map(t=>({t,N:normTxt(t)}));
+  funcsAtivos().forEach(f=>{ for(const pg of pags){ if(idxNome(pg.N,f)<0||!/liquido/.test(pg.N)) continue; if(funcsAtivos().some(o=>o.id!==f.id&&idxNome(pg.N,o)>=0)) continue; const r=trincaLiquido(pg.t); if(r){ viaPag[f.id]={...r,ok:true}; break; } } });
+  funcsAtivos().forEach(f=>{ const idx=idxNome(N,f); if(idx>=0) achados.push({f,idx}); });
   achados.sort((a,b)=>a.idx-b.idx);
   return achados.map((a,i)=>{ const ini=i>0? Math.max(achados[i-1].idx+1,a.idx-1500) : Math.max(0,a.idx-1500);
     // o nome pode vir antes ou depois dos valores: usa o trecho entre um funcionário e o próximo
     const fim=i+1<achados.length? achados[i+1].idx : Math.min(N.length,a.idx+4000);
+    if(viaPag[a.f.id]) return {fid:a.f.id,nome:a.f.nome,...viaPag[a.f.id]};
     let r=liqDoHolerite(T.slice(a.idx,fim)); if(!r.ok){ const r2=liqDoHolerite(T.slice(i>0?achados[i-1].idx+60:0,fim)); if(r2.ok) r=r2; }
     return {fid:a.f.id,nome:a.f.nome,...r}; });
 }
@@ -2712,7 +2724,8 @@ $("fiPix").onclick=()=>{ const f=FOL.funcs.find(x=>x.id===$("fiFunc").value), v=
 $("folPdf").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return; if(!funcsAtivos().length){ uiAlert("Cadastre os funcionários antes de importar a folha."); return; }
   $("folPdfSt").textContent="📄 Lendo o PDF…";
   try{ let {texto,pdf}=await textoPDF(f,30); if(texto.replace(/\s/g,"").length<50){ $("folPdfSt").textContent="🔎 PDF escaneado, lendo as letras…"; texto=await ocr(await pdfParaImagem(pdf)); }
-    folPrev={itens:lerHolerites(texto)}; $("folPdfSt").textContent=""; renderFolPrev(); }catch(err){ $("folPdfSt").textContent="Não consegui ler o PDF: "+err.message; } };
+    let paginas=null; try{ paginas=await paginasPDF(pdf,30); }catch(_){}
+    folPrev={itens:lerHolerites(texto,paginas)}; $("folPdfSt").textContent=""; renderFolPrev(); }catch(err){ $("folPdfSt").textContent="Não consegui ler o PDF: "+err.message; } };
 $("folPrev").addEventListener("input",e=>{ const i=e.target.dataset.fpl; if(i!=null) folPrev.itens[+i].liq=num(e.target.value); });
 $("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.holAdiant=false; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
 let ffEdit=null;
