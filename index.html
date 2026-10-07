@@ -235,6 +235,34 @@ input.rv{width:110px;text-align:right;padding:6px 8px;font-size:14px}
 .h3{font:700 15px var(--display);margin:18px 0 4px}
 #alerts a{color:inherit;font-weight:700}
 @media (max-width:900px){.vmid b{white-space:normal}.vitem{grid-template-columns:52px 1fr auto;gap:10px}.vgrid{grid-template-columns:1fr}.lbrow{grid-template-columns:1fr auto}.lbrow .status{grid-column:1/-1;order:3}}
+.secbox{border-top-color:var(--c-purple)!important;background:linear-gradient(160deg,rgba(124,58,237,.07),var(--surface) 55%)}
+#secTxt{width:100%;font:500 15px var(--body);color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:14px;padding:12px 14px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.chip2{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 11px;font:600 12.5px var(--body);cursor:pointer}
+.chip2:hover{border-color:var(--c-purple)}
+.secstatus{margin:10px 0 0;font-size:14px;font-weight:600;min-height:1em}.secstatus.ok{color:var(--c-money)}.secstatus.warn{color:var(--c-orange)}
+.sprev{border:2px dashed var(--c-purple);border-radius:16px;padding:12px 14px;margin-top:10px;background:var(--surface)}
+.warnt{color:var(--c-orange)!important;font-weight:600}
+.vgrid.one{grid-template-columns:1fr}
+.vdata.ag{background:linear-gradient(160deg,#A78BFA,#7C3AED)}
+a.ebtn{display:inline-grid;place-items:center;text-decoration:none}
+.v.warnv{color:var(--c-orange)}.v.negv{color:var(--c-coral)}.v.posv{color:var(--c-money)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.fcard{border:1px solid var(--line);border-radius:18px;padding:14px;background:var(--surface);display:grid;gap:10px;border-top:4px solid var(--c-orange)}
+.fhead{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center}.fhead span{display:block;font-size:12.5px}
+.fav{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font:800 20px var(--display);color:#fff;background:linear-gradient(140deg,#F97316,#DB2777)}
+.fliq{display:flex;align-items:center;justify-content:space-between;gap:10px}.fliq input{max-width:150px;text-align:right}
+.fitens{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.fitens li{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:var(--sunk);border-radius:10px;padding:6px 10px;font-size:13.5px}
+.ftotal{display:flex;justify-content:space-between;align-items:baseline;background:var(--ok-bg);border-radius:12px;padding:10px 12px}.ftotal b{font:800 20px var(--display);color:var(--c-money)}
+.fpay{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fpbox{border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:6px;align-content:start}
+.fpbox span{font-size:12.5px;color:var(--muted);font-weight:600}.fpbox b{font:800 18px var(--display)}
+.fpbox.ok{background:var(--ok-bg);border-color:transparent}.fpbox.ok b{color:var(--c-money)}
+.fpbox .row{gap:6px}
+@media (max-width:600px){.fpay{grid-template-columns:1fr}}
+#secContas .vfim .acts,#secAgenda .vfim .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
+@media (max-width:700px){#secContas .vitem,#secAgenda .vitem{grid-template-columns:52px minmax(0,1fr)}#secContas .vfim,#secAgenda .vfim{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.vmid{min-width:0}.vmid b{overflow-wrap:anywhere}}
 .hidden{display:none!important}
 @media (max-width:1100px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:820px){
@@ -473,6 +501,8 @@ main{padding-bottom:110px}
     <button data-tab="lanc" data-title="📝 Lançamentos" aria-current="false"><span class="nemo" aria-hidden="true">📝</span><span>Lançamentos</span></button>
     <button data-tab="contas" data-title="🏦 Bancos, parcelas e recorrentes" aria-current="false"><span class="nemo" aria-hidden="true">🏦</span><span>Bancos</span></button>
     <button data-tab="res" data-title="📈 Resultado do mês" aria-current="false"><span class="nemo" aria-hidden="true">📈</span><span>Resultado</span></button>
+    <button class="navx" data-tab="sec" data-title="🤖 Secretária" aria-current="false"><span class="nemo" aria-hidden="true">🤖</span><span>Secretária</span></button>
+    <button class="navx" data-tab="folha" data-title="👷 Folha de pagamento" aria-current="false"><span class="nemo" aria-hidden="true">👷</span><span>Folha</span></button>
     <button class="navx" data-tab="cons" data-title="🧠 Consultor" aria-current="false"><span class="nemo" aria-hidden="true">🧠</span><span>Consultor</span></button>
     <button class="navx" data-tab="imp" data-title="🧾 Impostos e Fator R" aria-current="false"><span class="nemo" aria-hidden="true">🧾</span><span>Impostos</span></button>
     <button class="navx" data-tab="aj" data-title="⚙️ Ajustes" aria-current="false"><span class="nemo" aria-hidden="true">⚙️</span><span>Ajustes</span></button>
@@ -618,6 +648,71 @@ main{padding-bottom:110px}
         <button class="btn" id="dAdd">Registrar distribuição</button>
       </div>
       <p class="note" id="dNote"></p>
+    </section>
+  </div>
+
+  <div id="tab-sec" class="stack hidden">
+    <section class="card secbox">
+      <h2>🤖 Fale com a Secretária</h2>
+      <p class="sub">Escreva como numa mensagem, cole a linha digitável do boleto ou envie a conta em foto, print ou PDF. Ela lê o valor e o vencimento, agenda e te lembra 2 dias antes.</p>
+      <textarea id="secTxt" rows="3" placeholder="Ex.: Luz 389,90 vence 15/10&#10;Reunião com o Pastelar sexta às 14h&#10;Internet 129,90 dia 10"></textarea>
+      <div class="chips"><span class="status">Exemplos:</span>
+        <button class="chip2" data-secex="Energia 389,90 vence 15/10">💡 Energia 389,90 vence 15/10</button>
+        <button class="chip2" data-secex="Visita ao Bella pizzaria amanhã às 9h">🍕 Visita amanhã às 9h</button>
+        <button class="chip2" data-secex="Reunião com o contador sexta às 14h30">🧮 Reunião sexta 14h30</button></div>
+      <div class="row" style="margin-top:12px;gap:10px">
+        <button class="btn" id="secLer">🤖 Ler e agendar</button>
+        <label class="btn orange" style="cursor:pointer;color:#fff">📎 Enviar conta (foto, print ou PDF)<input type="file" id="secFile" accept="image/*,application/pdf" multiple class="hidden"></label>
+        <span class="status" id="secFileN"></span></div>
+      <p id="secStatus" class="secstatus"></p>
+      <div id="secPrev" class="hidden"></div>
+    </section>
+    <div class="grid4" id="secTiles"></div>
+    <section class="card"><div class="row" style="justify-content:space-between"><h2>💳 Contas a pagar</h2><label class="chk"><input type="checkbox" id="secVerPagas"> Mostrar pagas e concluídos</label></div>
+      <p class="sub">🔢 copia o código de barras · 📅 adiciona ao Google Agenda · 🔔 baixa o lembrete para a agenda do celular · ✅ lança o pagamento.</p>
+      <div id="secContas"></div></section>
+    <section class="card"><h2>📆 Agenda de compromissos</h2><p class="sub">Reuniões, visitas a parceiros, treinamentos e o que mais você mandar.</p><div id="secAgenda"></div></section>
+  </div>
+
+  <div id="tab-folha" class="stack hidden">
+    <div class="grid4" id="folTiles"></div>
+    <section class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>👷 Pagamentos de <span class="fMes"></span></h2><label class="chk"><input type="checkbox" id="folDescVale"> O líquido do holerite já desconta o vale</label></div>
+      <p class="sub">Toque em 📋 Pix copia e cola, cole no app do banco (Pix &gt; Pix Copia e Cola) e confirme. Depois marque ✅ Paguei: o pagamento vira uma saída de Salários.</p>
+      <div id="folCards" class="fgrid"></div></section>
+    <section class="card"><h2>➕ Vales, prêmios, cardápios e descontos</h2><p class="sub">Tudo que soma ou desconta na folha de <span class="fMes"></span>.</p>
+      <div class="form">
+        <label>Funcionário<select id="fiFunc"></select></label>
+        <label>Tipo<select id="fiTipo"><option value="cardapio">🍔 Cardápio criado (+)</option><option value="premio">🏆 Prêmio (+)</option><option value="extra">⏰ Hora extra (+)</option><option value="bonus">🎁 Bonificação / comissão (+)</option><option value="outro">➕ Outro acréscimo (+)</option><option value="vale">💸 Vale / adiantamento extra (−)</option><option value="desconto">➖ Desconto: falta, consumo, empréstimo (−)</option></select></label>
+        <label id="fiQtdL">Quantidade<input id="fiQtd" inputmode="numeric" value="1"></label>
+        <label id="fiDescL">Descrição (opcional)<input id="fiDesc" placeholder="Ex.: Padoca, Villa Grill"></label>
+        <label>Valor<input id="fiVal" inputmode="decimal" placeholder="0,00"></label>
+        <label>Data<input type="date" id="fiData"></label>
+        <button class="btn" id="fiAdd">Lançar na folha</button>
+      </div></section>
+    <section class="card"><h2>📄 Importar folha do contador</h2><p class="sub">Envie o PDF dos holerites ou do resumo da folha. O gestor procura o nome de cada funcionário e pega o valor líquido.</p>
+      <div class="row"><label class="btn" style="cursor:pointer;color:#fff">📄 Escolher PDF da folha<input type="file" id="folPdf" accept="application/pdf" class="hidden"></label><span class="status" id="folPdfSt"></span></div>
+      <div id="folPrev" class="hidden" style="margin-top:12px"></div></section>
+    <section class="card"><h2>👥 Funcionários</h2><p class="sub">Cadastre a chave Pix uma vez. Ela fica salva para os próximos pagamentos.</p>
+      <div id="ffList"></div>
+      <div class="form" style="margin-top:14px">
+        <label>Nome (igual ao holerite)<input id="ffNome" placeholder="Nome completo"></label>
+        <label>Cargo<input id="ffCargo" placeholder="Ex.: Atendente da central"></label>
+        <label>Chave Pix<input id="ffChave" placeholder="CPF, celular, e-mail ou aleatória"></label>
+        <label>Tipo da chave<select id="ffTipo"><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="telefone">Celular</option><option value="email">E-mail</option><option value="aleatoria">Aleatória</option></select></label>
+        <label>Salário bruto<input id="ffSal" inputmode="decimal" placeholder="0,00"></label>
+        <label>Vale por<select id="ffValeTipo"><option value="pct">% do salário</option><option value="fixo">Valor fixo</option></select></label>
+        <label id="ffValeL">Vale (% do salário)<input id="ffVale" inputmode="numeric" placeholder="padrão"></label>
+        <button class="btn" id="ffAdd">Cadastrar funcionário</button>
+      </div>
+      <h3 class="h3">⚙️ Regras da folha</h3>
+      <div class="form">
+        <label>Dia do vale<input id="fcDia" inputmode="numeric"></label>
+        <label>Vale padrão (% do salário)<input id="fcPct" inputmode="numeric"></label>
+        <label>Prêmio por cardápio criado<input id="fcCard" inputmode="decimal"></label>
+        <label>Cidade (para o Pix)<input id="fcCid"></label>
+        <label>Pagar pelo banco<select id="fcBanco"></select></label>
+      </div>
+      <p class="note">O saldo do salário vence no 5º dia útil do mês seguinte (sábado conta como dia útil). Prêmios por desempenho, como o do cardápio, avise o contador para entrarem no holerite como prêmio.</p>
     </section>
   </div>
 
@@ -809,6 +904,8 @@ main{padding-bottom:110px}
   <div class="mbox"><button class="xbtn mclose" data-close="maisModal" aria-label="Fechar">×</button>
     <h2 style="margin:0 0 12px;font:700 18px var(--display)">Mais opções</h2>
     <div class="maisgrid">
+      <button data-tab="sec" data-title="🤖 Secretária" aria-current="false"><span>🤖</span>Secretária</button>
+      <button data-tab="folha" data-title="👷 Folha de pagamento" aria-current="false"><span>👷</span>Folha</button>
       <button data-tab="cons" data-title="🧠 Consultor" aria-current="false"><span>🧠</span>Consultor</button>
       <button data-tab="imp" data-title="🧾 Impostos e Fator R" aria-current="false"><span>🧾</span>Impostos e Fator R</button>
       <button data-tab="aj" data-title="⚙️ Ajustes" aria-current="false"><span>⚙️</span>Ajustes</button>
@@ -933,9 +1030,10 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 6"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 7"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
+  const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
   try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("gfmd:m-")) months[k.slice(7)]=JSON.parse(localStorage.getItem(k)); } }catch(e){}
 }
 async function initDb(){
@@ -945,16 +1043,16 @@ async function initDb(){
     const id=await u.id(); if(!id){ setStatus(); return; }
     db=d; uidUser=id; mode="db";
     const snap=await db.collection("data/users/"+uidUser).get();
-    if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); }
+    if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); if(SEC.contas.length||SEC.agenda.length) save("sec",SEC); if((FOL.funcs||[]).length) save("folha",FOL); }
     else { Object.keys(months).forEach(k=>delete months[k]);
-      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
+      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id==="sec") SEC={contas:[],agenda:[],...x}; else if(doc.id==="folha") FOL={funcs:[],meses:{},...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
     ensureCash(); setStatus(); renderAll(); setTimeout(autoSnapshot,4000); setTimeout(vencToast,2500);
     // mantém aberto em vários aparelhos sem um desfazer o que o outro apagou
     db.collection("data/users/"+uidUser).onSnapshot(s2=>{
       let changed=false;
       s2.docChanges().forEach(ch=>{ const id=ch.doc.id, q=queues[id]; if(q&&(q.running||q.pending)) return;
         if(ch.type==="removed"){ if(id.startsWith("m-")){ delete months[id.slice(2)]; changed=true; } return; }
-        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
+        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id==="sec"){ SEC={contas:[],agenda:[],...x}; changed=true; } else if(id==="folha"){ FOL={funcs:[],meses:{},...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
       if(changed && $("modal").classList.contains("hidden") && !editId) renderAll();
     }, err=>{ setStatus("Sincronização pausada ("+(err.code||"erro")+"). Recarregue a página."); });
   }catch(e){ mode="local"; setStatus("("+(e.message||e.code||"sem conexão")+")"); }
@@ -1064,7 +1162,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFolha(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -1445,8 +1543,8 @@ $("prevM").onclick=()=>{cur=shift(cur,-1); $("dData").value=""; $("fData").value
 $("nextM").onclick=()=>{cur=shift(cur,1); $("dData").value=""; $("fData").value=defaultDate(); renderAll(); fillImpostos(true);};
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-current",x.dataset.tab===b.dataset.tab?"page":"false"));
-  ["painel","lanc","contas","res","cons","imp","aj"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==b.dataset.tab));
-  { const t=b.dataset.title, i=t.indexOf(" "); closeM("maisModal"); $("navMais").setAttribute("aria-current",["cons","imp","aj"].includes(b.dataset.tab)?"page":"false"); $("pageTitle").innerHTML=`<span class="pe">${t.slice(0,i)}</span> <span class="pt">${esc(t.slice(i+1))}</span>`; } window.scrollTo(0,0); if(b.dataset.tab==="painel") renderCombo();
+  ["painel","lanc","contas","res","sec","folha","cons","imp","aj"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==b.dataset.tab));
+  { const t=b.dataset.title, i=t.indexOf(" "); closeM("maisModal"); $("navMais").setAttribute("aria-current",["sec","folha","cons","imp","aj"].includes(b.dataset.tab)?"page":"false"); $("pageTitle").innerHTML=`<span class="pe">${t.slice(0,i)}</span> <span class="pt">${esc(t.slice(i+1))}</span>`; } window.scrollTo(0,0); if(b.dataset.tab==="painel") renderCombo();
 });
 
 // ---------- Excel ----------
@@ -2059,6 +2157,15 @@ function ocorrencias(){
   (cfg.parcelamentos||[]).forEach(p=>meses.forEach(m0=>{ const key=mKey(m0.getFullYear(),m0.getMonth()+1), i=mdiff(p.data.slice(0,7),key);
     if(i<0||i>=p.n) return; const dt=diaNoMes(m0.getFullYear(),m0.getMonth(),Number(p.data.slice(8,10))||1);
     push({id:"par-"+p.id+"@"+key,dt,key,emo:"💳",nome:`${p.descricao} (${i+1}/${p.n})`,tipo:"par",feito:dt<hoje,valor:p.valor}); }));
+  const lim0=new Date(hoje); lim0.setDate(lim0.getDate()-60);
+  (SEC.contas||[]).forEach(c=>{ if(!c.venc) return; const [y,m,d]=c.venc.split("-").map(Number), dt=new Date(y,m-1,d); if(dt<lim0||dt>fim) return;
+    out.push({id:"conta-"+c.id,dt,key:c.venc.slice(0,7),emo:catEmo(c.cat),nome:c.desc,tipo:"conta",conta:c,feito:!!c.pago,valor:c.valor}); });
+  (SEC.agenda||[]).forEach(a=>{ if(!a.data) return; const [y,m,d]=a.data.split("-").map(Number), dt=new Date(y,m-1,d); if(dt<lim0||dt>fim) return;
+    out.push({id:"ag-"+a.id,dt,key:a.data.slice(0,7),emo:"📆",nome:a.titulo+(a.hora?" às "+a.hora:""),tipo:"ag",ag:a,feito:!!a.feito,valor:0}); });
+  if(funcsAtivos().length){ const cf=fcfg(); [-1,0,1].forEach(i=>{ const c0=new Date(hoje.getFullYear(),hoje.getMonth()+i,1), k=mKey(c0.getFullYear(),c0.getMonth()+1), m=fmesRO(k), F=funcsAtivos();
+      const dv=diaNoMes(c0.getFullYear(),c0.getMonth(),cf.diaVale), ds=quintoDiaUtil(c0.getFullYear(),c0.getMonth()+1);
+      const tv=F.filter(f=>valePrevisto(f)>0); if(tv.length) push({id:"fvale@"+k,dt:dv,key:k,emo:"💸",nome:"Vale dos funcionários ("+label(k).split(" ")[0].toLowerCase()+")",tipo:"fol",feito:tv.every(f=>((m.pagos||{})[f.id]||{}).vale),valor:tv.reduce((a,f)=>a+valePrevisto(f),0)});
+      push({id:"fsal@"+k,dt:ds,key:k,emo:"👷",nome:"Salário de "+label(k).split(" ")[0].toLowerCase()+" (5º dia útil)",tipo:"fol",feito:F.every(f=>((m.pagos||{})[f.id]||{}).saldo),valor:F.reduce((a,f)=>a+(calcFunc(f,k).aPagar||0),0)}); }); }
   out.forEach(o=>{ o.ds=isoD(o.dt); o.dias=Math.round((o.dt-hoje)/864e5); });
   return out.sort((a,b)=>a.dt-b.dt);
 }
@@ -2071,7 +2178,7 @@ function renderVenc(){
   $("vencResumo").innerHTML= !abertos.length? "Tudo em dia nos próximos 14 dias 🎉" : `${atras?`<b class="neg">${atras} atrasado${atras>1?"s":""}</b> · `:""}${prox?`<b style="color:var(--c-orange)">${prox} vencendo até 2 dias</b> · `:""}${abertos.length} em aberto nos próximos 14 dias`;
   $("vencBox").innerHTML= !L.length? '<div class="empty">Nenhum vencimento nos próximos 14 dias.</div>' :
    `<div class="vgrid">${L.slice(0,14).map(o=>{ const [cl,tx]=quando(o);
-     const btn=o.feito? "" : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>` : "";
+     const btn=o.feito? "" : o.tipo==="conta"? `<button class="btn small" data-vpag="${o.conta.id}">✅ Paguei</button>` : o.tipo==="ag"? `<button class="btn ghost small" data-vag="${o.ag.id}">✓ Feito</button>` : o.tipo==="fol"? `<button class="btn ghost small" data-vfol="1">Abrir folha</button>` : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>` : "";
      return `<div class="vitem ${cl}"><div class="vdata"><b>${pad2(o.dt.getDate())}</b><span>${DIAS_SEM[o.dt.getDay()]} · ${mesCurto(o.key)}</span></div>
        <div class="vmid"><b>${o.emo} ${esc(o.nome)}</b><span>${o.valor?(o.est&&o.tipo==="lemb"?"≈ ":"")+brl(o.valor)+(o.est&&o.tipo==="lemb"?" (mês passado)":""):o.tipo==="par"?"débito automático da parcela":""}</span></div>
        <div class="vfim"><span class="vbadge ${cl}">${tx}</span>${btn}</div></div>`; }).join("")}</div>`;
@@ -2118,9 +2225,9 @@ $("lbPadrao").onclick=async()=>{ if(!await uiConfirm("Voltar os lembretes para o
 
 // ---------- Backup: lembrete semanal e cópias automáticas ----------
 const snaps={};
-function temDados(){ return Object.values(months).some(m=>(m.lancamentos||[]).length); }
+function temDados(){ return Object.values(months).some(m=>(m.lancamentos||[]).length)||SEC.contas.length||(FOL.funcs||[]).length; }
 function diasDesdeBackup(){ if(!cfg.ultimoBackup) return null; return Math.floor((Date.now()-new Date(cfg.ultimoBackup).getTime())/864e5); }
-function pacoteDados(){ return {app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}}; }
+function pacoteDados(){ return {app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,sec:SEC,folha:FOL,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}}; }
 async function baixarBackup(){
   const ok=await saveBlob(`backup-gestor-${isoD(hojeD())}.json`,new Blob([JSON.stringify(pacoteDados(),null,1)],{type:"application/json"}));
   if(ok){ cfg.ultimoBackup=new Date().toISOString(); save("config",cfg); renderAll(); uiAlert("Backup baixado ✅ Guarde o arquivo num lugar seguro (Google Drive, e-mail ou pendrive)."); }
@@ -2129,7 +2236,7 @@ async function restaurarDocs(docs){
   const n=Object.keys(docs).filter(k=>k.startsWith("m-")).length;
   if(!await uiConfirm(`Restaurar esta cópia? Ela traz ${n} mês(es) de lançamentos e as configurações, e substitui o que estiver nesses meses agora.`)) return false;
   await snapshotAgora("bk-antes","antes de restaurar");
-  Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ const keep=cfg.ultimoBackup; cfg={...DEFAULT_CFG,...v}; if(keep) cfg.ultimoBackup=keep; save("config",cfg); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
+  Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ const keep=cfg.ultimoBackup; cfg={...DEFAULT_CFG,...v}; if(keep) cfg.ultimoBackup=keep; save("config",cfg); } else if(k==="sec"){ SEC={contas:[],agenda:[],...v}; save("sec",SEC); } else if(k==="folha"){ FOL={funcs:[],meses:{},...v}; save("folha",FOL); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
   ensureCash(); renderAll(); uiAlert("Cópia restaurada ✅"); return true;
 }
 async function gz(str){ if(typeof CompressionStream==="undefined") return {gz:false,dados:str};
@@ -2159,9 +2266,406 @@ $("bkAuto").addEventListener("click",async e=>{ const dl=e.target.dataset?.snapd
     if(dl) await saveBlob(`backup-gestor-${snaps[id].criado.slice(0,10)}.json`,new Blob([JSON.stringify({app:"gestor-financeiro-md",versao:1,gerado:snaps[id].criado,docs},null,1)],{type:"application/json"}));
     else await restaurarDocs(docs); }catch(err){ uiAlert("Não consegui abrir esta cópia: "+err.message); } });
 
+// ================= Secretária =================
+let SEC={contas:[],agenda:[]};
+function saveSec(){ save("sec",SEC); }
+const soDig=s=>String(s||"").replace(/\D/g,"");
+const MESES_N=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+function dataBR(iso){ if(!iso) return "sem data"; const [y,m,d]=iso.split("-"); return `${d}/${m}/${y}`; }
+function isoDeDate(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function hojeLocal(){ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
+// --- boletos ---
+function mod10(n){ let s=0,w=2; for(let i=n.length-1;i>=0;i--){ let p=+n[i]*w; s+= p>9? Math.floor(p/10)+p%10 : p; w=w===2?1:2; } const r=s%10; return r?10-r:0; }
+function mod11Banc(n){ let s=0,w=2; for(let i=n.length-1;i>=0;i--){ s+=+n[i]*w; w=w===9?2:w+1; } const r=11-(s%11); return (r===0||r===10||r===11)?1:r; }
+function mod11Arr(n){ let s=0,w=2; for(let i=n.length-1;i>=0;i--){ s+=+n[i]*w; w=w===9?2:w+1; } const r=s%11; return (r===0||r===1)?0:(r===10?1:11-r); }
+function vencDeFator(f){ if(!f) return null; const hoje=hojeLocal(), cand=[];
+  const a=new Date(1997,9,7); a.setDate(a.getDate()+f); cand.push(a);
+  if(f>=1000){ const b=new Date(2025,1,22); b.setDate(b.getDate()+(f-1000)); cand.push(b); }
+  cand.sort((x,y)=>Math.abs(x-hoje)-Math.abs(y-hoje)); return isoDeDate(cand[0]); }
+function boletoBancario(d){ // 47 dígitos (linha) ou 44 (código de barras)
+  let barra, ok;
+  if(d.length===47){ const c1=d.slice(0,9),c2=d.slice(10,20),c3=d.slice(21,31);
+    ok= mod10(c1)===+d[9] && mod10(c2)===+d[20] && mod10(c3)===+d[31];
+    barra=d.slice(0,4)+d[32]+d.slice(33,47)+d.slice(4,9)+c2+c3; }
+  else { barra=d; }
+  const dvOk= mod11Banc(barra.slice(0,4)+barra.slice(5))===+barra[4]; ok= d.length===47? (ok&&dvOk) : dvOk;
+  const fator=+barra.slice(5,9), valor=+barra.slice(9,19)/100;
+  return {tipo:"bancario",linha:d,ok,valor:valor||null,venc:vencDeFator(fator),banco:barra.slice(0,3)};
+}
+function boletoArrecadacao(d){
+  let barra, ok=true;
+  if(d.length===48){ barra=""; for(let i=0;i<4;i++){ const bl=d.slice(i*12,i*12+11), dv=+d[i*12+11]; const ref=d[2]; const calc=(ref==="6"||ref==="7")?mod10(bl):mod11Arr(bl); if(calc!==dv) ok=false; barra+=bl; } }
+  else barra=d;
+  const ref=barra[2]; const dvG=(ref==="6"||ref==="7")?mod10(barra.slice(0,3)+barra.slice(4)):mod11Arr(barra.slice(0,3)+barra.slice(4)); if(dvG!==+barra[3]) ok=false;
+  const valor=(ref==="6"||ref==="7")? +barra.slice(4,15)/100 : null;
+  let venc=null; for(const pos of [19,23,20,25]){ const s=barra.slice(pos,pos+8), y=+s.slice(0,4), m=+s.slice(4,6), dd=+s.slice(6,8); if(y>=2020&&y<=2040&&m>=1&&m<=12&&dd>=1&&dd<=31){ venc=`${y}-${String(m).padStart(2,"0")}-${String(dd).padStart(2,"0")}`; break; } }
+  const SEG={"1":"Prefeitura / taxas","2":"Água e saneamento","3":"Energia","4":"Telefone e internet","5":"Guia de imposto","6":"Carnê","7":"Multa de trânsito","9":"Boleto"};
+  return {tipo:"arrecadacao",linha:d,ok,valor,venc,segmento:SEG[barra[1]]||"Conta"};
+}
+function acharBoleto(text){
+  const lines=String(text||"").replace(/[Oo](?=\d)|(?<=\d)[Oo]/g,"0").split(/\n/);
+  const tenta=d=>{ if(d.length===47&&d[0]!=="8") return boletoBancario(d); if(d.length===48&&d[0]==="8") return boletoArrecadacao(d); if(d.length===44) return d[0]==="8"? boletoArrecadacao(d) : boletoBancario(d); return null; };
+  let melhor=null;
+  for(let i=0;i<lines.length;i++){ for(let k=1;k<=3&&i+k<=lines.length;k++){ const d=soDig(lines.slice(i,i+k).join(" ")); if(d.length<44) continue;
+      for(const L of [48,47,44]){ for(let s=0;s+L<=d.length;s++){ const r=tenta(d.slice(s,s+L)); if(r&&r.ok) return r; if(r&&!melhor&&(r.valor||r.venc)&&L===d.length) melhor=r; } } } }
+  return melhor;
+}
+// --- textos ---
+const MONEY=/(?:R\$\s*)?(\d{1,3}(?:\.\d{3})+,\d{2}|\d+,\d{2})/;
+function valorMoney(s){ return parseFloat(s.replace(/\./g,"").replace(",",".")); }
+function anoProximo(d,m){ const hoje=hojeLocal(); let y=hoje.getFullYear(); const dt=new Date(y,m-1,d); if(dt<new Date(hoje.getFullYear(),hoje.getMonth(),hoje.getDate()-45)) y++; return y; }
+function achaData(t){
+  const hoje=hojeLocal(), n=normTxt(t); let m;
+  if((m=t.match(/\b(\d{1,2})[\/\-.](\d{1,2})(?:[\/\-.](\d{2,4}))?\b/))){ const d=+m[1],mo=+m[2]; if(d>=1&&d<=31&&mo>=1&&mo<=12){ let y=m[3]?+m[3]:anoProximo(d,mo); if(y<100) y+=2000; return {iso:isoDeDate(new Date(y,mo-1,d)),txt:m[0]}; } }
+  if((m=n.match(/\b(\d{1,2}) de (janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b/))){ const mo=["janeiro","fevereiro","marco","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"].indexOf(m[2])+1, d=+m[1]; return {iso:isoDeDate(new Date(anoProximo(d,mo),mo-1,d)),txt:m[0]}; }
+  if(/\bdepois de amanha\b/.test(n)){ const d=new Date(hoje); d.setDate(d.getDate()+2); return {iso:isoDeDate(d),txt:"depois de amanhã"}; }
+  if(/\bamanha\b/.test(n)){ const d=new Date(hoje); d.setDate(d.getDate()+1); return {iso:isoDeDate(d),txt:"amanhã"}; }
+  if(/\bhoje\b/.test(n)) return {iso:isoDeDate(hoje),txt:"hoje"};
+  const SEM=["domingo","segunda","terca","quarta","quinta","sexta","sabado"];
+  if((m=n.match(/\b(domingo|segunda|terca|quarta|quinta|sexta|sabado)(?:-feira)?\b/))){ const w=SEM.indexOf(m[1]); const d=new Date(hoje); let add=(w-d.getDay()+7)%7; if(/(que vem|proxim)/.test(n)&&add<7) add+= add===0?7:0; d.setDate(d.getDate()+add); return {iso:isoDeDate(d),txt:m[0]}; }
+  if((m=n.match(/\bdia (\d{1,2})\b/))){ const dd=+m[1]; if(dd>=1&&dd<=31){ let d=new Date(hoje.getFullYear(),hoje.getMonth(),dd); if(d<hoje) d=new Date(hoje.getFullYear(),hoje.getMonth()+1,dd); return {iso:isoDeDate(d),txt:m[0]}; } }
+  return null;
+}
+function achaHora(t){ const n=normTxt(t); let m;
+  if((m=n.match(/\b(\d{1,2})\s*(?:h|:)\s*(\d{2})?\b(?!\/)/))&&+m[1]<24) return {h:String(+m[1]).padStart(2,"0")+":"+(m[2]||"00"),txt:m[0]};
+  if((m=n.match(/\bas (\d{1,2})(?:\s*horas?)?\b/))&&+m[1]<24) return {h:String(+m[1]).padStart(2,"0")+":00",txt:m[0]};
+  return null; }
+const PAL_COMP=/\b(reuniao|reunioes|visita|visitar|encontro|treinamento|ligar|ligacao|call|consulta|almoco|jantar|evento|apresentacao|entrevista|marcar|agendar|buscar|levar|curso|palestra)\b/;
+function limparDesc(t){ return t.replace(/\b(vence|vencimento|venc|vencendo|vencer|dia|pagar|paga|pagamento|conta de|conta|de|da|do|em|no|na|para|pra|ate|até|às|as|hoje|amanh[aã]|depois|r\$|reais|valor|boleto|com vencimento|horas?)\b/gi," ").replace(/R\$/g," ").replace(/[–—\-:;,.]+\s*$/,"").replace(/^\s*[–—\-:;,.]+/,"").replace(/\s{2,}/g," ").trim().replace(/(\s+(às|as|à|a|ao|no|na|em|de|do|da|com|e|at[eé]))+$/i,"").replace(/^(às|as|à)\s+/i,"").trim(); }
+function cap(s){ s=s.trim(); return s? s[0].toUpperCase()+s.slice(1) : s; }
+function sugerirCatTexto(t){ const r=sugerirCat(t,-1); if(r) return r.c; const n=normTxt(t);
+  const M=[["energisa|energia|luz","Energia"],["internet|fibra|wifi","Internet"],["vivo|claro|tim|telefone|celular|chip","Plano de dados móveis"],["aluguel","Aluguel"],["contador|contabil","Contador"],["simples nacional|\\bdas\\b","DAS"],["fgts","FGTS"],["inss|dctf|gps","INSS"],["cdl","CDL"],["combust|posto|gasolina","Combustível"],["mercado|supermerc","Mercado do escritório"],["seguro","Seguro dos entregadores"],["site|dominio|hospedagem de site","Site de divulgação"],["designer","Designer gráfico"],["influenc","Influenciadoras"],["agua|saneamento|saae","Outro custo fixo"]];
+  for(const [re,c] of M) if(new RegExp(re).test(n)&&allCats().some(x=>x[0]===c)) return c; return "Outra despesa"; }
+function parseLinha(line){
+  const t=line.trim(); if(!t) return null;
+  const b=acharBoleto(t);
+  if(b){ const resto=limparDesc(t.replace(/[\d.\s-]{40,}/g," ")); const desc=cap(resto)||b.segmento||"Boleto"; return {tipo:"conta",desc,valor:b.valor,venc:b.venc,codigo:b.linha,codigoOk:b.ok,cat:sugerirCatTexto(desc)}; }
+  let rest=t; const mm=t.match(MONEY); const valor=mm? valorMoney(mm[1]) : null; if(mm) rest=rest.replace(mm[0]," ");
+  const dt=achaData(rest); if(dt) rest=rest.replace(new RegExp(dt.txt.replace(/[.*+?^${}()|[\]\\\/]/g,"\\$&"),"i")," ");
+  const hr=achaHora(rest); if(hr) rest=normTxt(rest)===rest? rest.replace(hr.txt," ") : rest.replace(new RegExp(hr.txt.replace(/[.*+?^${}()|[\]\\\/]/g,"\\$&").replace(/a/g,"[aà]"),"i")," ");
+  const n=normTxt(t), comp=PAL_COMP.test(n)&&!valor, desc=cap(limparDesc(rest));
+  if(comp||(!valor&&(hr||dt))) return {tipo:"ag",titulo:desc||"Compromisso",data:dt?dt.iso:null,hora:hr?hr.h:null};
+  if(valor||dt) return {tipo:"conta",desc:desc||"Conta",valor,venc:dt?dt.iso:null,cat:sugerirCatTexto(desc||t)};
+  return {tipo:"ag",titulo:cap(t),data:null,hora:null};
+}
+function parseTexto(text){ return String(text||"").split(/\n+/).map(parseLinha).filter(Boolean); }
+function parseDocumento(text,nome){
+  const t=String(text||""); const b=acharBoleto(t);
+  let valor=b&&b.valor, venc=b&&b.venc, m;
+  if(!valor){ const re=/(valor\s+(?:do\s+)?documento|valor\s+cobrado|total\s+a\s+pagar|valor\s+a\s+pagar|total\s+da\s+fatura|valor\s+total|total\s+geral)[^\d]{0,40}?(\d{1,3}(?:\.\d{3})*,\d{2})/i;
+    if((m=t.match(re))) valor=valorMoney(m[2]); else { const all=[...t.matchAll(/R\$\s*(\d{1,3}(?:\.\d{3})*,\d{2})/g)].map(x=>valorMoney(x[1])); if(all.length) valor=Math.max(...all); } }
+  if(!venc){ if((m=t.match(/venc[a-zç]*[^\d]{0,30}?(\d{2}[\/.]\d{2}[\/.]\d{2,4})/i))){ const r=achaData(m[1]); if(r) venc=r.iso; } }
+  let desc=""; if((m=t.match(/(?:benefici[aá]rio|cedente|raz[aã]o social|empresa)\s*:?\s*\n?\s*([A-Za-zÀ-ú][^\n\d]{2,50})/i))) desc=m[1].replace(/\b(cnpj|cpf|ag[eê]ncia).*$/i,"").trim();
+  const n=normTxt(t);
+  const K=[["documento de arrecadacao do simples|simples nacional","DAS do Simples"],["fgts","FGTS"],["darf","DARF"],["energisa","Energia (Energisa)"],["\\bvivo\\b","Vivo"],["\\bclaro\\b","Claro"],["\\btim\\b","TIM"],["aluguel","Aluguel"],["internet","Internet"]];
+  if(!desc) for(const [re,d] of K) if(new RegExp(re).test(n)){ desc=d; break; }
+  if(!desc) desc=(b&&b.segmento)||String(nome||"Conta").replace(/\.[a-z0-9]+$/i,"").replace(/[_-]+/g," ");
+  return {tipo:"conta",desc:cap(desc.toLowerCase()==desc?desc:desc),valor:valor||null,venc:venc||null,codigo:b?b.linha:null,codigoOk:b?b.ok:null,cat:sugerirCatTexto(desc+" "+n.slice(0,400))};
+}
+// --- leitura de arquivos ---
+const PDFJS_URL="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", PDFJS_W="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js", TESS_URL="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+function carregarScript(src){ return new Promise((ok,err)=>{ const s=document.createElement("script"); s.src=src; s.onload=ok; s.onerror=()=>err(new Error("sem conexão para carregar o leitor")); document.head.appendChild(s); }); }
+async function pdfDoc(f){ if(!window.pdfjsLib) await carregarScript(PDFJS_URL); window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_W; return await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise; }
+async function textoPDF(f,maxPag){ const pdf=await pdfDoc(f); let out="";
+  for(let i=1;i<=Math.min(pdf.numPages,maxPag||5);i++){ const pg=await pdf.getPage(i), tc=await pg.getTextContent(); let lastY=null;
+    tc.items.forEach(it=>{ const y=it.transform? Math.round(it.transform[5]) : null; if(lastY!==null&&y!==null&&Math.abs(y-lastY)>3) out+="\n"; else if(out&&!out.endsWith("\n")) out+=" "; out+=it.str; if(it.hasEOL) out+="\n"; lastY=y; }); out+="\n"; }
+  return {texto:out,pdf}; }
+let tessWorker=null;
+async function ocr(src){ if(!window.Tesseract) await carregarScript(TESS_URL); if(!tessWorker) tessWorker=await window.Tesseract.createWorker("por"); const r=await tessWorker.recognize(src); return r.data.text; }
+async function pdfParaImagem(pdf){ const pg=await pdf.getPage(1), vp=pg.getViewport({scale:2}), cv=document.createElement("canvas"); cv.width=vp.width; cv.height=vp.height; await pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise; return cv; }
+async function lerArquivo(f,status){
+  const isPdf=/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name);
+  if(isPdf){ status(`📄 Lendo ${f.name}…`); const {texto,pdf}=await textoPDF(f,3);
+    if(texto.replace(/\s/g,"").length>=30) return texto;
+    status(`🔎 ${f.name} é uma imagem dentro do PDF. Lendo as letras (pode levar alguns segundos)…`); return await ocr(await pdfParaImagem(pdf)); }
+  status(`🔎 Lendo as letras de ${f.name} (na primeira vez leva até 1 minuto)…`); return await ocr(f);
+}
+// --- prévia e salvamento ---
+let secPrev=[];
+function secStatus(t,cls){ const el=$("secStatus"); el.innerHTML=t||""; el.className="secstatus "+(cls||""); }
+function catOptsSaida(sel){ const gs={}; allCats().filter(c=>c[2]==="saida"&&!["terceiros","distribuicao","investimento"].includes(c[3])).forEach(c=>{ (gs[c[1]]=gs[c[1]]||[]).push(c[0]); }); return Object.entries(gs).map(([g,l])=>`<optgroup label="${GRUPOS[g]||g}">${l.map(n=>`<option value="${esc(n)}"${n===sel?" selected":""}>${catEmo(n)} ${esc(n)}</option>`).join("")}</optgroup>`).join(""); }
+function bancoOpts(sel){ return bancos().map(b=>`<option value="${b.id}"${b.id===sel?" selected":""}>${esc(b.nome)}</option>`).join(""); }
+function renderSecPrev(){
+  const box=$("secPrev"); if(!secPrev.length){ box.classList.add("hidden"); box.innerHTML=""; return; }
+  box.classList.remove("hidden");
+  box.innerHTML=`<h3 class="h3">🤖 Entendi assim. Confira e salve:</h3>`+secPrev.map((p,i)=>`<div class="sprev ${p.tipo}">
+    <div class="seg" role="group"><button data-ptipo="conta" data-i="${i}" aria-pressed="${p.tipo==="conta"}">💳 Conta a pagar</button><button data-ptipo="ag" data-i="${i}" aria-pressed="${p.tipo==="ag"}">📆 Compromisso</button></div>
+    ${p.tipo==="conta"?`<div class="form">
+      <label>Descrição<input data-pf="desc" data-i="${i}" value="${esc(p.desc||"")}"></label>
+      <label>Valor<input data-pf="valor" data-i="${i}" inputmode="decimal" value="${p.valor?fmtIn(p.valor):""}" placeholder="0,00"></label>
+      <label>Vencimento<input type="date" data-pf="venc" data-i="${i}" value="${p.venc||""}"></label>
+      <label>Categoria<select data-pf="cat" data-i="${i}">${catOptsSaida(p.cat)}</select></label>
+      <label>Pagar pelo banco<select data-pf="banco" data-i="${i}">${bancoOpts(p.banco||b0())}</select></label></div>
+      ${p.codigo?`<p class="note" style="overflow-wrap:anywhere">🔢 Código de barras: <b>${p.codigoOk?"lido e conferido ✅":"lido, mas confira ⚠️"}</b> · ${esc(p.codigo)}</p>`:""}`
+    :`<div class="form">
+      <label>O que é<input data-pf="titulo" data-i="${i}" value="${esc(p.titulo||"")}"></label>
+      <label>Data<input type="date" data-pf="data" data-i="${i}" value="${p.data||""}"></label>
+      <label>Hora<input type="time" data-pf="hora" data-i="${i}" value="${p.hora||""}"></label>
+      <label>Local ou observação<input data-pf="local" data-i="${i}" value="${esc(p.local||"")}" placeholder="opcional"></label></div>`}
+    ${p.arquivo?`<p class="note">📎 ${esc(p.arquivo.name)} será guardado junto.</p>`:""}
+    ${p.aviso?`<p class="note warnt">⚠️ ${esc(p.aviso)}</p>`:""}
+    <div class="row" style="margin-top:8px"><button class="btn" data-psave="${i}">Salvar</button><button class="btn ghost" data-pdel="${i}">Descartar</button></div></div>`).join("");
+}
+async function secLer(){
+  const txt=$("secTxt").value.trim(), files=[...$("secFile").files]; if(!txt&&!files.length){ secStatus("Escreva uma mensagem ou envie uma conta.","warn"); return; }
+  $("secLer").disabled=true; const novos=[];
+  try{
+    if(txt) parseTexto(txt).forEach(p=>novos.push(p));
+    for(const f of files){ try{ const texto=await lerArquivo(f,t=>secStatus(t)); const p=parseDocumento(texto,f.name); p.arquivo=f;
+        if(!p.valor||!p.venc) p.aviso=`Não consegui ler ${!p.valor&&!p.venc?"o valor e o vencimento":!p.valor?"o valor":"o vencimento"}. Preencha abaixo.`; novos.push(p); }
+      catch(err){ novos.push({tipo:"conta",desc:f.name.replace(/\.[a-z0-9]+$/i,""),valor:null,venc:null,cat:"Outra despesa",arquivo:f,aviso:"Não consegui ler este arquivo ("+(err.message||"erro")+"). Preencha à mão."}); } }
+    novos.forEach(p=>{ if(p.tipo==="conta"&&!p.banco) p.banco=(cfg.secBanco||b0()); });
+    secPrev=secPrev.concat(novos); renderSecPrev(); secStatus(novos.length?`✅ Li ${novos.length} ${novos.length>1?"itens":"item"}. Confira abaixo.`:"Não encontrei nada para agendar.",novos.length?"ok":"warn");
+    $("secTxt").value=""; $("secFile").value=""; $("secFileN").textContent="";
+  }finally{ $("secLer").disabled=false; }
+}
+async function secSalvar(i){
+  const p=secPrev[i]; if(!p||p.salvando) return;
+  if(p.tipo==="conta"){ if(!p.desc||!num(p.valor)||!p.venc){ uiAlert("Preencha descrição, valor e vencimento."); return; }
+    p.salvando=true; let anexo=null; if(p.arquivo&&await getAssets()){ try{ const pr=await prepararArquivo(p.arquivo); const r=await assetsNS.upload(pr.blob,{type:pr.type}); anexo={id:r.id,nome:pr.nome,tipo:r.contentType||pr.type,tam:r.sizeBytes||pr.blob.size}; }catch(e){} }
+    SEC.contas.push({id:uid(),desc:p.desc,valor:num(p.valor),venc:p.venc,cat:p.cat||"Outra despesa",banco:p.banco||b0(),codigo:p.codigo||null,anexo,pago:null,criado:new Date().toISOString()});
+    cfg.secBanco=p.banco; }
+  else { if(!p.titulo){ uiAlert("Escreva o que é o compromisso."); return; }
+    SEC.agenda.push({id:uid(),titulo:p.titulo,data:p.data||null,hora:p.hora||null,local:p.local||"",feito:false,criado:new Date().toISOString()}); }
+  secPrev.splice(secPrev.indexOf(p),1); renderSecPrev(); if(!secPrev.length) secStatus(""); saveSec(); renderAll(); uiAlert(p.tipo==="conta"?"💳 Conta agendada. Vou te lembrar 2 dias antes.":"📆 Compromisso agendado.");
+}
+// --- agenda do celular ---
+function icsDate(iso,h){ return iso.replace(/-/g,"")+(h?"T"+h.replace(":","")+"00":""); }
+function linkGoogle(titulo,iso,hora,det){ let dates; if(hora){ const [hh,mi]=hora.split(":").map(Number), e=new Date(2000,0,1,hh+1,mi); dates=icsDate(iso,hora)+"/"+icsDate(iso,String(e.getHours()).padStart(2,"0")+":"+String(e.getMinutes()).padStart(2,"0")); }
+  else { const [y,m,d]=iso.split("-").map(Number), n=isoDeDate(new Date(y,m-1,d+1)); dates=icsDate(iso)+"/"+icsDate(n); }
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(titulo)+"&dates="+dates+"&ctz=America/Sao_Paulo&details="+encodeURIComponent(det||"Criado pelo GE$TOR FINANCEIRO"); }
+async function baixarIcs(titulo,iso,hora,det){
+  const [y,m,d]=iso.split("-").map(Number), fim=hora? null : isoDeDate(new Date(y,m-1,d+1));
+  const ev=["BEGIN:VEVENT","UID:"+uid()+"@gestor-md","DTSTAMP:"+new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z","SUMMARY:"+titulo.replace(/[,;]/g," "),
+    hora?"DTSTART:"+icsDate(iso,hora):"DTSTART;VALUE=DATE:"+icsDate(iso), hora?"DURATION:PT1H":"DTEND;VALUE=DATE:"+icsDate(fim),"DESCRIPTION:"+(det||"").replace(/\n/g,"\\n"),
+    "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+titulo,"TRIGGER:"+(hora?"-PT1H":"-PT15H"),"END:VALARM","BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+titulo,"TRIGGER:"+(hora?"-P1D":"PT8H"),"END:VALARM","END:VEVENT"];
+  const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Gestor MD//PT","CALSCALE:GREGORIAN",...ev,"END:VCALENDAR"].join("\r\n");
+  await saveBlob(normTxt(titulo).replace(/[^a-z0-9]+/g,"-").slice(0,40)+".ics",new Blob([ics],{type:"text/calendar"})); }
+// --- copiar ---
+async function copiar(texto,msg){
+  try{ await navigator.clipboard.writeText(texto); uiAlert(msg||"Copiado ✅"); return; }catch(e){}
+  try{ const ta=document.createElement("textarea"); ta.value=texto; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); const ok=document.execCommand("copy"); ta.remove(); if(ok){ uiAlert(msg||"Copiado ✅"); return; } }catch(e){}
+  const p=uiAsk("Não consegui copiar sozinho. Selecione o código abaixo e copie:",{input:true,ok:"Fechar"}); setTimeout(()=>{ $("mIn").value=texto; $("mIn").select(); },60); await p; }
+// --- listas ---
+function statusData(iso,feito){ if(feito) return ["pago","✓ pago"]; if(!iso) return ["depois","sem data"]; const [y,m,d]=iso.split("-").map(Number), dias=Math.round((new Date(y,m-1,d)-hojeLocal())/864e5);
+  if(dias<0) return ["atras",`atrasada ${-dias} dia${dias<-1?"s":""}`]; if(dias===0) return ["hoje","vence hoje"]; if(dias<=2) return ["breve",dias===1?"vence amanhã":"em 2 dias"]; return ["depois",`em ${dias} dias`]; }
+function renderSec(){
+  if(!$("tab-sec")) return;
+  const verPagas=$("secVerPagas").checked;
+  const C=[...SEC.contas].filter(c=>verPagas||!c.pago).sort((a,b)=>(!!a.pago-!!b.pago)||(a.venc||"").localeCompare(b.venc||""));
+  const aberto=SEC.contas.filter(c=>!c.pago), hoje=hojeLocal(), sem=new Date(hoje); sem.setDate(sem.getDate()+7);
+  const tot=aberto.reduce((a,c)=>a+c.valor,0), semana=aberto.filter(c=>{ const [y,m,d]=c.venc.split("-").map(Number); return new Date(y,m-1,d)<=sem; }).reduce((a,c)=>a+c.valor,0);
+  const atr=aberto.filter(c=>statusData(c.venc)[0]==="atras");
+  $("secTiles").innerHTML=[["💳 Em aberto",brl(tot),""],["📅 Até 7 dias",brl(semana),semana?"warnv":""],["⏰ Atrasadas",String(atr.length),atr.length?"negv":""],["📆 Compromissos",String(SEC.agenda.filter(a=>!a.feito).length),""]]
+    .map(([k,v,c])=>`<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`).join("");
+  $("secContas").innerHTML= !C.length? '<div class="empty">Nenhuma conta a pagar. Mande uma mensagem ou um boleto acima. 🙂</div>' :
+    `<div class="vgrid one">${C.map(c=>{ const [cl,tx]=statusData(c.venc,!!c.pago), [y,m,d]=c.venc.split("-").map(Number), dt=new Date(y,m-1,d);
+      return `<div class="vitem ${cl}"><div class="vdata"><b>${String(d).padStart(2,"0")}</b><span>${DIAS_SEM[dt.getDay()]} · ${mesCurto(c.venc.slice(0,7))}</span></div>
+        <div class="vmid"><b>${catEmo(c.cat)} ${esc(c.desc)}</b><span>${brl(c.valor)} · ${esc(c.cat)} · ${esc(bankName(c.banco))}${c.pago?` · pago em ${dataBR(c.pago.data)}`:""}</span></div>
+        <div class="vfim"><span class="vbadge ${cl}">${tx}</span><div class="acts">
+          ${c.codigo&&!c.pago?`<button class="btn ghost small" data-scod="${c.id}" title="Copiar código de barras">🔢 Copiar código</button>`:""}
+          ${c.anexo?`<button class="ebtn" data-sanx="${c.id}" title="Ver conta">📎</button>`:""}
+          ${!c.pago?`<a class="ebtn" target="_blank" rel="noopener" href="${linkGoogle("Pagar: "+c.desc+" "+brl(c.valor),c.venc,null,"Conta a pagar no GE$TOR. Valor "+brl(c.valor)+(c.codigo?"\nCódigo: "+c.codigo:""))}" title="Adicionar ao Google Agenda">📅</a><button class="ebtn" data-sics="${c.id}" title="Baixar para a agenda do celular (.ics)">🔔</button><button class="btn small" data-spag="${c.id}">✅ Paguei</button>`
+            :`<button class="btn ghost small" data-sdesf="${c.id}">↩︎ Desfazer</button>`}
+          <button class="xbtn" data-sdel="${c.id}" title="Excluir">×</button></div></div></div>`; }).join("")}</div>`;
+  const A=[...SEC.agenda].filter(a=>verPagas||!a.feito).sort((a,b)=>(!!a.feito-!!b.feito)||((a.data||"9")+(a.hora||"")).localeCompare((b.data||"9")+(b.hora||"")));
+  $("secAgenda").innerHTML= !A.length? '<div class="empty">Nenhum compromisso. Ex.: "Reunião com o Pastelar sexta às 14h".</div>' :
+    `<div class="vgrid one">${A.map(a=>{ const [cl,tx]=a.feito?["pago","✓ feito"]:a.data?(()=>{ const s=statusData(a.data); return [s[0],s[1].replace("vence ","").replace("atrasada","passou há").replace(/^em 2 dias$/,"em 2 dias")]; })():["depois","sem data"];
+      const dt=a.data? (()=>{ const [y,m,d]=a.data.split("-").map(Number); return new Date(y,m-1,d); })() : null;
+      return `<div class="vitem ${cl}"><div class="vdata ag"><b>${dt?String(dt.getDate()).padStart(2,"0"):"—"}</b><span>${dt?DIAS_SEM[dt.getDay()]+" · "+mesCurto(a.data.slice(0,7)):"sem data"}</span></div>
+        <div class="vmid"><b>📆 ${esc(a.titulo)}</b><span>${a.hora?"🕒 "+a.hora:"dia todo"}${a.local?" · "+esc(a.local):""}</span></div>
+        <div class="vfim"><span class="vbadge ${cl}">${tx}</span><div class="acts">
+          ${a.data&&!a.feito?`<a class="ebtn" target="_blank" rel="noopener" href="${linkGoogle(a.titulo,a.data,a.hora,a.local)}" title="Adicionar ao Google Agenda">📅</a><button class="ebtn" data-aics="${a.id}" title="Baixar para a agenda do celular (.ics)">🔔</button>`:""}
+          ${!a.feito?`<button class="btn ghost small" data-afeito="${a.id}">✓ Feito</button>`:`<button class="btn ghost small" data-adesf="${a.id}">↩︎</button>`}
+          <button class="xbtn" data-adel="${a.id}" title="Excluir">×</button></div></div></div>`; }).join("")}</div>`;
+}
+async function pagarConta(id,silencioso){
+  const c=SEC.contas.find(x=>x.id===id); if(!c||c.pago) return;
+  const hoje=isoDeDate(hojeLocal()); const lid=addLanc({data:hoje,tipo:"saida",categoria:c.cat,descricao:c.desc,parceiro:"",banco:c.banco||b0(),valor:c.valor,...(c.anexo?{comp:[c.anexo]}:{})});
+  c.pago={data:hoje,lanc:lid}; saveSec(); renderAll(); if(!silencioso) uiAlert(`✅ Pago e lançado como saída em ${bankName(c.banco)}. Anexe o comprovante pelo 📎 em Lançamentos.`);
+}
+function removerLanc(lid){ for(const k of Object.keys(months)){ const m=months[k]; if((m.lancamentos||[]).some(l=>l.id===lid)){ m.lancamentos=m.lancamentos.filter(l=>l.id!==lid); save("m-"+k,m); return true; } } return false; }
+
+// ================= Folha de pagamento =================
+const FOL_CFG_DEF={diaVale:20,pctVale:40,valorCardapio:50,cidade:"VILA RICA",banco:""};
+let FOL={funcs:[],cfg:{...FOL_CFG_DEF},meses:{}};
+function saveFol(){ save("folha",FOL); }
+function fcfg(){ return {...FOL_CFG_DEF,...(FOL.cfg||{})}; }
+const TIPOS_FOL={vale:{n:"Vale / adiantamento",e:"💸",s:-1},premio:{n:"Prêmio",e:"🏆",s:1},cardapio:{n:"Cardápio criado",e:"🍔",s:1},extra:{n:"Hora extra",e:"⏰",s:1},bonus:{n:"Bonificação / comissão",e:"🎁",s:1},desconto:{n:"Desconto (falta, consumo, empréstimo)",e:"➖",s:-1},outro:{n:"Outro acréscimo",e:"➕",s:1}};
+function fmes(k){ k=k||cur; FOL.meses=FOL.meses||{}; return FOL.meses[k]||(FOL.meses[k]={liq:{},liqDescontaVale:true,itens:[],pagos:{}}); }
+function fmesRO(k){ return (FOL.meses&&FOL.meses[k||cur])||{liq:{},liqDescontaVale:true,itens:[],pagos:{}}; }
+// --- Pix copia e cola (BR Code) ---
+function crc16(s){ let c=0xFFFF; for(let i=0;i<s.length;i++){ c^=s.charCodeAt(i)<<8; for(let j=0;j<8;j++) c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF; } return c.toString(16).toUpperCase().padStart(4,"0"); }
+const tlv=(id,v)=>id+String(v.length).padStart(2,"0")+v;
+const semAcento=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9 ]/g,"").trim();
+function cpfValido(c){ c=soDig(c); if(c.length!==11||/^(\d)\1+$/.test(c)) return false; for(const t of [9,10]){ let s=0; for(let i=0;i<t;i++) s+=+c[i]*(t+1-i); const d=(s*10)%11%10; if(d!==+c[t]) return false; } return true; }
+function tipoChave(k){ k=String(k||"").trim(); if(/@/.test(k)) return "email"; if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(k)) return "aleatoria";
+  const d=soDig(k); if(/^\+|\(|\)/.test(k)) return "telefone"; if(d.length===14) return "cnpj"; if(d.length===11) return cpfValido(d)?"cpf":"telefone"; if(d.length===10||d.length===13||d.length===12) return "telefone"; return "aleatoria"; }
+function chaveNorm(k,t){ k=String(k||"").trim(); t=t||tipoChave(k); const d=soDig(k);
+  if(t==="cpf"||t==="cnpj") return d; if(t==="telefone") return d.startsWith("55")&&d.length>=12? "+"+d : "+55"+d; return k.toLowerCase(); }
+function pixCode(chave,tipo,nome,cidade,valor,txid){
+  const conta=tlv("00","br.gov.bcb.pix")+tlv("01",chaveNorm(chave,tipo));
+  let p=tlv("00","01")+tlv("26",conta)+tlv("52","0000")+tlv("53","986");
+  if(valor>0) p+=tlv("54",(Math.round(valor*100)/100).toFixed(2));
+  p+=tlv("58","BR")+tlv("59",semAcento(nome).toUpperCase().slice(0,25)||"FUNCIONARIO")+tlv("60",semAcento(cidade).toUpperCase().slice(0,15)||"BRASIL")+tlv("62",tlv("05",(txid||"***").replace(/[^A-Za-z0-9]/g,"").slice(0,25)||"***"));
+  p+="6304"; return p+crc16(p); }
+// --- cálculos ---
+function funcsAtivos(){ return (FOL.funcs||[]).filter(f=>f.ativo!==false); }
+function valePrevisto(f){ if(f.valeTipo==="fixo") return num(f.valeValor); const pc=f.valeValor!=null&&f.valeValor!==""? num(f.valeValor) : fcfg().pctVale; return Math.round(num(f.salario)*pc)/100; }
+function calcFunc(f,k){
+  const m=fmesRO(k), its=(m.itens||[]).filter(i=>i.fid===f.id), pg=(m.pagos||{})[f.id]||{};
+  const liq=m.liq&&m.liq[f.id]!=null? num(m.liq[f.id]) : null;
+  const mais=its.filter(i=>TIPOS_FOL[i.tipo].s>0).reduce((a,i)=>a+num(i.valor),0);
+  const menos=its.filter(i=>i.tipo==="desconto").reduce((a,i)=>a+num(i.valor),0);
+  const valesAuto=its.filter(i=>i.tipo==="vale"&&i.auto).reduce((a,i)=>a+num(i.valor),0), valesMan=its.filter(i=>i.tipo==="vale"&&!i.auto).reduce((a,i)=>a+num(i.valor),0);
+  const vales=(m.liqDescontaVale? 0 : valesAuto)+valesMan;
+  const aPagar= liq==null? null : Math.max(0,Math.round((liq+mais-menos-vales)*100)/100);
+  return {liq,mais,menos,vales,valesAuto,valesMan,aPagar,its,pg,vale:valePrevisto(f)};
+}
+function resumoFolha(k){ let liq=0,mais=0,menos=0,ap=0,pago=0,falta=0;
+  funcsAtivos().forEach(f=>{ const c=calcFunc(f,k); liq+=c.liq||0; mais+=c.mais; menos+=c.menos+c.vales; ap+=c.aPagar||0; pago+=(c.pg.vale?num(c.pg.vale.valor):0)+(c.pg.saldo?num(c.pg.saldo.valor):0); if(!c.pg.saldo) falta+=c.aPagar||0; if(!c.pg.vale&&c.vale>0) falta+=0; });
+  return {liq,mais,menos,ap,pago,falta}; }
+function quintoDiaUtil(y,m0){ let d=new Date(y,m0,1), n=0; while(true){ if(d.getDay()!==0) n++; if(n===5) return d; d.setDate(d.getDate()+1); } }
+// --- render ---
+function chaveMask(k){ k=String(k||""); return k.length>8? k.slice(0,4)+"•••"+k.slice(-3) : k; }
+function renderFolha(){
+  if(!$("tab-folha")) return;
+  const k=cur, m=fmesRO(k), F=funcsAtivos(), cf=fcfg(), r=resumoFolha(k);
+  document.querySelectorAll(".fMes").forEach(e=>e.textContent=label(k));
+  $("folTiles").innerHTML=[["📄 Líquido da folha",brl(r.liq),""],["🏆 Prêmios e extras","+ "+brl(r.mais),"posv"],["💸 Vales e descontos","− "+brl(r.menos),"negv"],["💰 Saldo a pagar",brl(r.ap),""],["✅ Já pago no mês",brl(r.pago),"posv"]]
+    .map(([a,b,c])=>`<div class="stat"><div class="k">${a}</div><div class="v ${c}">${b}</div></div>`).join("");
+  $("folDescVale").checked=m.liqDescontaVale!==false;
+  // cartões por funcionário
+  $("folCards").innerHTML= !F.length? '<div class="empty">Cadastre os funcionários e a chave Pix de cada um em "👥 Funcionários", logo abaixo.</div>' :
+   F.map(f=>{ const c=calcFunc(f,k);
+    const linhas=c.its.map(i=>{ const T=TIPOS_FOL[i.tipo]; return `<li><span>${T.e} ${esc(T.n)}${i.qtd>1?` × ${i.qtd}`:""}${i.desc?` · <span class="status">${esc(i.desc)}</span>`:""}${i.auto?' <span class="vtag">pago pelo gestor</span>':""}</span><b class="${T.s>0?"pos":"neg"}">${T.s>0?"+":"−"} ${brl(i.valor)}</b>${i.auto?"":`<button class="xbtn" data-fidel="${i.id}" aria-label="Remover">×</button>`}</li>`; }).join("");
+    const valeOk=!!c.pg.vale, saldoOk=!!c.pg.saldo;
+    return `<div class="fcard">
+      <div class="fhead"><div class="fav">${esc((f.nome||"?").trim()[0]||"?").toUpperCase()}</div><div><b>${esc(f.nome)}</b><span class="status">${esc(f.cargo||"")}${f.cargo?" · ":""}Pix ${esc(chaveMask(f.chave))} (${f.tipoChave||tipoChave(f.chave)})</span></div><button class="btn ghost small" data-fchave="${f.id}">📋 Chave</button></div>
+      <div class="fbody">
+        <label class="fliq">📄 Líquido do holerite<input data-fliq="${f.id}" inputmode="decimal" value="${c.liq!=null?fmtIn(c.liq):""}" placeholder="do PDF do contador"></label>
+        ${linhas?`<ul class="fitens">${linhas}</ul>`:""}
+        ${!m.liqDescontaVale&&c.valesAuto?`<p class="note">O vale pago (${brl(c.valesAuto)}) está sendo descontado do saldo.</p>`:""}
+        <div class="ftotal"><span>💰 Saldo a pagar</span><b>${c.aPagar==null?"informe o líquido":brl(c.aPagar)}</b></div>
+      </div>
+      <div class="fpay">
+        <div class="fpbox ${valeOk?"ok":""}"><span>💸 Vale ${valeOk?`pago ${dataBR(c.pg.vale.data)}`:`dia ${cf.diaVale}`}</span><b>${brl(valeOk?c.pg.vale.valor:c.vale)}</b>
+          ${valeOk?`<button class="btn ghost small" data-fdesf="vale" data-fid="${f.id}">↩︎ Desfazer</button>`: c.vale>0?`<div class="row"><button class="btn small orange" data-fpix="vale" data-fid="${f.id}">📋 Pix copia e cola</button><button class="btn ghost small" data-fpag="vale" data-fid="${f.id}">✅ Paguei</button></div>`:`<span class="status">sem vale cadastrado</span>`}</div>
+        <div class="fpbox ${saldoOk?"ok":""}"><span>💰 Saldo ${saldoOk?`pago ${dataBR(c.pg.saldo.data)}`:"(5º dia útil)"}</span><b>${saldoOk?brl(c.pg.saldo.valor):c.aPagar==null?"—":brl(c.aPagar)}</b>
+          ${saldoOk?`<button class="btn ghost small" data-fdesf="saldo" data-fid="${f.id}">↩︎ Desfazer</button>`: c.aPagar?`<div class="row"><button class="btn small" data-fpix="saldo" data-fid="${f.id}">📋 Pix copia e cola</button><button class="btn ghost small" data-fpag="saldo" data-fid="${f.id}">✅ Paguei</button></div>`:""}</div>
+      </div></div>`; }).join("");
+  // formulário de itens
+  const fs=$("fiFunc"), fv=fs.value; fs.innerHTML=F.map(f=>`<option value="${f.id}">${esc(f.nome)}</option>`).join(""); if(fv) fs.value=fv;
+  const t=$("fiTipo").value; $("fiQtdL").classList.toggle("hidden",t!=="cardapio");
+  if(t==="cardapio"&&document.activeElement!==$("fiVal")) $("fiVal").value=fmtIn((parseInt($("fiQtd").value,10)||1)*cf.valorCardapio);
+  $("fiDescL").firstChild.textContent= t==="cardapio"? "Estabelecimento(s)" : "Descrição (opcional)";
+  // funcionários
+  $("ffList").innerHTML= !(FOL.funcs||[]).length? '<p class="note">Nenhum funcionário cadastrado.</p>' :
+   `<div class="lblist">${FOL.funcs.map(f=>`<div class="lbrow ${f.ativo===false?"off":""}"><span><b>${esc(f.nome)}</b> <span class="status">${esc(f.cargo||"")}</span></span><span class="status">Pix ${esc(chaveMask(f.chave))} · salário ${f.salario?brl(f.salario):"—"} · vale ${f.valeTipo==="fixo"?brl(f.valeValor):(f.valeValor!=null&&f.valeValor!==""?f.valeValor:cf.pctVale)+"%"} = ${brl(valePrevisto(f))}</span><span class="row" style="gap:2px"><button class="ebtn" data-ffed="${f.id}" title="Editar">✎</button><button class="xbtn" data-ffdel="${f.id}" title="Excluir">×</button></span></div>`).join("")}</div>`;
+  $("fcDia").value=cf.diaVale; $("fcPct").value=String(cf.pctVale).replace(".",","); if(document.activeElement!==$("fcCard")) $("fcCard").value=fmtIn(cf.valorCardapio); $("fcCid").value=cf.cidade;
+  const fb=$("fcBanco"); fb.innerHTML=bancoOpts(cf.banco||b0()); 
+}
+// --- importação do PDF do contador ---
+let folPrev=null;
+function nomeTokens(n){ return normTxt(n).split(/\s+/).filter(w=>w.length>2&&!["dos","das","de","da","do"].includes(w)); }
+function lerHolerites(texto){
+  const T=String(texto), N=normTxt(T); const achados=[];
+  funcsAtivos().forEach(f=>{ const tk=nomeTokens(f.nome); if(!tk.length) return; const primeiro=tk[0], ultimo=tk[tk.length-1];
+    let idx=-1; const re=new RegExp("\\b"+primeiro+"\\b","g"); let mm; while((mm=re.exec(N))){ const trecho=N.slice(mm.index,mm.index+80); if(tk.length===1||trecho.includes(ultimo)||tk.slice(1).some(w=>trecho.includes(w))){ idx=mm.index; break; } }
+    if(idx>=0) achados.push({f,idx}); });
+  achados.sort((a,b)=>a.idx-b.idx);
+  return achados.map((a,i)=>{ const fim=i+1<achados.length? achados[i+1].idx : Math.min(N.length,a.idx+4000), seg=T.slice(a.idx,fim), segN=N.slice(a.idx,fim);
+    let m=seg.match(/l[ií]quido[^\d]{0,60}?(\d{1,3}(?:\.\d{3})*,\d{2})/i) || seg.match(/valor\s+a\s+receber[^\d]{0,40}?(\d{1,3}(?:\.\d{3})*,\d{2})/i);
+    let liq=m? valorMoney(m[1]) : null; if(liq==null){ const all=[...seg.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2})/g)].map(x=>valorMoney(x[1])); if(all.length) liq=all[all.length-1]; }
+    return {fid:a.f.id,nome:a.f.nome,liq,temVale:/adiant|\bvale\b/.test(segN),ok:!!m}; });
+}
+function renderFolPrev(){
+  const box=$("folPrev"); if(!folPrev){ box.classList.add("hidden"); return; } box.classList.remove("hidden");
+  const faltam=funcsAtivos().filter(f=>!folPrev.itens.some(x=>x.fid===f.id));
+  box.innerHTML=`<h3 class="h3">📄 Encontrei no PDF:</h3>${folPrev.itens.length?`<div class="tablebox"><table><thead><tr><th>Funcionário</th><th class="num">Líquido</th><th></th></tr></thead><tbody>${folPrev.itens.map((x,i)=>`<tr><td>${esc(x.nome)}${x.temVale?' <span class="vtag">holerite tem vale</span>':""}</td><td class="num"><input class="rv" data-fpl="${i}" inputmode="decimal" value="${x.liq!=null?fmtIn(x.liq):""}"></td><td>${x.ok?"✅":"⚠️ confira"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Não encontrei nenhum funcionário cadastrado neste PDF. Confira se os nomes no cadastro estão iguais aos do holerite.</p>'}
+   ${faltam.length?`<p class="note warnt">Não achei: ${faltam.map(f=>esc(f.nome)).join(", ")}. Digite o líquido deles no cartão de cada um.</p>`:""}
+   <label class="chk" style="margin-top:8px"><input type="checkbox" id="fpVale" ${folPrev.itens.some(x=>x.temVale)?"checked":""}> O líquido do holerite já desconta o vale</label>
+   <div class="row" style="margin-top:10px"><button class="btn" id="fpOk">Usar estes valores em ${esc(label(cur))}</button><button class="btn ghost" id="fpNo">Cancelar</button></div>`;
+}
+
+// ---------- eventos Secretária ----------
+$("secLer").onclick=secLer;
+$("secTxt").addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)) secLer(); });
+$("secFile").onchange=()=>{ const n=$("secFile").files.length; $("secFileN").textContent=n? `${n} arquivo${n>1?"s":""} pronto${n>1?"s":""} para ler` : ""; if(n&&!$("secTxt").value.trim()) secLer(); };
+document.querySelectorAll("[data-secex]").forEach(b=>b.onclick=()=>{ $("secTxt").value=b.dataset.secex; $("secTxt").focus(); });
+$("secPrev").addEventListener("click",e=>{ const t=e.target.closest("button"); if(!t) return; const i=+t.dataset.i;
+  if(t.dataset.ptipo){ const p=secPrev[i]; if(p.tipo!==t.dataset.ptipo){ if(t.dataset.ptipo==="ag"){ p.titulo=p.titulo||p.desc; p.data=p.data||p.venc; } else { p.desc=p.desc||p.titulo; p.venc=p.venc||p.data; p.cat=p.cat||sugerirCatTexto(p.desc||""); p.banco=p.banco||cfg.secBanco||b0(); } p.tipo=t.dataset.ptipo; renderSecPrev(); } }
+  if(t.dataset.psave!=null) secSalvar(+t.dataset.psave);
+  if(t.dataset.pdel!=null){ secPrev.splice(+t.dataset.pdel,1); renderSecPrev(); } });
+$("secPrev").addEventListener("input",e=>{ const f=e.target.dataset.pf, i=e.target.dataset.i; if(!f||i==null) return; secPrev[+i][f]= f==="valor"? num(e.target.value) : e.target.value; });
+$("secPrev").addEventListener("change",e=>{ const f=e.target.dataset.pf, i=e.target.dataset.i; if(!f||i==null) return; secPrev[+i][f]= f==="valor"? num(e.target.value) : e.target.value; });
+$("secVerPagas").onchange=renderSec;
+document.addEventListener("click",async e=>{
+  const el=e.target.closest&&e.target.closest("[data-scod],[data-sanx],[data-sics],[data-spag],[data-sdesf],[data-sdel],[data-aics],[data-afeito],[data-adesf],[data-adel],[data-vpag],[data-vag],[data-vfol]"); if(!el) return;
+  const d=el.dataset, C=SEC.contas, A=SEC.agenda;
+  if(d.scod){ const c=C.find(x=>x.id===d.scod); if(c) copiar(c.codigo,"🔢 Código de barras copiado. Cole no app do banco em \"Pagar boleto\"."); }
+  if(d.sanx){ const c=C.find(x=>x.id===d.sanx); if(c&&c.anexo) baixarComp(c.anexo); }
+  if(d.sics){ const c=C.find(x=>x.id===d.sics); if(c) baixarIcs("Pagar: "+c.desc+" "+brl(c.valor),c.venc,null,"Conta a pagar. Valor "+brl(c.valor)+(c.codigo?"\nCódigo: "+c.codigo:"")); }
+  if(d.spag||d.vpag){ const id=d.spag||d.vpag; const c=C.find(x=>x.id===id); if(c&&await uiConfirm(`Marcar "${c.desc}" (${brl(c.valor)}) como paga hoje? Ela vira uma saída em ${bankName(c.banco)}.`)) pagarConta(id); }
+  if(d.sdesf){ const c=C.find(x=>x.id===d.sdesf); if(c&&c.pago&&await uiConfirm("Desfazer o pagamento? A saída lançada também será removida.")){ if(c.pago.lanc) removerLanc(c.pago.lanc); c.pago=null; saveSec(); renderAll(); } }
+  if(d.sdel){ const c=C.find(x=>x.id===d.sdel); if(c&&await uiConfirm(`Excluir a conta "${c.desc}"?${c.pago?" A saída já lançada continua em Lançamentos.":""}`)){ SEC.contas=C.filter(x=>x!==c); saveSec(); renderAll(); if(c.anexo&&!c.pago) apagarAssets([c.anexo]); } }
+  if(d.aics){ const a=A.find(x=>x.id===d.aics); if(a) baixarIcs(a.titulo,a.data,a.hora,a.local); }
+  if(d.afeito||d.vag){ const a=A.find(x=>x.id===(d.afeito||d.vag)); if(a){ a.feito=true; saveSec(); renderAll(); } }
+  if(d.adesf){ const a=A.find(x=>x.id===d.adesf); if(a){ a.feito=false; saveSec(); renderAll(); } }
+  if(d.adel){ const a=A.find(x=>x.id===d.adel); if(a&&await uiConfirm(`Excluir "${a.titulo}"?`)){ SEC.agenda=A.filter(x=>x!==a); saveSec(); renderAll(); } }
+  if(d.vfol){ document.querySelector('[data-tab="folha"]').click(); }
+});
+// ---------- eventos Folha ----------
+$("folDescVale").onchange=e=>{ fmes().liqDescontaVale=e.target.checked; saveFol(); renderAll(); };
+$("folCards").addEventListener("change",e=>{ const id=e.target.dataset.fliq; if(!id) return; const m=fmes(), v=e.target.value.trim(); if(v==="") delete m.liq[id]; else m.liq[id]=num(v); saveFol(); renderAll(); });
+$("folCards").addEventListener("click",async e=>{
+  const b=e.target.closest("button"); if(!b) return; const d=b.dataset, f=(FOL.funcs||[]).find(x=>x.id===d.fid||x.id===d.fchave);
+  if(d.fidel){ const m=fmes(); const it=m.itens.find(i=>i.id===d.fidel); if(it&&await uiConfirm(`Remover ${TIPOS_FOL[it.tipo].n} de ${brl(it.valor)}?`)){ m.itens=m.itens.filter(i=>i!==it); saveFol(); renderAll(); } return; }
+  if(d.fchave&&f){ copiar(chaveNorm(f.chave,f.tipoChave),"📋 Chave Pix copiada."); return; }
+  if(!f) return; const c=calcFunc(f,cur), cf=fcfg();
+  if(d.fpix){ const v=d.fpix==="vale"? c.vale : c.aPagar; if(!v){ uiAlert("Sem valor para pagar."); return; }
+    copiar(pixCode(f.chave,f.tipoChave,f.nome,cf.cidade,v,(d.fpix==="vale"?"VALE":"SALARIO")+cur.replace("-","")),`📋 Pix de ${brl(v)} para ${f.nome} copiado. No app do banco: Pix > Pix Copia e Cola.`); }
+  if(d.fpag){ const tipo=d.fpag, v=tipo==="vale"? c.vale : c.aPagar; if(!v) return;
+    if(!await uiConfirm(`Confirmar que você pagou ${brl(v)} de ${tipo==="vale"?"vale":"saldo do salário"} para ${f.nome}? Vira uma saída de Salários em ${bankName(cf.banco||b0())}.`)) return;
+    const hoje=isoDeDate(hojeLocal()), m=fmes();
+    const det= tipo==="saldo"? c.its.filter(i=>TIPOS_FOL[i.tipo].s>0).map(i=>TIPOS_FOL[i.tipo].n+(i.qtd>1?" ×"+i.qtd:"")).join(", ") : "";
+    const lid=addLanc({data:hoje,tipo:"saida",categoria:"Salários dos funcionários",descricao:`${tipo==="vale"?"Vale":"Salário"} ${label(cur).toLowerCase()} · ${f.nome}${det?" (inclui "+det+")":""}`,parceiro:"",banco:cf.banco||b0(),valor:v});
+    m.pagos[f.id]=m.pagos[f.id]||{}; m.pagos[f.id][tipo]={data:hoje,valor:v,lanc:lid};
+    if(tipo==="vale") m.itens.push({id:uid(),fid:f.id,tipo:"vale",auto:true,valor:v,data:hoje,desc:"vale do dia "+cf.diaVale});
+    saveFol(); renderAll(); uiAlert("✅ Pagamento registrado."); }
+  if(d.fdesf){ const tipo=d.fdesf, m=fmes(), pg=(m.pagos[f.id]||{})[tipo]; if(!pg) return;
+    if(!await uiConfirm("Desfazer este pagamento? A saída lançada também será removida.")) return;
+    if(pg.lanc) removerLanc(pg.lanc); delete m.pagos[f.id][tipo]; if(tipo==="vale") m.itens=m.itens.filter(i=>!(i.fid===f.id&&i.tipo==="vale"&&i.auto)); saveFol(); renderAll(); }
+});
+$("fiTipo").onchange=renderFolha; $("fiQtd").addEventListener("input",renderFolha);
+$("fiAdd").onclick=()=>{ const fid=$("fiFunc").value, tipo=$("fiTipo").value, v=num($("fiVal").value); if(!fid){ uiAlert("Cadastre um funcionário primeiro."); return; } if(!v){ $("fiVal").focus(); return; }
+  fmes().itens.push({id:uid(),fid,tipo,qtd:tipo==="cardapio"?(parseInt($("fiQtd").value,10)||1):1,desc:$("fiDesc").value.trim(),valor:Math.abs(v),data:$("fiData").value||isoDeDate(hojeLocal())});
+  $("fiDesc").value=""; $("fiQtd").value="1"; if(tipo!=="cardapio") $("fiVal").value=""; saveFol(); renderAll(); uiAlert(`${TIPOS_FOL[tipo].e} Lançado na folha de ${label(cur)}.`); };
+$("folPdf").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return; if(!funcsAtivos().length){ uiAlert("Cadastre os funcionários antes de importar a folha."); return; }
+  $("folPdfSt").textContent="📄 Lendo o PDF…";
+  try{ let {texto,pdf}=await textoPDF(f,30); if(texto.replace(/\s/g,"").length<50){ $("folPdfSt").textContent="🔎 PDF escaneado, lendo as letras…"; texto=await ocr(await pdfParaImagem(pdf)); }
+    folPrev={itens:lerHolerites(texto)}; $("folPdfSt").textContent=""; renderFolPrev(); }catch(err){ $("folPdfSt").textContent="Não consegui ler o PDF: "+err.message; } };
+$("folPrev").addEventListener("input",e=>{ const i=e.target.dataset.fpl; if(i!=null) folPrev.itens[+i].liq=num(e.target.value); });
+$("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.liqDescontaVale=$("fpVale").checked; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
+let ffEdit=null;
+$("ffChave").addEventListener("input",()=>{ $("ffTipo").value=tipoChave($("ffChave").value); });
+$("ffValeTipo").onchange=()=>{ $("ffValeL").firstChild.textContent=$("ffValeTipo").value==="fixo"?"Valor do vale (R$)":"Vale (% do salário)"; };
+$("ffAdd").onclick=()=>{ const nome=$("ffNome").value.trim(), chave=$("ffChave").value.trim(); if(!nome){ $("ffNome").focus(); return; } if(!chave){ $("ffChave").focus(); return; }
+  const tipo=$("ffTipo").value; if(tipo==="cpf"&&!cpfValido(chave)){ uiAlert("Esse CPF parece inválido. Confira a chave Pix."); return; }
+  const dados={nome,cargo:$("ffCargo").value.trim(),chave,tipoChave:tipo,salario:num($("ffSal").value),valeTipo:$("ffValeTipo").value,valeValor:$("ffVale").value.trim()===""?"":num($("ffVale").value),ativo:true};
+  FOL.funcs=FOL.funcs||[];
+  if(ffEdit){ Object.assign(FOL.funcs.find(f=>f.id===ffEdit),dados); ffEdit=null; $("ffAdd").textContent="Cadastrar funcionário"; }
+  else FOL.funcs.push({id:uid(),...dados});
+  ["ffNome","ffCargo","ffChave","ffSal","ffVale"].forEach(i=>$(i).value=""); saveFol(); renderAll(); uiAlert("👷 Funcionário salvo."); };
+$("ffList").addEventListener("click",async e=>{ const ed=e.target.dataset.ffed, dl=e.target.dataset.ffdel;
+  if(ed){ const f=FOL.funcs.find(x=>x.id===ed); ffEdit=ed; $("ffNome").value=f.nome; $("ffCargo").value=f.cargo||""; $("ffChave").value=f.chave; $("ffTipo").value=f.tipoChave||tipoChave(f.chave); $("ffSal").value=f.salario?fmtIn(f.salario):""; $("ffValeTipo").value=f.valeTipo||"pct"; $("ffVale").value=f.valeValor===""||f.valeValor==null?"":String(f.valeValor).replace(".",","); $("ffAdd").textContent="Salvar alterações"; $("ffNome").scrollIntoView({behavior:"smooth",block:"center"}); }
+  if(dl){ const f=FOL.funcs.find(x=>x.id===dl); if(await uiConfirm(`Excluir ${f.nome} do cadastro? Os pagamentos já lançados continuam.`)){ FOL.funcs=FOL.funcs.filter(x=>x!==f); saveFol(); renderAll(); } } });
+["fcDia","fcPct","fcCard","fcCid","fcBanco"].forEach(id=>$(id).addEventListener("change",()=>{ FOL.cfg={...fcfg(),diaVale:Math.min(31,Math.max(1,parseInt($("fcDia").value,10)||20)),pctVale:num($("fcPct").value)||0,valorCardapio:num($("fcCard").value)||0,cidade:$("fcCid").value.trim()||"VILA RICA",banco:$("fcBanco").value}; saveFol(); renderAll(); }));
+window.__gestorTeste={parseTexto,parseDocumento,acharBoleto,pixCode,crc16,lerHolerites,tipoChave,calcFunc};
+
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
-loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); setTimeout(vencToast,3500); initDb(); getAssets().then(()=>renderAll());
+loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); if($("fiData")) $("fiData").value=isoDeDate(hojeLocal()); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); setTimeout(vencToast,3500); initDb(); getAssets().then(()=>renderAll());
 })();
 </script>
 </body>
