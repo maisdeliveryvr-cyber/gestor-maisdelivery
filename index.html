@@ -693,7 +693,7 @@ main{padding-bottom:110px}
       </div>
       <label class="chk" id="fiPagoL" style="margin-top:10px"><input type="checkbox" id="fiPago" checked> Já paguei este adiantamento (lança a saída em Salários agora)</label>
       <div class="row" style="margin-top:10px"><button class="btn" id="fiAdd">Lançar na folha</button><button class="btn ghost" id="fiPix">📋 Pix do adiantamento</button></div></section>
-    <section class="card fstep s3"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>3️⃣ 💰 Pagamento de <span class="fMes"></span></h2><label class="chk"><input type="checkbox" id="folDescVale"> O holerite do contador já desconta os adiantamentos</label></div>
+    <section class="card fstep s3"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>3️⃣ 💰 Pagamento de <span class="fMes"></span></h2></div>
       <p class="sub">Saldo de cada um = líquido da folha + prêmios − adiantamentos − descontos. Toque em 📋 Pix copia e cola, pague no app do banco (Pix &gt; Pix Copia e Cola) e marque ✅ Paguei.</p>
       <div id="folCards" class="fgrid"></div></section>
     <section class="card"><h2>👥 Funcionários</h2><p class="sub">Cadastre a chave Pix uma vez. Ela fica salva para os próximos pagamentos.</p>
@@ -1030,7 +1030,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 9"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 10"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
@@ -2566,7 +2566,7 @@ function calcFunc(f,k){
   const menos=its.filter(i=>i.tipo==="desconto").reduce((a,i)=>a+num(i.valor),0);
   const adiant=its.filter(i=>i.tipo==="vale").reduce((a,i)=>a+num(i.valor),0);
   const adiantPago=its.filter(i=>i.tipo==="vale"&&(i.lanc||i.auto)).reduce((a,i)=>a+num(i.valor),0);
-  const vales=m.holAdiant? 0 : adiant;
+  const vales=adiant;
   const aPagar= liq==null? null : Math.max(0,Math.round((liq+mais-menos-vales)*100)/100);
   return {liq,mais,menos,vales,adiant,adiantPago,aPagar,its,pg};
 }
@@ -2582,7 +2582,6 @@ function renderFolha(){
   document.querySelectorAll(".fMes").forEach(e=>e.textContent=label(k));
   $("folTiles").innerHTML=[["📄 Líquido da folha",brl(r.liq),""],["🏆 Prêmios e extras","+ "+brl(r.mais),"posv"],["💸 Adiantamentos e descontos","− "+brl(r.menos),"negv"],["💰 Falta pagar",brl(r.ap),""],["✅ Já pago no mês",brl(r.pago),"posv"]]
     .map(([a,b,c])=>`<div class="stat"><div class="k">${a}</div><div class="v ${c}">${b}</div></div>`).join("");
-  $("folDescVale").checked=!!m.holAdiant;
   // cartões por funcionário
   $("folCards").innerHTML= !F.length? '<div class="empty">Cadastre os funcionários e a chave Pix de cada um em "👥 Funcionários", logo abaixo.</div>' :
    F.map(f=>{ const c=calcFunc(f,k);
@@ -2593,7 +2592,6 @@ function renderFolha(){
       <div class="fbody">
         <label class="fliq">📄 Líquido do holerite<input data-fliq="${f.id}" inputmode="decimal" value="${c.liq!=null?fmtIn(c.liq):""}" placeholder="do PDF do contador"></label>
         ${linhas?`<ul class="fitens">${linhas}</ul>`:""}
-        ${c.adiant&&m.holAdiant?`<p class="note">Adiantamentos (${brl(c.adiant)}) não descontados aqui: o holerite já desconta.</p>`:""}
         <div class="ftotal"><span>💰 Saldo a pagar</span><b>${c.aPagar==null?"informe o líquido":brl(c.aPagar)}</b></div>
       </div>
       <div class="fpay one">
@@ -2615,23 +2613,41 @@ function renderFolha(){
 // --- importação do PDF do contador ---
 let folPrev=null;
 function nomeTokens(n){ return normTxt(n).split(/\s+/).filter(w=>w.length>2&&!["dos","das","de","da","do"].includes(w)); }
+const NUM_RE=/(\d{1,3}(?:\.\d{3})*,\d{2})(?!\d)/g;
+function numsDe(t){ return [...t.matchAll(NUM_RE)].map(x=>({v:valorMoney(x[1]),i:x.index})); }
+// lê totais e líquido de um holerite (o texto do PDF pode vir com rótulos e valores em ordens diferentes)
+function liqDoHolerite(seg){
+  const N=normTxt(seg), nums=numsDe(seg), igual=(a,b)=>Math.abs(a-b)<0.015;
+  const pos=re=>{ const m=N.match(re); return m? m.index+m[0].length : -1; };
+  const pV=pos(/total\s+(?:de\s+|dos\s+)?(?:vencimentos|proventos)/), pD=pos(/total\s+(?:de\s+|dos\s+)?descontos/), pL=pos(/(?:valor\s+)?liquido(?:\s+a\s+receber)?/);
+  let venc=null, desc=null;
+  if(pV>=0&&pD>=0){ const a=Math.min(pV,pD), b=Math.max(pV,pD), entre=nums.filter(n=>n.i>=a&&n.i<b-25), depois=nums.filter(n=>n.i>=b);
+    if(!entre.length&&depois.length>=2){ const [x,y]=depois; if(pV<pD){ venc=x.v; desc=y.v; } else { desc=x.v; venc=y.v; } }
+    else { const nv=nums.find(n=>n.i>=pV), nd=nums.find(n=>n.i>=pD); venc=nv?nv.v:null; desc=nd?nd.v:null; } }
+  let liq=null, ok=false;
+  if(venc!=null&&desc!=null&&venc>desc){ const alvo=Math.round((venc-desc)*100)/100; if(nums.some(n=>igual(n.v,alvo))){ liq=alvo; ok=true; } }
+  if(liq==null&&pL>=0){ const prox=nums.filter(n=>n.i>=pL).slice(0,6); const c=venc!=null&&desc!=null? prox.find(n=>igual(n.v,venc-desc)) : null; const p=c||prox.find(n=>n.v!==venc); if(p){ liq=p.v; ok=!!c; } }
+  if(liq==null&&venc!=null&&desc!=null&&venc>desc) liq=Math.round((venc-desc)*100)/100;
+  return {liq,venc,desc,ok};
+}
 function lerHolerites(texto){
   const T=String(texto), N=normTxt(T); const achados=[];
   funcsAtivos().forEach(f=>{ const tk=nomeTokens(f.nome); if(!tk.length) return; const primeiro=tk[0], ultimo=tk[tk.length-1];
     let idx=-1; const re=new RegExp("\\b"+primeiro+"\\b","g"); let mm; while((mm=re.exec(N))){ const trecho=N.slice(mm.index,mm.index+80); if(tk.length===1||trecho.includes(ultimo)||tk.slice(1).some(w=>trecho.includes(w))){ idx=mm.index; break; } }
     if(idx>=0) achados.push({f,idx}); });
   achados.sort((a,b)=>a.idx-b.idx);
-  return achados.map((a,i)=>{ const fim=i+1<achados.length? achados[i+1].idx : Math.min(N.length,a.idx+4000), seg=T.slice(a.idx,fim), segN=N.slice(a.idx,fim);
-    let m=seg.match(/l[ií]quido[^\d]{0,60}?(\d{1,3}(?:\.\d{3})*,\d{2})/i) || seg.match(/valor\s+a\s+receber[^\d]{0,40}?(\d{1,3}(?:\.\d{3})*,\d{2})/i);
-    let liq=m? valorMoney(m[1]) : null; if(liq==null){ const all=[...seg.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2})/g)].map(x=>valorMoney(x[1])); if(all.length) liq=all[all.length-1]; }
-    return {fid:a.f.id,nome:a.f.nome,liq,temVale:/adiant|\bvale\b/.test(segN),ok:!!m}; });
+  return achados.map((a,i)=>{ const ini=i>0? Math.max(achados[i-1].idx+1,a.idx-1500) : Math.max(0,a.idx-1500);
+    // o nome pode vir antes ou depois dos valores: usa o trecho entre um funcionário e o próximo
+    const fim=i+1<achados.length? achados[i+1].idx : Math.min(N.length,a.idx+4000);
+    let r=liqDoHolerite(T.slice(a.idx,fim)); if(!r.ok){ const r2=liqDoHolerite(T.slice(i>0?achados[i-1].idx+60:0,fim)); if(r2.ok) r=r2; }
+    return {fid:a.f.id,nome:a.f.nome,...r}; });
 }
 function renderFolPrev(){
   const box=$("folPrev"); if(!folPrev){ box.classList.add("hidden"); return; } box.classList.remove("hidden");
   const faltam=funcsAtivos().filter(f=>!folPrev.itens.some(x=>x.fid===f.id));
-  box.innerHTML=`<h3 class="h3">📄 Encontrei no PDF:</h3>${folPrev.itens.length?`<div class="tablebox"><table><thead><tr><th>Funcionário</th><th class="num">Líquido</th><th></th></tr></thead><tbody>${folPrev.itens.map((x,i)=>`<tr><td>${esc(x.nome)}${x.temVale?' <span class="vtag">holerite tem vale</span>':""}</td><td class="num"><input class="rv" data-fpl="${i}" inputmode="decimal" value="${x.liq!=null?fmtIn(x.liq):""}"></td><td>${x.ok?"✅":"⚠️ confira"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Não encontrei nenhum funcionário cadastrado neste PDF. Confira se os nomes no cadastro estão iguais aos do holerite.</p>'}
+  box.innerHTML=`<h3 class="h3">📄 Encontrei no PDF:</h3>${folPrev.itens.length?`<div class="tablebox"><table><thead><tr><th>Funcionário</th><th class="num">Vencimentos</th><th class="num">Descontos</th><th class="num">Líquido ➜</th><th></th></tr></thead><tbody>${folPrev.itens.map((x,i)=>`<tr><td>${esc(x.nome)}</td><td class="num">${x.venc!=null?brl(x.venc):"—"}</td><td class="num neg">${x.desc!=null?"− "+brl(x.desc):"—"}</td><td class="num"><input class="rv" data-fpl="${i}" inputmode="decimal" value="${x.liq!=null?fmtIn(x.liq):""}"></td><td>${x.ok?"✅":"⚠️ confira"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Não encontrei nenhum funcionário cadastrado neste PDF. Confira se os nomes no cadastro estão iguais aos do holerite.</p>'}
    ${faltam.length?`<p class="note warnt">Não achei: ${faltam.map(f=>esc(f.nome)).join(", ")}. Digite o líquido deles no cartão de cada um.</p>`:""}
-   <label class="chk" style="margin-top:8px"><input type="checkbox" id="fpVale" ${folPrev.itens.some(x=>x.temVale)?"checked":""}> O holerite já desconta os adiantamentos</label>
+   <p class="note">O líquido é o "Valor Líquido" do holerite (vencimentos − descontos do contador). Os adiantamentos que você lançar na etapa 2 são descontados dele no pagamento.</p>
    <div class="row" style="margin-top:10px"><button class="btn" id="fpOk">Usar estes valores em ${esc(label(cur))}</button><button class="btn ghost" id="fpNo">Cancelar</button></div>`;
 }
 
@@ -2664,7 +2680,6 @@ document.addEventListener("click",async e=>{
   if(d.vfol){ document.querySelector('[data-tab="folha"]').click(); }
 });
 // ---------- eventos Folha ----------
-$("folDescVale").onchange=e=>{ fmes().holAdiant=e.target.checked; saveFol(); renderAll(); };
 $("folCards").addEventListener("change",e=>{ const id=e.target.dataset.fliq; if(!id) return; const m=fmes(), v=e.target.value.trim(); if(v==="") delete m.liq[id]; else m.liq[id]=num(v); saveFol(); renderAll(); });
 $("folCards").addEventListener("click",async e=>{
   const b=e.target.closest("button"); if(!b) return; const d=b.dataset, f=(FOL.funcs||[]).find(x=>x.id===d.fid||x.id===d.fchave);
@@ -2699,7 +2714,7 @@ $("folPdf").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if
   try{ let {texto,pdf}=await textoPDF(f,30); if(texto.replace(/\s/g,"").length<50){ $("folPdfSt").textContent="🔎 PDF escaneado, lendo as letras…"; texto=await ocr(await pdfParaImagem(pdf)); }
     folPrev={itens:lerHolerites(texto)}; $("folPdfSt").textContent=""; renderFolPrev(); }catch(err){ $("folPdfSt").textContent="Não consegui ler o PDF: "+err.message; } };
 $("folPrev").addEventListener("input",e=>{ const i=e.target.dataset.fpl; if(i!=null) folPrev.itens[+i].liq=num(e.target.value); });
-$("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.holAdiant=$("fpVale").checked; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
+$("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.holAdiant=false; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
 let ffEdit=null;
 $("ffChave").addEventListener("input",()=>{ $("ffTipo").value=tipoChave($("ffChave").value); });
 $("ffAdd").onclick=()=>{ const nome=$("ffNome").value.trim(), chave=$("ffChave").value.trim(); if(!nome){ $("ffNome").focus(); return; } if(!chave){ $("ffChave").focus(); return; }
@@ -2713,7 +2728,7 @@ $("ffList").addEventListener("click",async e=>{ const ed=e.target.dataset.ffed, 
   if(ed){ const f=FOL.funcs.find(x=>x.id===ed); ffEdit=ed; $("ffNome").value=f.nome; $("ffCargo").value=f.cargo||""; $("ffChave").value=f.chave; $("ffTipo").value=f.tipoChave||tipoChave(f.chave); $("ffSal").value=f.salario?fmtIn(f.salario):""; $("ffAdd").textContent="Salvar alterações"; $("ffNome").scrollIntoView({behavior:"smooth",block:"center"}); }
   if(dl){ const f=FOL.funcs.find(x=>x.id===dl); if(await uiConfirm(`Excluir ${f.nome} do cadastro? Os pagamentos já lançados continuam.`)){ FOL.funcs=FOL.funcs.filter(x=>x!==f); saveFol(); renderAll(); } } });
 ["fcCard","fcCid","fcBanco"].forEach(id=>$(id).addEventListener("change",()=>{ FOL.cfg={...fcfg(),valorCardapio:num($("fcCard").value)||0,cidade:$("fcCid").value.trim()||"VILA RICA",banco:$("fcBanco").value}; saveFol(); renderAll(); }));
-window.__gestorTeste={acharPix,parseTexto,parseDocumento,acharBoleto,pixCode,crc16,lerHolerites,tipoChave,calcFunc};
+window.__gestorTeste={liqDoHolerite,acharPix,parseTexto,parseDocumento,acharBoleto,pixCode,crc16,lerHolerites,tipoChave,calcFunc};
 
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
