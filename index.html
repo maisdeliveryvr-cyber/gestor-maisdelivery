@@ -261,6 +261,9 @@ a.ebtn{display:inline-grid;place-items:center;text-decoration:none}
 .fpbox.ok{background:var(--ok-bg);border-color:transparent}.fpbox.ok b{color:var(--c-money)}
 .fpbox .row{gap:6px}
 @media (max-width:600px){.fpay{grid-template-columns:1fr}}
+.fpay.one{grid-template-columns:1fr}
+.fstep.s1{border-top-color:var(--c-blue)!important}.fstep.s2{border-top-color:var(--c-orange)!important}.fstep.s3{border-top-color:var(--c-green,#16A34A)!important}
+.vtag.ok{background:var(--ok-bg);color:var(--c-money)}
 #secContas .vfim .acts,#secAgenda .vfim .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
 @media (max-width:700px){#secContas .vitem,#secAgenda .vitem{grid-template-columns:52px minmax(0,1fr)}#secContas .vfim,#secAgenda .vfim{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.vmid{min-width:0}.vmid b{overflow-wrap:anywhere}}
 .hidden{display:none!important}
@@ -676,43 +679,40 @@ main{padding-bottom:110px}
 
   <div id="tab-folha" class="stack hidden">
     <div class="grid4" id="folTiles"></div>
-    <section class="card"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>👷 Pagamentos de <span class="fMes"></span></h2><label class="chk"><input type="checkbox" id="folDescVale"> O líquido do holerite já desconta o vale</label></div>
-      <p class="sub">Toque em 📋 Pix copia e cola, cole no app do banco (Pix &gt; Pix Copia e Cola) e confirme. Depois marque ✅ Paguei: o pagamento vira uma saída de Salários.</p>
-      <div id="folCards" class="fgrid"></div></section>
-    <section class="card"><h2>➕ Vales, prêmios, cardápios e descontos</h2><p class="sub">Tudo que soma ou desconta na folha de <span class="fMes"></span>.</p>
+    <section class="card fstep s1"><h2>1️⃣ 📄 Folha do contador</h2><p class="sub">Envie o PDF da folha que o contador manda (holerites ou resumo). O gestor acha cada funcionário e pega o valor líquido de <span class="fMes"></span>.</p>
+      <div class="row"><label class="btn" style="cursor:pointer;color:#fff">📄 Enviar PDF da folha<input type="file" id="folPdf" accept="application/pdf" class="hidden"></label><span class="status" id="folPdfSt"></span></div>
+      <div id="folPrev" class="hidden" style="margin-top:12px"></div></section>
+    <section class="card fstep s2"><h2>2️⃣ ➖ Adiantamentos, descontos e prêmios</h2><p class="sub">Coloque aqui só o que muda o valor além da folha do contador: um adiantamento que você deu, um desconto (falta, consumo, empréstimo) ou um prêmio. Nada entra sozinho.</p>
       <div class="form">
         <label>Funcionário<select id="fiFunc"></select></label>
-        <label>Tipo<select id="fiTipo"><option value="cardapio">🍔 Cardápio criado (+)</option><option value="premio">🏆 Prêmio (+)</option><option value="extra">⏰ Hora extra (+)</option><option value="bonus">🎁 Bonificação / comissão (+)</option><option value="outro">➕ Outro acréscimo (+)</option><option value="vale">💸 Vale / adiantamento extra (−)</option><option value="desconto">➖ Desconto: falta, consumo, empréstimo (−)</option></select></label>
+        <label>Tipo<select id="fiTipo"><option value="vale">💸 Adiantamento / vale (−)</option><option value="desconto">➖ Desconto: falta, consumo, empréstimo (−)</option><option value="cardapio">🍔 Cardápio criado (+)</option><option value="premio">🏆 Prêmio (+)</option><option value="extra">⏰ Hora extra (+)</option><option value="bonus">🎁 Bonificação / comissão (+)</option><option value="outro">➕ Outro acréscimo (+)</option></select></label>
         <label id="fiQtdL">Quantidade<input id="fiQtd" inputmode="numeric" value="1"></label>
-        <label id="fiDescL">Descrição (opcional)<input id="fiDesc" placeholder="Ex.: Padoca, Villa Grill"></label>
+        <label id="fiDescL">Descrição (opcional)<input id="fiDesc" placeholder="Ex.: pediu dia 12"></label>
         <label>Valor<input id="fiVal" inputmode="decimal" placeholder="0,00"></label>
         <label>Data<input type="date" id="fiData"></label>
-        <button class="btn" id="fiAdd">Lançar na folha</button>
-      </div></section>
-    <section class="card"><h2>📄 Importar folha do contador</h2><p class="sub">Envie o PDF dos holerites ou do resumo da folha. O gestor procura o nome de cada funcionário e pega o valor líquido.</p>
-      <div class="row"><label class="btn" style="cursor:pointer;color:#fff">📄 Escolher PDF da folha<input type="file" id="folPdf" accept="application/pdf" class="hidden"></label><span class="status" id="folPdfSt"></span></div>
-      <div id="folPrev" class="hidden" style="margin-top:12px"></div></section>
+      </div>
+      <label class="chk" id="fiPagoL" style="margin-top:10px"><input type="checkbox" id="fiPago" checked> Já paguei este adiantamento (lança a saída em Salários agora)</label>
+      <div class="row" style="margin-top:10px"><button class="btn" id="fiAdd">Lançar na folha</button><button class="btn ghost" id="fiPix">📋 Pix do adiantamento</button></div></section>
+    <section class="card fstep s3"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>3️⃣ 💰 Pagamento de <span class="fMes"></span></h2><label class="chk"><input type="checkbox" id="folDescVale"> O holerite do contador já desconta os adiantamentos</label></div>
+      <p class="sub">Saldo de cada um = líquido da folha + prêmios − adiantamentos − descontos. Toque em 📋 Pix copia e cola, pague no app do banco (Pix &gt; Pix Copia e Cola) e marque ✅ Paguei.</p>
+      <div id="folCards" class="fgrid"></div></section>
     <section class="card"><h2>👥 Funcionários</h2><p class="sub">Cadastre a chave Pix uma vez. Ela fica salva para os próximos pagamentos.</p>
       <div id="ffList"></div>
       <div class="form" style="margin-top:14px">
         <label>Nome (igual ao holerite)<input id="ffNome" placeholder="Nome completo"></label>
-        <label>Cargo<input id="ffCargo" placeholder="Ex.: Atendente da central"></label>
+        <label>Cargo<input id="ffCargo" placeholder="Ex.: Gerente"></label>
         <label>Chave Pix<input id="ffChave" placeholder="CPF, celular, e-mail ou aleatória"></label>
         <label>Tipo da chave<select id="ffTipo"><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="telefone">Celular</option><option value="email">E-mail</option><option value="aleatoria">Aleatória</option></select></label>
-        <label>Salário bruto<input id="ffSal" inputmode="decimal" placeholder="0,00"></label>
-        <label>Vale por<select id="ffValeTipo"><option value="pct">% do salário</option><option value="fixo">Valor fixo</option></select></label>
-        <label id="ffValeL">Vale (% do salário)<input id="ffVale" inputmode="numeric" placeholder="padrão"></label>
+        <label>Salário bruto (opcional)<input id="ffSal" inputmode="decimal" placeholder="0,00"></label>
         <button class="btn" id="ffAdd">Cadastrar funcionário</button>
       </div>
       <h3 class="h3">⚙️ Regras da folha</h3>
       <div class="form">
-        <label>Dia do vale<input id="fcDia" inputmode="numeric"></label>
-        <label>Vale padrão (% do salário)<input id="fcPct" inputmode="numeric"></label>
         <label>Prêmio por cardápio criado<input id="fcCard" inputmode="decimal"></label>
         <label>Cidade (para o Pix)<input id="fcCid"></label>
         <label>Pagar pelo banco<select id="fcBanco"></select></label>
       </div>
-      <p class="note">O saldo do salário vence no 5º dia útil do mês seguinte (sábado conta como dia útil). Prêmios por desempenho, como o do cardápio, avise o contador para entrarem no holerite como prêmio.</p>
+      <p class="note">O salário vence no 5º dia útil do mês seguinte (sábado conta como dia útil). Prêmios, como o do cardápio, avise o contador para entrarem no holerite como prêmio.</p>
     </section>
   </div>
 
@@ -1030,7 +1030,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 8"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 9"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
@@ -2163,8 +2163,7 @@ function ocorrencias(){
   (SEC.agenda||[]).forEach(a=>{ if(!a.data) return; const [y,m,d]=a.data.split("-").map(Number), dt=new Date(y,m-1,d); if(dt<lim0||dt>fim) return;
     out.push({id:"ag-"+a.id,dt,key:a.data.slice(0,7),emo:"📆",nome:a.titulo+(a.hora?" às "+a.hora:""),tipo:"ag",ag:a,feito:!!a.feito,valor:0}); });
   if(funcsAtivos().length){ const cf=fcfg(); [-1,0,1].forEach(i=>{ const c0=new Date(hoje.getFullYear(),hoje.getMonth()+i,1), k=mKey(c0.getFullYear(),c0.getMonth()+1), m=fmesRO(k), F=funcsAtivos();
-      const dv=diaNoMes(c0.getFullYear(),c0.getMonth(),cf.diaVale), ds=quintoDiaUtil(c0.getFullYear(),c0.getMonth()+1);
-      const tv=F.filter(f=>valePrevisto(f)>0); if(tv.length) push({id:"fvale@"+k,dt:dv,key:k,emo:"💸",nome:"Vale dos funcionários ("+label(k).split(" ")[0].toLowerCase()+")",tipo:"fol",feito:tv.every(f=>((m.pagos||{})[f.id]||{}).vale),valor:tv.reduce((a,f)=>a+valePrevisto(f),0)});
+      const ds=quintoDiaUtil(c0.getFullYear(),c0.getMonth()+1);
       push({id:"fsal@"+k,dt:ds,key:k,emo:"👷",nome:"Salário de "+label(k).split(" ")[0].toLowerCase()+" (5º dia útil)",tipo:"fol",feito:F.every(f=>((m.pagos||{})[f.id]||{}).saldo),valor:F.reduce((a,f)=>a+(calcFunc(f,k).aPagar||0),0)}); }); }
   out.forEach(o=>{ o.ds=isoD(o.dt); o.dias=Math.round((o.dt-hoje)/864e5); });
   return out.sort((a,b)=>a.dt-b.dt);
@@ -2536,13 +2535,13 @@ async function pagarConta(id,silencioso){
 function removerLanc(lid){ for(const k of Object.keys(months)){ const m=months[k]; if((m.lancamentos||[]).some(l=>l.id===lid)){ m.lancamentos=m.lancamentos.filter(l=>l.id!==lid); save("m-"+k,m); return true; } } return false; }
 
 // ================= Folha de pagamento =================
-const FOL_CFG_DEF={diaVale:20,pctVale:40,valorCardapio:50,cidade:"VILA RICA",banco:""};
+const FOL_CFG_DEF={valorCardapio:50,cidade:"VILA RICA",banco:""};
 let FOL={funcs:[],cfg:{...FOL_CFG_DEF},meses:{}};
 function saveFol(){ save("folha",FOL); }
 function fcfg(){ return {...FOL_CFG_DEF,...(FOL.cfg||{})}; }
-const TIPOS_FOL={vale:{n:"Vale / adiantamento",e:"💸",s:-1},premio:{n:"Prêmio",e:"🏆",s:1},cardapio:{n:"Cardápio criado",e:"🍔",s:1},extra:{n:"Hora extra",e:"⏰",s:1},bonus:{n:"Bonificação / comissão",e:"🎁",s:1},desconto:{n:"Desconto (falta, consumo, empréstimo)",e:"➖",s:-1},outro:{n:"Outro acréscimo",e:"➕",s:1}};
-function fmes(k){ k=k||cur; FOL.meses=FOL.meses||{}; return FOL.meses[k]||(FOL.meses[k]={liq:{},liqDescontaVale:true,itens:[],pagos:{}}); }
-function fmesRO(k){ return (FOL.meses&&FOL.meses[k||cur])||{liq:{},liqDescontaVale:true,itens:[],pagos:{}}; }
+const TIPOS_FOL={vale:{n:"Adiantamento / vale",e:"💸",s:-1},premio:{n:"Prêmio",e:"🏆",s:1},cardapio:{n:"Cardápio criado",e:"🍔",s:1},extra:{n:"Hora extra",e:"⏰",s:1},bonus:{n:"Bonificação / comissão",e:"🎁",s:1},desconto:{n:"Desconto",e:"➖",s:-1},outro:{n:"Outro acréscimo",e:"➕",s:1}};
+function fmes(k){ k=k||cur; FOL.meses=FOL.meses||{}; return FOL.meses[k]||(FOL.meses[k]={liq:{},holAdiant:false,itens:[],pagos:{}}); }
+function fmesRO(k){ return (FOL.meses&&FOL.meses[k||cur])||{liq:{},holAdiant:false,itens:[],pagos:{}}; }
 // --- Pix copia e cola (BR Code) ---
 function crc16(s){ let c=0xFFFF; for(let i=0;i<s.length;i++){ c^=s.charCodeAt(i)<<8; for(let j=0;j<8;j++) c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF; } return c.toString(16).toUpperCase().padStart(4,"0"); }
 const tlv=(id,v)=>id+String(v.length).padStart(2,"0")+v;
@@ -2560,20 +2559,20 @@ function pixCode(chave,tipo,nome,cidade,valor,txid){
   p+="6304"; return p+crc16(p); }
 // --- cálculos ---
 function funcsAtivos(){ return (FOL.funcs||[]).filter(f=>f.ativo!==false); }
-function valePrevisto(f){ if(f.valeTipo==="fixo") return num(f.valeValor); const pc=f.valeValor!=null&&f.valeValor!==""? num(f.valeValor) : fcfg().pctVale; return Math.round(num(f.salario)*pc)/100; }
 function calcFunc(f,k){
   const m=fmesRO(k), its=(m.itens||[]).filter(i=>i.fid===f.id), pg=(m.pagos||{})[f.id]||{};
   const liq=m.liq&&m.liq[f.id]!=null? num(m.liq[f.id]) : null;
   const mais=its.filter(i=>TIPOS_FOL[i.tipo].s>0).reduce((a,i)=>a+num(i.valor),0);
   const menos=its.filter(i=>i.tipo==="desconto").reduce((a,i)=>a+num(i.valor),0);
-  const valesAuto=its.filter(i=>i.tipo==="vale"&&i.auto).reduce((a,i)=>a+num(i.valor),0), valesMan=its.filter(i=>i.tipo==="vale"&&!i.auto).reduce((a,i)=>a+num(i.valor),0);
-  const vales=(m.liqDescontaVale? 0 : valesAuto)+valesMan;
+  const adiant=its.filter(i=>i.tipo==="vale").reduce((a,i)=>a+num(i.valor),0);
+  const adiantPago=its.filter(i=>i.tipo==="vale"&&(i.lanc||i.auto)).reduce((a,i)=>a+num(i.valor),0);
+  const vales=m.holAdiant? 0 : adiant;
   const aPagar= liq==null? null : Math.max(0,Math.round((liq+mais-menos-vales)*100)/100);
-  return {liq,mais,menos,vales,valesAuto,valesMan,aPagar,its,pg,vale:valePrevisto(f)};
+  return {liq,mais,menos,vales,adiant,adiantPago,aPagar,its,pg};
 }
-function resumoFolha(k){ let liq=0,mais=0,menos=0,ap=0,pago=0,falta=0;
-  funcsAtivos().forEach(f=>{ const c=calcFunc(f,k); liq+=c.liq||0; mais+=c.mais; menos+=c.menos+c.vales; ap+=c.aPagar||0; pago+=(c.pg.vale?num(c.pg.vale.valor):0)+(c.pg.saldo?num(c.pg.saldo.valor):0); if(!c.pg.saldo) falta+=c.aPagar||0; if(!c.pg.vale&&c.vale>0) falta+=0; });
-  return {liq,mais,menos,ap,pago,falta}; }
+function resumoFolha(k){ let liq=0,mais=0,menos=0,ap=0,pago=0;
+  funcsAtivos().forEach(f=>{ const c=calcFunc(f,k); liq+=c.liq||0; mais+=c.mais; menos+=c.menos+c.adiant; ap+=c.pg.saldo?0:(c.aPagar||0); pago+=c.adiantPago+(c.pg.saldo?num(c.pg.saldo.valor):0); });
+  return {liq,mais,menos,ap,pago}; }
 function quintoDiaUtil(y,m0){ let d=new Date(y,m0,1), n=0; while(true){ if(d.getDay()!==0) n++; if(n===5) return d; d.setDate(d.getDate()+1); } }
 // --- render ---
 function chaveMask(k){ k=String(k||""); return k.length>8? k.slice(0,4)+"•••"+k.slice(-3) : k; }
@@ -2581,26 +2580,24 @@ function renderFolha(){
   if(!$("tab-folha")) return;
   const k=cur, m=fmesRO(k), F=funcsAtivos(), cf=fcfg(), r=resumoFolha(k);
   document.querySelectorAll(".fMes").forEach(e=>e.textContent=label(k));
-  $("folTiles").innerHTML=[["📄 Líquido da folha",brl(r.liq),""],["🏆 Prêmios e extras","+ "+brl(r.mais),"posv"],["💸 Vales e descontos","− "+brl(r.menos),"negv"],["💰 Saldo a pagar",brl(r.ap),""],["✅ Já pago no mês",brl(r.pago),"posv"]]
+  $("folTiles").innerHTML=[["📄 Líquido da folha",brl(r.liq),""],["🏆 Prêmios e extras","+ "+brl(r.mais),"posv"],["💸 Adiantamentos e descontos","− "+brl(r.menos),"negv"],["💰 Falta pagar",brl(r.ap),""],["✅ Já pago no mês",brl(r.pago),"posv"]]
     .map(([a,b,c])=>`<div class="stat"><div class="k">${a}</div><div class="v ${c}">${b}</div></div>`).join("");
-  $("folDescVale").checked=m.liqDescontaVale!==false;
+  $("folDescVale").checked=!!m.holAdiant;
   // cartões por funcionário
   $("folCards").innerHTML= !F.length? '<div class="empty">Cadastre os funcionários e a chave Pix de cada um em "👥 Funcionários", logo abaixo.</div>' :
    F.map(f=>{ const c=calcFunc(f,k);
-    const linhas=c.its.map(i=>{ const T=TIPOS_FOL[i.tipo]; return `<li><span>${T.e} ${esc(T.n)}${i.qtd>1?` × ${i.qtd}`:""}${i.desc?` · <span class="status">${esc(i.desc)}</span>`:""}${i.auto?' <span class="vtag">pago pelo gestor</span>':""}</span><b class="${T.s>0?"pos":"neg"}">${T.s>0?"+":"−"} ${brl(i.valor)}</b>${i.auto?"":`<button class="xbtn" data-fidel="${i.id}" aria-label="Remover">×</button>`}</li>`; }).join("");
-    const valeOk=!!c.pg.vale, saldoOk=!!c.pg.saldo;
+    const linhas=c.its.map(i=>{ const T=TIPOS_FOL[i.tipo]; return `<li><span>${T.e} ${esc(T.n)}${i.qtd>1?` × ${i.qtd}`:""}${i.desc?` · <span class="status">${esc(i.desc)}</span>`:""}${i.tipo==="vale"?((i.lanc||i.auto)?` <span class="vtag ok">pago ${dataBR(i.data)}</span>`:` <span class="vtag">só descontar</span>`):""}</span><b class="${T.s>0?"pos":"neg"}">${T.s>0?"+":"−"} ${brl(i.valor)}</b><button class="xbtn" data-fidel="${i.id}" aria-label="Remover">×</button></li>`; }).join("");
+    const saldoOk=!!c.pg.saldo;
     return `<div class="fcard">
       <div class="fhead"><div class="fav">${esc((f.nome||"?").trim()[0]||"?").toUpperCase()}</div><div><b>${esc(f.nome)}</b><span class="status">${esc(f.cargo||"")}${f.cargo?" · ":""}Pix ${esc(chaveMask(f.chave))} (${f.tipoChave||tipoChave(f.chave)})</span></div><button class="btn ghost small" data-fchave="${f.id}">📋 Chave</button></div>
       <div class="fbody">
         <label class="fliq">📄 Líquido do holerite<input data-fliq="${f.id}" inputmode="decimal" value="${c.liq!=null?fmtIn(c.liq):""}" placeholder="do PDF do contador"></label>
         ${linhas?`<ul class="fitens">${linhas}</ul>`:""}
-        ${!m.liqDescontaVale&&c.valesAuto?`<p class="note">O vale pago (${brl(c.valesAuto)}) está sendo descontado do saldo.</p>`:""}
+        ${c.adiant&&m.holAdiant?`<p class="note">Adiantamentos (${brl(c.adiant)}) não descontados aqui: o holerite já desconta.</p>`:""}
         <div class="ftotal"><span>💰 Saldo a pagar</span><b>${c.aPagar==null?"informe o líquido":brl(c.aPagar)}</b></div>
       </div>
-      <div class="fpay">
-        <div class="fpbox ${valeOk?"ok":""}"><span>💸 Vale ${valeOk?`pago ${dataBR(c.pg.vale.data)}`:`dia ${cf.diaVale}`}</span><b>${brl(valeOk?c.pg.vale.valor:c.vale)}</b>
-          ${valeOk?`<button class="btn ghost small" data-fdesf="vale" data-fid="${f.id}">↩︎ Desfazer</button>`: c.vale>0?`<div class="row"><button class="btn small orange" data-fpix="vale" data-fid="${f.id}">📋 Pix copia e cola</button><button class="btn ghost small" data-fpag="vale" data-fid="${f.id}">✅ Paguei</button></div>`:`<span class="status">sem vale cadastrado</span>`}</div>
-        <div class="fpbox ${saldoOk?"ok":""}"><span>💰 Saldo ${saldoOk?`pago ${dataBR(c.pg.saldo.data)}`:"(5º dia útil)"}</span><b>${saldoOk?brl(c.pg.saldo.valor):c.aPagar==null?"—":brl(c.aPagar)}</b>
+      <div class="fpay one">
+        <div class="fpbox ${saldoOk?"ok":""}"><span>💰 Salário ${saldoOk?`pago ${dataBR(c.pg.saldo.data)}`:"(5º dia útil)"}</span><b>${saldoOk?brl(c.pg.saldo.valor):c.aPagar==null?"—":brl(c.aPagar)}</b>
           ${saldoOk?`<button class="btn ghost small" data-fdesf="saldo" data-fid="${f.id}">↩︎ Desfazer</button>`: c.aPagar?`<div class="row"><button class="btn small" data-fpix="saldo" data-fid="${f.id}">📋 Pix copia e cola</button><button class="btn ghost small" data-fpag="saldo" data-fid="${f.id}">✅ Paguei</button></div>`:""}</div>
       </div></div>`; }).join("");
   // formulário de itens
@@ -2608,10 +2605,11 @@ function renderFolha(){
   const t=$("fiTipo").value; $("fiQtdL").classList.toggle("hidden",t!=="cardapio");
   if(t==="cardapio"&&document.activeElement!==$("fiVal")) $("fiVal").value=fmtIn((parseInt($("fiQtd").value,10)||1)*cf.valorCardapio);
   $("fiDescL").firstChild.textContent= t==="cardapio"? "Estabelecimento(s)" : "Descrição (opcional)";
+  $("fiPagoL").classList.toggle("hidden",t!=="vale"); $("fiDesc").placeholder={vale:"Ex.: pediu dia 12",desconto:"Ex.: consumo, falta dia 3",cardapio:"Ex.: Padoca, Villa Grill"}[t]||"Ex.: meta batida"; $("fiPix").classList.toggle("hidden",t!=="vale");
   // funcionários
   $("ffList").innerHTML= !(FOL.funcs||[]).length? '<p class="note">Nenhum funcionário cadastrado.</p>' :
-   `<div class="lblist">${FOL.funcs.map(f=>`<div class="lbrow ${f.ativo===false?"off":""}"><span><b>${esc(f.nome)}</b> <span class="status">${esc(f.cargo||"")}</span></span><span class="status">Pix ${esc(chaveMask(f.chave))} · salário ${f.salario?brl(f.salario):"—"} · vale ${f.valeTipo==="fixo"?brl(f.valeValor):(f.valeValor!=null&&f.valeValor!==""?f.valeValor:cf.pctVale)+"%"} = ${brl(valePrevisto(f))}</span><span class="row" style="gap:2px"><button class="ebtn" data-ffed="${f.id}" title="Editar">✎</button><button class="xbtn" data-ffdel="${f.id}" title="Excluir">×</button></span></div>`).join("")}</div>`;
-  $("fcDia").value=cf.diaVale; $("fcPct").value=String(cf.pctVale).replace(".",","); if(document.activeElement!==$("fcCard")) $("fcCard").value=fmtIn(cf.valorCardapio); $("fcCid").value=cf.cidade;
+   `<div class="lblist">${FOL.funcs.map(f=>`<div class="lbrow ${f.ativo===false?"off":""}"><span><b>${esc(f.nome)}</b> <span class="status">${esc(f.cargo||"")}</span></span><span class="status">Pix ${esc(chaveMask(f.chave))} · salário ${f.salario?brl(f.salario):"—"}</span><span class="row" style="gap:2px"><button class="ebtn" data-ffed="${f.id}" title="Editar">✎</button><button class="xbtn" data-ffdel="${f.id}" title="Excluir">×</button></span></div>`).join("")}</div>`;
+  if(document.activeElement!==$("fcCard")) $("fcCard").value=fmtIn(cf.valorCardapio); $("fcCid").value=cf.cidade;
   const fb=$("fcBanco"); fb.innerHTML=bancoOpts(cf.banco||b0()); 
 }
 // --- importação do PDF do contador ---
@@ -2633,7 +2631,7 @@ function renderFolPrev(){
   const faltam=funcsAtivos().filter(f=>!folPrev.itens.some(x=>x.fid===f.id));
   box.innerHTML=`<h3 class="h3">📄 Encontrei no PDF:</h3>${folPrev.itens.length?`<div class="tablebox"><table><thead><tr><th>Funcionário</th><th class="num">Líquido</th><th></th></tr></thead><tbody>${folPrev.itens.map((x,i)=>`<tr><td>${esc(x.nome)}${x.temVale?' <span class="vtag">holerite tem vale</span>':""}</td><td class="num"><input class="rv" data-fpl="${i}" inputmode="decimal" value="${x.liq!=null?fmtIn(x.liq):""}"></td><td>${x.ok?"✅":"⚠️ confira"}</td></tr>`).join("")}</tbody></table></div>`:'<p class="note">Não encontrei nenhum funcionário cadastrado neste PDF. Confira se os nomes no cadastro estão iguais aos do holerite.</p>'}
    ${faltam.length?`<p class="note warnt">Não achei: ${faltam.map(f=>esc(f.nome)).join(", ")}. Digite o líquido deles no cartão de cada um.</p>`:""}
-   <label class="chk" style="margin-top:8px"><input type="checkbox" id="fpVale" ${folPrev.itens.some(x=>x.temVale)?"checked":""}> O líquido do holerite já desconta o vale</label>
+   <label class="chk" style="margin-top:8px"><input type="checkbox" id="fpVale" ${folPrev.itens.some(x=>x.temVale)?"checked":""}> O holerite já desconta os adiantamentos</label>
    <div class="row" style="margin-top:10px"><button class="btn" id="fpOk">Usar estes valores em ${esc(label(cur))}</button><button class="btn ghost" id="fpNo">Cancelar</button></div>`;
 }
 
@@ -2666,51 +2664,55 @@ document.addEventListener("click",async e=>{
   if(d.vfol){ document.querySelector('[data-tab="folha"]').click(); }
 });
 // ---------- eventos Folha ----------
-$("folDescVale").onchange=e=>{ fmes().liqDescontaVale=e.target.checked; saveFol(); renderAll(); };
+$("folDescVale").onchange=e=>{ fmes().holAdiant=e.target.checked; saveFol(); renderAll(); };
 $("folCards").addEventListener("change",e=>{ const id=e.target.dataset.fliq; if(!id) return; const m=fmes(), v=e.target.value.trim(); if(v==="") delete m.liq[id]; else m.liq[id]=num(v); saveFol(); renderAll(); });
 $("folCards").addEventListener("click",async e=>{
   const b=e.target.closest("button"); if(!b) return; const d=b.dataset, f=(FOL.funcs||[]).find(x=>x.id===d.fid||x.id===d.fchave);
-  if(d.fidel){ const m=fmes(); const it=m.itens.find(i=>i.id===d.fidel); if(it&&await uiConfirm(`Remover ${TIPOS_FOL[it.tipo].n} de ${brl(it.valor)}?`)){ m.itens=m.itens.filter(i=>i!==it); saveFol(); renderAll(); } return; }
+  if(d.fidel){ const m=fmes(); const it=m.itens.find(i=>i.id===d.fidel); if(!it) return; const lanc=it.lanc||(it.auto&&((m.pagos[it.fid]||{}).vale||{}).lanc);
+    if(await uiConfirm(`Remover ${TIPOS_FOL[it.tipo].n} de ${brl(it.valor)}?${lanc?" A saída lançada também será removida.":""}`)){ if(lanc) removerLanc(lanc); if(it.auto&&m.pagos[it.fid]) delete m.pagos[it.fid].vale; m.itens=m.itens.filter(i=>i!==it); saveFol(); renderAll(); } return; }
   if(d.fchave&&f){ copiar(chaveNorm(f.chave,f.tipoChave),"📋 Chave Pix copiada."); return; }
   if(!f) return; const c=calcFunc(f,cur), cf=fcfg();
-  if(d.fpix){ const v=d.fpix==="vale"? c.vale : c.aPagar; if(!v){ uiAlert("Sem valor para pagar."); return; }
-    copiar(pixCode(f.chave,f.tipoChave,f.nome,cf.cidade,v,(d.fpix==="vale"?"VALE":"SALARIO")+cur.replace("-","")),`📋 Pix de ${brl(v)} para ${f.nome} copiado. No app do banco: Pix > Pix Copia e Cola.`); }
-  if(d.fpag){ const tipo=d.fpag, v=tipo==="vale"? c.vale : c.aPagar; if(!v) return;
-    if(!await uiConfirm(`Confirmar que você pagou ${brl(v)} de ${tipo==="vale"?"vale":"saldo do salário"} para ${f.nome}? Vira uma saída de Salários em ${bankName(cf.banco||b0())}.`)) return;
+  if(d.fpix){ const v=c.aPagar; if(!v){ uiAlert("Sem valor para pagar."); return; }
+    copiar(pixCode(f.chave,f.tipoChave,f.nome,cf.cidade,v,"SALARIO"+cur.replace("-","")),`📋 Pix de ${brl(v)} para ${f.nome} copiado. No app do banco: Pix > Pix Copia e Cola.`); }
+  if(d.fpag){ const tipo="saldo", v=c.aPagar; if(!v) return;
+    if(!await uiConfirm(`Confirmar que você pagou ${brl(v)} de salário para ${f.nome}? Vira uma saída de Salários em ${bankName(cf.banco||b0())}.`)) return;
     const hoje=isoDeDate(hojeLocal()), m=fmes();
     const det= tipo==="saldo"? c.its.filter(i=>TIPOS_FOL[i.tipo].s>0).map(i=>TIPOS_FOL[i.tipo].n+(i.qtd>1?" ×"+i.qtd:"")).join(", ") : "";
-    const lid=addLanc({data:hoje,tipo:"saida",categoria:"Salários dos funcionários",descricao:`${tipo==="vale"?"Vale":"Salário"} ${label(cur).toLowerCase()} · ${f.nome}${det?" (inclui "+det+")":""}`,parceiro:"",banco:cf.banco||b0(),valor:v});
+    const lid=addLanc({data:hoje,tipo:"saida",categoria:"Salários dos funcionários",descricao:`Salário ${label(cur).toLowerCase()} · ${f.nome}${det?" (inclui "+det+")":""}`,parceiro:"",banco:cf.banco||b0(),valor:v});
     m.pagos[f.id]=m.pagos[f.id]||{}; m.pagos[f.id][tipo]={data:hoje,valor:v,lanc:lid};
-    if(tipo==="vale") m.itens.push({id:uid(),fid:f.id,tipo:"vale",auto:true,valor:v,data:hoje,desc:"vale do dia "+cf.diaVale});
     saveFol(); renderAll(); uiAlert("✅ Pagamento registrado."); }
   if(d.fdesf){ const tipo=d.fdesf, m=fmes(), pg=(m.pagos[f.id]||{})[tipo]; if(!pg) return;
     if(!await uiConfirm("Desfazer este pagamento? A saída lançada também será removida.")) return;
-    if(pg.lanc) removerLanc(pg.lanc); delete m.pagos[f.id][tipo]; if(tipo==="vale") m.itens=m.itens.filter(i=>!(i.fid===f.id&&i.tipo==="vale"&&i.auto)); saveFol(); renderAll(); }
+    if(pg.lanc) removerLanc(pg.lanc); delete m.pagos[f.id][tipo]; saveFol(); renderAll(); }
 });
 $("fiTipo").onchange=renderFolha; $("fiQtd").addEventListener("input",renderFolha);
 $("fiAdd").onclick=()=>{ const fid=$("fiFunc").value, tipo=$("fiTipo").value, v=num($("fiVal").value); if(!fid){ uiAlert("Cadastre um funcionário primeiro."); return; } if(!v){ $("fiVal").focus(); return; }
-  fmes().itens.push({id:uid(),fid,tipo,qtd:tipo==="cardapio"?(parseInt($("fiQtd").value,10)||1):1,desc:$("fiDesc").value.trim(),valor:Math.abs(v),data:$("fiData").value||isoDeDate(hojeLocal())});
-  $("fiDesc").value=""; $("fiQtd").value="1"; if(tipo!=="cardapio") $("fiVal").value=""; saveFol(); renderAll(); uiAlert(`${TIPOS_FOL[tipo].e} Lançado na folha de ${label(cur)}.`); };
+  const f=FOL.funcs.find(x=>x.id===fid), data=$("fiData").value||isoDeDate(hojeLocal()), desc=$("fiDesc").value.trim();
+  const it={id:uid(),fid,tipo,qtd:tipo==="cardapio"?(parseInt($("fiQtd").value,10)||1):1,desc,valor:Math.abs(v),data};
+  if(tipo==="vale"&&$("fiPago").checked){ const cf=fcfg(); it.lanc=addLanc({data,tipo:"saida",categoria:"Salários dos funcionários",descricao:`Adiantamento ${label(cur).toLowerCase()} · ${f.nome}${desc?" ("+desc+")":""}`,parceiro:"",banco:cf.banco||b0(),valor:Math.abs(v)}); }
+  fmes().itens.push(it);
+  $("fiDesc").value=""; $("fiQtd").value="1"; if(tipo!=="cardapio") $("fiVal").value=""; saveFol(); renderAll(); uiAlert(`${TIPOS_FOL[tipo].e} Lançado na folha de ${label(cur)}${it.lanc?" e a saída foi registrada":""}.${TIPOS_FOL[tipo].s<0?" Vai ser descontado no pagamento do salário.":" Vai somar no pagamento do salário."}`); };
+$("fiPix").onclick=()=>{ const f=FOL.funcs.find(x=>x.id===$("fiFunc").value), v=num($("fiVal").value); if(!f){ uiAlert("Cadastre um funcionário primeiro."); return; } if(!v){ $("fiVal").focus(); uiAlert("Digite o valor do adiantamento."); return; }
+  copiar(pixCode(f.chave,f.tipoChave,f.nome,fcfg().cidade,v,"ADIANT"+cur.replace("-","")),`📋 Pix de ${brl(v)} para ${f.nome} copiado. Depois de pagar, clique em Lançar na folha.`); };
 $("folPdf").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return; if(!funcsAtivos().length){ uiAlert("Cadastre os funcionários antes de importar a folha."); return; }
   $("folPdfSt").textContent="📄 Lendo o PDF…";
   try{ let {texto,pdf}=await textoPDF(f,30); if(texto.replace(/\s/g,"").length<50){ $("folPdfSt").textContent="🔎 PDF escaneado, lendo as letras…"; texto=await ocr(await pdfParaImagem(pdf)); }
     folPrev={itens:lerHolerites(texto)}; $("folPdfSt").textContent=""; renderFolPrev(); }catch(err){ $("folPdfSt").textContent="Não consegui ler o PDF: "+err.message; } };
 $("folPrev").addEventListener("input",e=>{ const i=e.target.dataset.fpl; if(i!=null) folPrev.itens[+i].liq=num(e.target.value); });
-$("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.liqDescontaVale=$("fpVale").checked; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
+$("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.holAdiant=$("fpVale").checked; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
 let ffEdit=null;
 $("ffChave").addEventListener("input",()=>{ $("ffTipo").value=tipoChave($("ffChave").value); });
-$("ffValeTipo").onchange=()=>{ $("ffValeL").firstChild.textContent=$("ffValeTipo").value==="fixo"?"Valor do vale (R$)":"Vale (% do salário)"; };
 $("ffAdd").onclick=()=>{ const nome=$("ffNome").value.trim(), chave=$("ffChave").value.trim(); if(!nome){ $("ffNome").focus(); return; } if(!chave){ $("ffChave").focus(); return; }
   const tipo=$("ffTipo").value; if(tipo==="cpf"&&!cpfValido(chave)){ uiAlert("Esse CPF parece inválido. Confira a chave Pix."); return; }
-  const dados={nome,cargo:$("ffCargo").value.trim(),chave,tipoChave:tipo,salario:num($("ffSal").value),valeTipo:$("ffValeTipo").value,valeValor:$("ffVale").value.trim()===""?"":num($("ffVale").value),ativo:true};
+  const dados={nome,cargo:$("ffCargo").value.trim(),chave,tipoChave:tipo,salario:num($("ffSal").value),ativo:true};
   FOL.funcs=FOL.funcs||[];
   if(ffEdit){ Object.assign(FOL.funcs.find(f=>f.id===ffEdit),dados); ffEdit=null; $("ffAdd").textContent="Cadastrar funcionário"; }
   else FOL.funcs.push({id:uid(),...dados});
-  ["ffNome","ffCargo","ffChave","ffSal","ffVale"].forEach(i=>$(i).value=""); saveFol(); renderAll(); uiAlert("👷 Funcionário salvo."); };
+  ["ffNome","ffCargo","ffChave","ffSal"].forEach(i=>$(i).value=""); saveFol(); renderAll(); uiAlert("👷 Funcionário salvo."); };
 $("ffList").addEventListener("click",async e=>{ const ed=e.target.dataset.ffed, dl=e.target.dataset.ffdel;
-  if(ed){ const f=FOL.funcs.find(x=>x.id===ed); ffEdit=ed; $("ffNome").value=f.nome; $("ffCargo").value=f.cargo||""; $("ffChave").value=f.chave; $("ffTipo").value=f.tipoChave||tipoChave(f.chave); $("ffSal").value=f.salario?fmtIn(f.salario):""; $("ffValeTipo").value=f.valeTipo||"pct"; $("ffVale").value=f.valeValor===""||f.valeValor==null?"":String(f.valeValor).replace(".",","); $("ffAdd").textContent="Salvar alterações"; $("ffNome").scrollIntoView({behavior:"smooth",block:"center"}); }
+  if(ed){ const f=FOL.funcs.find(x=>x.id===ed); ffEdit=ed; $("ffNome").value=f.nome; $("ffCargo").value=f.cargo||""; $("ffChave").value=f.chave; $("ffTipo").value=f.tipoChave||tipoChave(f.chave); $("ffSal").value=f.salario?fmtIn(f.salario):""; $("ffAdd").textContent="Salvar alterações"; $("ffNome").scrollIntoView({behavior:"smooth",block:"center"}); }
   if(dl){ const f=FOL.funcs.find(x=>x.id===dl); if(await uiConfirm(`Excluir ${f.nome} do cadastro? Os pagamentos já lançados continuam.`)){ FOL.funcs=FOL.funcs.filter(x=>x!==f); saveFol(); renderAll(); } } });
-["fcDia","fcPct","fcCard","fcCid","fcBanco"].forEach(id=>$(id).addEventListener("change",()=>{ FOL.cfg={...fcfg(),diaVale:Math.min(31,Math.max(1,parseInt($("fcDia").value,10)||20)),pctVale:num($("fcPct").value)||0,valorCardapio:num($("fcCard").value)||0,cidade:$("fcCid").value.trim()||"VILA RICA",banco:$("fcBanco").value}; saveFol(); renderAll(); }));
+["fcCard","fcCid","fcBanco"].forEach(id=>$(id).addEventListener("change",()=>{ FOL.cfg={...fcfg(),valorCardapio:num($("fcCard").value)||0,cidade:$("fcCid").value.trim()||"VILA RICA",banco:$("fcBanco").value}; saveFol(); renderAll(); }));
 window.__gestorTeste={acharPix,parseTexto,parseDocumento,acharBoleto,pixCode,crc16,lerHolerites,tipoChave,calcFunc};
 
 // ---------- Início ----------
