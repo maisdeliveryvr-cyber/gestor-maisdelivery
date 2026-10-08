@@ -278,11 +278,19 @@ a.ebtn{display:inline-grid;place-items:center;text-decoration:none}
 .rbcad{display:grid;grid-template-columns:minmax(0,1.4fr) 140px minmax(0,1fr) 70px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
 .rbcad.head{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .rbcad.off b{opacity:.5}
-.prevgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.prevgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.prevgrid .stat{min-width:0}.prevgrid .v{overflow-wrap:anywhere}
+.resbox{margin-top:14px;border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--surface)}
+.resbox.ok{border-color:color-mix(in srgb,var(--c-money) 40%,var(--line))}.resbox.low{border-color:color-mix(in srgb,var(--c-amber) 55%,var(--line));background:var(--warn-bg)}
+.restrack{position:relative;height:12px;border-radius:999px;background:var(--track);margin:10px 0 6px;overflow:visible}
+.restrack span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--c-blue),var(--c-money))}.resbox.low .restrack span{background:linear-gradient(90deg,var(--c-coral),var(--c-amber))}
+.restrack i{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);border-radius:2px}
+.calc{list-style:none;margin:10px 0 0;padding:0}.calc li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.calc li.tot{border-bottom:0;font-size:16px;font-weight:800}.calc li.tot b{font:800 20px var(--display)}
 .prevchart{position:relative;margin-top:14px}.prevchart svg{display:block;width:100%;height:190px}
 .prevtip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;border-radius:8px;padding:6px 9px;white-space:nowrap;transform:translate(-50%,-110%)}
 .prevcols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
 .prevcols ul{list-style:none;margin:6px 0 0;padding:0}.prevcols li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+@media (max-width:520px){.prevgrid{grid-template-columns:1fr!important}}
 @media (max-width:800px){.prevgrid{grid-template-columns:1fr 1fr}.prevcols{grid-template-columns:1fr}.rbrow{grid-template-columns:52px minmax(0,1fr)}.rbrow .rbval,.rbrow .rbacts{grid-column:1/-1}.rbcad{grid-template-columns:1fr 1fr}.rbcad.head{display:none}}
 .hidden{display:none!important}
 @media (max-width:1100px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}}
@@ -1076,7 +1084,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 13"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 14"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0};
@@ -2874,53 +2882,59 @@ function renderReceber(){
 }
 function setCad(k,nome,campo,valor){ RCB.cad=RCB.cad||{}; RCB.cad[k]={...(RCB.cad[k]||{}),nome,[campo]:valor}; saveRcb(); }
 function rbCob(key,id){ RCB.cob=RCB.cob||{}; RCB.cob[key]=RCB.cob[key]||{}; return RCB.cob[key][id]=RCB.cob[key][id]||{}; }
-// ================= Previsão de caixa =================
+// ================= Previsão do mês e reserva =================
 function aRepassarAte(key){ const m=months[key]||{}; if(m.aRepassar!=null) return num(m.aRepassar); let t=0; Object.keys(months).filter(k=>k<=key).forEach(k=>{ const s=sums(k); t+=s.terceirosIn-s.terceirosOut; }); return Math.max(0,t); }
-function previsaoCaixa(dias){ dias=dias||30; const hoje=hojeD(), kH=isoD(hoje).slice(0,7), s=sums(kH);
-  if(s.ini==null) return null;
-  const m=months[kH]||{}, base=s.fim-aRepassarAte(kH)-(m.provisoes||0);
-  const ev=[]; const dIdx=iso=>{ const [y,mo,d]=iso.split("-").map(Number); return Math.max(0,Math.round((new Date(y,mo-1,d)-hoje)/864e5)); };
-  ocorrencias(dias+5).forEach(o=>{ if(o.feito||!(num(o.valor)>0)||o.dias>dias||o.tipo==="ag") return; ev.push({d:Math.max(0,o.dias),v:-num(o.valor),nome:o.nome,emo:o.emo,est:!!o.est,atras:o.dias<0}); });
-  [kH,shift(kH,1)].forEach(k=>linhasReceber(k).forEach(r=>{ if(r.falta<=0) return; const d=dIdx(r.venc); if(d>dias) return; ev.push({d,v:r.falta,nome:r.nome,emo:"🏪",est:r.estimado,atras:r.st==="atras"}); }));
-  const serie=[]; let run=base; for(let i=0;i<=dias;i++){ ev.filter(e=>e.d===i).forEach(e=>run+=e.v); const dt=new Date(hoje); dt.setDate(dt.getDate()+i); serie.push({i,dt,v:Math.round(run*100)/100}); }
-  const fimMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0), iFim=Math.min(dias,Math.round((fimMes-hoje)/864e5));
-  let min=serie[0]; serie.forEach(p=>{ if(p.v<min.v) min=p; });
-  return {base,saldoBanco:s.fim,serie,ev,fimMes:serie[iFim],fim:serie[dias],min,entradas:ev.filter(e=>e.v>0).reduce((a,e)=>a+e.v,0),saidas:-ev.filter(e=>e.v<0).reduce((a,e)=>a+e.v,0)}; }
+function natDe(nome){ const c=allCats().find(x=>x[0]===nome); return c? c[3] : ""; }
+function proLabRef(){ const p=cfg.proLaboreRef; return p==null||p===""? 5000 : num(p); }
+function gastoMensalRef(key){ const v=[]; for(let i=1;i<=6&&v.length<3;i++){ const s=sums(shift(key,-i)); if(s.custos>0) v.push({c:s.custos,p:s.prolabore}); }
+  if(!v.length){ const s=sums(key); if(s.custos>0) v.push({c:s.custos,p:s.prolabore}); }
+  const c=v.length? v.reduce((a,x)=>a+x.c,0)/v.length : 0, pm=v.length? v.reduce((a,x)=>a+x.p,0)/v.length : 0, p=Math.max(pm,proLabRef());
+  return {v:c+p,custos:c,prolabore:p,n:v.length}; }
+function previsaoMes(key){ const s=sums(key); if(s.ini==null) return null;
+  const kH=isoD(hojeD()).slice(0,7), aRepAnt=aRepassarAte(shift(key,-1)), reserva=Math.max(0,s.ini-aRepAnt);
+  const sai=[], ent=[];
+  if(key>=kH){ ocorrencias(70).forEach(o=>{ if(o.key!==key||o.feito||!(num(o.valor)>0)||o.tipo==="ag") return; const cat=o.tipo==="conta"?o.conta.cat:o.tipo==="rec"?o.rec.categoria:o.tipo==="lemb"?(o.lb&&o.lb.cat):""; const n=natDe(cat); if(n==="terceiros"||n==="distribuicao") return; sai.push({nome:o.nome,emo:o.emo,v:num(o.valor),est:!!o.est,atras:o.dias<0}); });
+    linhasReceber(key).forEach(r=>{ if(r.falta>0) ent.push({nome:r.nome,emo:"🏪",v:r.falta,est:r.estimado,atras:r.st==="atras"}); });
+    const plFalta=proLabRef()-s.prolabore; if(plFalta>0.009) sai.push({nome:"Pró-labore (ainda não lançado)",emo:"👤",v:Math.round(plFalta*100)/100,est:true,atras:false}); }
+  const entP=ent.reduce((a,e)=>a+e.v,0), saiP=sai.reduce((a,e)=>a+e.v,0);
+  const receitaPrev=s.receita+entP, gastosPrev=s.gastos+saiP, lucroPrev=receitaPrev-gastosPrev;
+  const g=gastoMensalRef(key), meta=cfg.reservaMeses||6, adequada=g.v*meta, sobra=reserva-adequada;
+  const podeRetirar=Math.max(0,sobra+lucroPrev-s.distribuicao);
+  return {s,reserva,aRepAnt,ent,sai,entP,saiP,receitaPrev,gastosPrev,lucroPrev,g,meta,adequada,sobra,podeRetirar,jaRetirado:s.distribuicao,meses:g.v>0?reserva/g.v:NaN,fimPrev:s.fim+entP-saiP,futuro:key>=kH};
+}
 function renderPrevisao(){
-  const box=$("prevBox"); if(!box) return; const P=previsaoCaixa(30);
-  if(!P){ $("prevInfo").textContent=""; box.innerHTML='<div class="empty">Informe o saldo dos bancos (aba Bancos) para ver a previsão dos próximos 30 dias.</div>'; return; }
-  const dm=d=>d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
-  $("prevInfo").textContent=`próximos 30 dias · ${P.ev.length} movimentos previstos`;
-  const cls=v=>v<0?"negv":"";
-  const tiles=[["💼 Caixa livre hoje",brl(P.base),cls(P.base),"saldo nos bancos menos valores de terceiros"],["📅 Fim do mês ("+dm(P.fimMes.dt)+")",brl(P.fimMes.v),cls(P.fimMes.v),""],["🔭 Em 30 dias ("+dm(P.fim.dt)+")",brl(P.fim.v),cls(P.fim.v),""],["📉 Menor saldo previsto",brl(P.min.v),P.min.v<0?"negv":"warnv","em "+dm(P.min.dt)]];
-  // gráfico
-  const W=900,H=190,pl=8,pr=8,pt=14,pb=24, vs=P.serie.map(p=>p.v), lo=Math.min(0,...vs), hi=Math.max(...vs,1), sx=i=>pl+(W-pl-pr)*i/30, sy=v=>pt+(H-pt-pb)*(1-(v-lo)/((hi-lo)||1));
-  const path=P.serie.map((p,i)=>(i?"L":"M")+sx(i).toFixed(1)+" "+sy(p.v).toFixed(1)).join(" ");
-  const area=path+` L${sx(30).toFixed(1)} ${sy(lo).toFixed(1)} L${sx(0).toFixed(1)} ${sy(lo).toFixed(1)} Z`;
-  const ticks=[0,7,14,21,30].map(i=>`<text x="${sx(i)}" y="${H-6}" text-anchor="${i===0?"start":i===30?"end":"middle"}" font-size="11" fill="var(--muted)">${dm(P.serie[i].dt)}</text>`).join("");
-  const zero=lo<0? `<line x1="${pl}" x2="${W-pr}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--c-coral)" stroke-width="1" stroke-dasharray="4 4"/><text x="${W-pr}" y="${sy(0)-4}" text-anchor="end" font-size="11" fill="var(--c-coral)">R$ 0</text>` : "";
-  const svg=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Saldo previsto dia a dia nos próximos 30 dias">
-    <path d="${area}" fill="var(--c-blue)" opacity=".10"/>${zero}<path d="${path}" fill="none" stroke="var(--c-blue)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
-    <circle cx="${sx(P.min.i)}" cy="${sy(P.min.v)}" r="4" fill="var(--surface)" stroke="${P.min.v<0?"var(--c-coral)":"var(--c-blue)"}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-    <line id="prevCross" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="var(--muted)" stroke-width="1" opacity="0"/>${ticks}
-    <rect id="prevHit" x="0" y="0" width="${W}" height="${H}" fill="transparent"/></svg>`;
-  const saidas=P.ev.filter(e=>e.v<0).sort((a,b)=>a.v-b.v).slice(0,6), ents=P.ev.filter(e=>e.v>0).sort((a,b)=>b.v-a.v).slice(0,6);
-  const li=e=>`<li><span>${e.emo||""} ${esc(e.nome)}${e.atras?' <span class="vtag warn">atrasado</span>':""}${e.est?' <span class="vtag">≈</span>':""}</span><b class="${e.v<0?"neg":"pos"}">${e.v<0?"−":"+"} ${brl(Math.abs(e.v))}</b></li>`;
-  box.innerHTML=`<div class="prevgrid">${tiles.map(([k,v,c,s])=>`<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v}</div>${s?`<div class="status" style="font-size:12px">${s}</div>`:""}</div>`).join("")}</div>
-    ${P.min.v<0?`<p class="note warnt" style="margin-top:10px">⚠️ O caixa livre fica negativo em ${dm(P.min.dt)}. Antecipe cobranças ou adie algum pagamento.</p>`:""}
-    <div class="prevchart">${svg}<div class="prevtip hidden" id="prevTip"></div></div>
-    <div class="prevcols"><div><b>⬇️ Maiores saídas previstas · ${brl(P.saidas)}</b><ul>${saidas.map(li).join("")||'<li><span class="status">nenhuma</span></li>'}</ul></div>
-    <div><b>⬆️ Comissões a receber · ${brl(P.entradas)}</b><ul>${ents.map(li).join("")||'<li><span class="status">nenhuma</span></li>'}</ul></div></div>
-    <p class="note">Usa as contas da Secretária, a folha, as recorrentes, as parcelas, os lembretes (≈ valor do mês passado) e as comissões da aba A receber. Repasses a estabelecimentos e entregadores não entram: esse dinheiro é de terceiros e já foi descontado do caixa livre.</p>`;
-  const hit=$("prevHit"), tip=$("prevTip"), cross=$("prevCross"), sv=hit.ownerSVGElement;
-  const mostra=ev=>{ const r=sv.getBoundingClientRect(), x=((ev.touches?ev.touches[0].clientX:ev.clientX)-r.left)/r.width*W; const i=Math.max(0,Math.min(30,Math.round((x-pl)/(W-pl-pr)*30))), p=P.serie[i];
-    cross.setAttribute("x1",sx(i)); cross.setAttribute("x2",sx(i)); cross.setAttribute("opacity",".6");
-    tip.classList.remove("hidden"); tip.style.left=(sx(i)/W*r.width)+"px"; tip.style.top=(sy(p.v)/H*r.height)+"px";
-    const doDia=P.ev.filter(e=>e.d===i); tip.innerHTML=`<b>${p.dt.toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})}</b> · ${brl(p.v)}${doDia.length?"<br>"+doDia.slice(0,3).map(e=>`${e.v<0?"−":"+"} ${brl(Math.abs(e.v))} ${esc(e.nome)}`).join("<br>"):""}`; };
-  const esconde=()=>{ tip.classList.add("hidden"); cross.setAttribute("opacity","0"); };
-  hit.addEventListener("mousemove",mostra); hit.addEventListener("touchstart",mostra,{passive:true}); hit.addEventListener("touchmove",mostra,{passive:true}); hit.addEventListener("mouseleave",esconde);
+  const box=$("prevBox"); if(!box) return; const P=previsaoMes(cur), [y,m]=cur.split("-");
+  document.querySelector("#prevCard h2").textContent="🔮 Previsão de "+label(cur).split(" ")[0].toLowerCase()+" e reserva";
+  if(!P){ $("prevInfo").textContent=""; box.innerHTML=`<div class="empty">Informe em Bancos o saldo de cada banco no dia 01/${m} (o dinheiro que veio acumulado dos meses anteriores). Ele vira a sua reserva.<br><button class="btn small" data-irbancos="1" style="margin-top:10px">🏦 Informar saldos</button></div>`; return; }
+  $("prevInfo").textContent=P.futuro? "realizado + previsto até o fim do mês" : "mês fechado";
+  const ok=P.sobra>=0, pctRes=P.adequada>0? Math.min(1,P.reserva/(P.adequada*1.5)) : 1, marca=1/1.5;
+  const tiles=[[`🛟 Reserva em 01/${m}`,brl(P.reserva),"",P.aRepAnt>0?`saldo nos bancos − ${brl(P.aRepAnt)} de terceiros`:"saldo acumulado dos meses anteriores"],
+    ["📈 Lucro previsto do mês",brl(P.lucroPrev),P.lucroPrev<0?"negv":"posv",`receita ${brl(P.receitaPrev)} − gastos ${brl(P.gastosPrev)}`],
+    ["🏦 Saldo previsto no fim do mês",brl(P.fimPrev),P.fimPrev<0?"negv":"","nos bancos, contando o que falta entrar e sair"],
+    ["💸 Pode retirar",brl(P.podeRetirar),P.podeRetirar>0?"posv":"",P.jaRetirado>0?`já retirou ${brl(P.jaRetirado)} este mês`:"sem mexer na reserva mínima"]];
+  const li=e=>`<li><span>${e.emo||""} ${esc(e.nome)}${e.atras?' <span class="vtag warn">atrasado</span>':""}${e.est?' <span class="vtag">≈</span>':""}</span><b>${brl(e.v)}</b></li>`;
+  box.innerHTML=`<div class="prevgrid">${tiles.map(([k,v,c,s])=>`<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="status" style="font-size:12px">${s}</div></div>`).join("")}</div>
+    <div class="resbox ${ok?"ok":"low"}">
+      <div class="row" style="justify-content:space-between;align-items:baseline;gap:8px"><b>${ok?"✅ Reserva acima do ideal":"⚠️ Reserva abaixo do ideal"}</b><span class="status">cobre <b>${isFinite(P.meses)?P.meses.toLocaleString("pt-BR",{maximumFractionDigits:1}):"—"} meses</b> de gastos · meta ${P.meta} meses</span></div>
+      <div class="restrack" role="img" aria-label="Reserva ${brl(P.reserva)} de ${brl(P.adequada)} ideais"><span style="width:${(pctRes*100).toFixed(1)}%"></span><i style="left:${(marca*100).toFixed(1)}%"></i></div>
+      <div class="row" style="justify-content:space-between;font-size:12.5px" ><span class="status">Reserva ${brl(P.reserva)}</span><span class="status">Ideal: ${P.meta} × ${brl(P.g.v)} = ${brl(P.adequada)}</span></div>
+      <ul class="calc">
+        <li><span>${ok?"Sobra acima da reserva ideal":"Falta para a reserva ideal"}</span><b class="${ok?"pos":"neg"}">${ok?"+":"−"} ${brl(Math.abs(P.sobra))}</b></li>
+        <li><span>${P.lucroPrev<0?"Prejuízo previsto do mês (sai da reserva)":"Lucro previsto do mês"+(!ok?" (completa a reserva primeiro)":"")}</span><b class="${P.lucroPrev<0?"neg":"pos"}">${P.lucroPrev<0?"−":"+"} ${brl(Math.abs(P.lucroPrev))}</b></li>
+        ${P.jaRetirado>0?`<li><span>Já retirado neste mês</span><b class="neg">− ${brl(P.jaRetirado)}</b></li>`:""}
+        <li class="tot"><span>💸 Pode retirar</span><b class="pos">${brl(P.podeRetirar)}</b></li>
+      </ul>
+      <p class="note" style="margin:6px 0 0">Gasto mensal de referência: média dos últimos ${P.g.n||1} ${P.g.n>1?"meses":"mês"} de custos (${brl(P.g.custos)}) + pró-labore (${brl(P.g.prolabore)}).
+        <label style="display:inline-flex;align-items:center;gap:6px;margin-left:6px">Pró-labore considerado <input id="prevProLab" inputmode="decimal" value="${fmtIn(proLabRef())}" style="width:110px"></label></p>
+    </div>
+    <div class="prevcols"><div><b>⬆️ Ainda vai entrar · ${brl(P.entP)}</b><ul>${P.ent.sort((a,b)=>b.v-a.v).slice(0,8).map(li).join("")||'<li><span class="status">nada previsto</span></li>'}</ul></div>
+      <div><b>⬇️ Ainda vai sair · ${brl(P.saiP)}</b><ul>${P.sai.sort((a,b)=>b.v-a.v).slice(0,8).map(li).join("")||'<li><span class="status">nada previsto</span></li>'}</ul></div></div>
+    <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost small" data-irbancos="1">🏦 Editar saldos de 01/${m}</button><span class="status">Já entrou ${brl(P.s.receita+P.s.outrasEnt)} e saiu ${brl(P.s.gastos+P.s.investimento)} em gastos neste mês. Repasses a estabelecimentos e entregadores não entram na conta (dinheiro de terceiros).</span></div>`;
 }
 
+// ---------- eventos Previsão ----------
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-irbancos]"); if(b){ const t=document.querySelector('.navx[data-tab="contas"]')||document.querySelector('[data-tab="contas"]'); if(t) t.click(); } });
+document.addEventListener("change",e=>{ if(e.target.id==="prevProLab"){ cfg.proLaboreRef=num(e.target.value); save("config",cfg); renderAll(); } });
 // ---------- eventos A receber ----------
 $("rbVerPagos").onchange=renderReceber;
 $("tab-receb").addEventListener("change",e=>{ const t=e.target, d=t.dataset;
