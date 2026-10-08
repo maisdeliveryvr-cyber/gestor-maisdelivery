@@ -292,6 +292,13 @@ a.ebtn{display:inline-grid;place-items:center;text-decoration:none}
 .prevcols ul{list-style:none;margin:6px 0 0;padding:0}.prevcols li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
 @media (max-width:520px){.prevgrid{grid-template-columns:1fr!important}}
 @media (max-width:800px){.prevgrid{grid-template-columns:1fr 1fr}.prevcols{grid-template-columns:1fr}.rbrow{grid-template-columns:52px minmax(0,1fr)}.rbrow .rbval,.rbrow .rbacts{grid-column:1/-1}.rbcad{grid-template-columns:1fr 1fr}.rbcad.head{display:none}}
+.avt{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;display:inline-grid;place-items:center;font:800 13px var(--display);color:#fff;flex:none;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.avtbtn{border:0;background:transparent;cursor:pointer;font-size:inherit;padding:0;margin-right:2px}.avtbtn:hover{transform:scale(1.15)}
+.favlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.favitem{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--surface)}
+.favitem .avt{width:52px;height:52px;font-size:22px;margin:0}.favitem b{display:block;overflow-wrap:anywhere}.favitem .status{font-size:12px}
+.favitem .row{grid-column:1/-1;gap:6px;justify-content:flex-end}
+.fav img{width:100%;height:100%;object-fit:cover;border-radius:inherit}.fav{overflow:hidden}
 .hidden{display:none!important}
 @media (max-width:1100px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:820px){
@@ -722,6 +729,20 @@ main{padding-bottom:110px}
       <p class="sub">🔢 copia o código de barras · 📅 adiciona ao Google Agenda · 🔔 baixa o lembrete para a agenda do celular · ✅ lança o pagamento.</p>
       <div id="secContas"></div></section>
     <section class="card"><h2>📆 Agenda de compromissos</h2><p class="sub">Reuniões, visitas a parceiros, treinamentos e o que mais você mandar.</p><div id="secAgenda"></div></section>
+    <section class="card" id="favCard"><h2>💠 Favorecidos do Pix</h2><p class="sub">Quem você paga por Pix (influenciadoras, Alô Vila Rica, prestadores…). Salve a chave ou o Pix copia e cola e uma foto ou logo: as contas e os vencimentos com esse nome mostram o avatar e o botão 💠 Pix já com o valor.</p>
+      <div id="favList" class="favlist"></div>
+      <h3 class="h3" id="favTit">➕ Novo favorecido</h3>
+      <div class="form">
+        <label>Nome<input id="fvNome" placeholder="Ex.: Elaine Elen"></label>
+        <label>Também aparece como (opcional)<input id="fvAlias" placeholder="Ex.: influenciadora elaine, elaine elen"></label>
+        <label>Chave Pix<input id="fvChave" placeholder="CPF, celular, e-mail ou aleatória"></label>
+        <label>Tipo da chave<select id="fvTipo"><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="telefone">Celular</option><option value="email">E-mail</option><option value="aleatoria">Aleatória</option></select></label>
+        <label style="grid-column:1/-1">ou cole o Pix copia e cola que a pessoa te mandou<textarea id="fvCopia" rows="2" placeholder="00020126…"></textarea></label>
+        <label>Categoria<select id="fvCat"></select></label>
+        <label>Valor de costume (opcional)<input id="fvVal" inputmode="decimal" placeholder="0,00"></label>
+        <label>Foto ou logo (opcional)<input type="file" id="fvFoto" accept="image/*"></label>
+        <div class="row"><button class="btn" id="fvAdd">Salvar favorecido</button><button class="btn ghost hidden" id="fvCancel">Cancelar</button></div>
+      </div></section>
   </div>
 
   <div id="tab-folha" class="stack hidden">
@@ -751,6 +772,7 @@ main{padding-bottom:110px}
         <label>Chave Pix<input id="ffChave" placeholder="CPF, celular, e-mail ou aleatória"></label>
         <label>Tipo da chave<select id="ffTipo"><option value="cpf">CPF</option><option value="cnpj">CNPJ</option><option value="telefone">Celular</option><option value="email">E-mail</option><option value="aleatoria">Aleatória</option></select></label>
         <label>Salário bruto (opcional)<input id="ffSal" inputmode="decimal" placeholder="0,00"></label>
+        <label>Foto (opcional)<input type="file" id="ffFoto" accept="image/*"></label>
         <button class="btn" id="ffAdd">Cadastrar funcionário</button>
       </div>
       <h3 class="h3">⚙️ Regras da folha</h3>
@@ -1084,10 +1106,10 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 14"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 15"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
-  const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0};
+  const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0};
   try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("gfmd:m-")) months[k.slice(7)]=JSON.parse(localStorage.getItem(k)); } }catch(e){}
 }
 async function initDb(){
@@ -1097,16 +1119,16 @@ async function initDb(){
     const id=await u.id(); if(!id){ setStatus(); return; }
     db=d; uidUser=id; mode="db";
     const snap=await db.collection("data/users/"+uidUser).get();
-    if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); if(SEC.contas.length||SEC.agenda.length) save("sec",SEC); if((FOL.funcs||[]).length) save("folha",FOL); if(Object.keys(RCB.cad).length||Object.keys(RCB.cob).length) save("receber",RCB); }
+    if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); if(SEC.contas.length||SEC.agenda.length) save("sec",SEC); if((FOL.funcs||[]).length) save("folha",FOL); if(Object.keys(RCB.cad).length||Object.keys(RCB.cob).length) save("receber",RCB); if(FAV.lista.length) save("fav",FAV); }
     else { Object.keys(months).forEach(k=>delete months[k]);
-      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id==="sec") SEC={contas:[],agenda:[],...x}; else if(doc.id==="folha") FOL={funcs:[],meses:{},...x}; else if(doc.id==="receber") RCB={cad:{},cob:{},cfg:{},...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
+      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id==="sec") SEC={contas:[],agenda:[],...x}; else if(doc.id==="folha") FOL={funcs:[],meses:{},...x}; else if(doc.id==="receber") RCB={cad:{},cob:{},cfg:{},...x}; else if(doc.id==="fav") FAV={lista:[],...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
     ensureCash(); setStatus(); renderAll(); setTimeout(autoSnapshot,4000); setTimeout(vencToast,2500);
     // mantém aberto em vários aparelhos sem um desfazer o que o outro apagou
     db.collection("data/users/"+uidUser).onSnapshot(s2=>{
       let changed=false;
       s2.docChanges().forEach(ch=>{ const id=ch.doc.id, q=queues[id]; if(q&&(q.running||q.pending)) return;
         if(ch.type==="removed"){ if(id.startsWith("m-")){ delete months[id.slice(2)]; changed=true; } return; }
-        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id==="sec"){ SEC={contas:[],agenda:[],...x}; changed=true; } else if(id==="folha"){ FOL={funcs:[],meses:{},...x}; changed=true; } else if(id==="receber"){ RCB={cad:{},cob:{},cfg:{},...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
+        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id==="sec"){ SEC={contas:[],agenda:[],...x}; changed=true; } else if(id==="folha"){ FOL={funcs:[],meses:{},...x}; changed=true; } else if(id==="receber"){ RCB={cad:{},cob:{},cfg:{},...x}; changed=true; } else if(id==="fav"){ FAV={lista:[],...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
       if(changed && $("modal").classList.contains("hidden") && !editId) renderAll();
     }, err=>{ setStatus("Sincronização pausada ("+(err.code||"erro")+"). Recarregue a página."); });
   }catch(e){ mode="local"; setStatus("("+(e.message||e.code||"sem conexão")+")"); }
@@ -1216,7 +1238,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFolha(); renderEstabs(); renderReceber(); renderPrevisao(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderPrevisao(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -2255,8 +2277,8 @@ function renderVenc(){
    `<div class="vgrid">${L.slice(0,14).map(o=>{ const [cl,tx]=quando(o);
      const btn=o.feito? "" : o.tipo==="conta"? `<button class="btn small" data-vpag="${o.conta.id}">✅ Paguei</button>` : o.tipo==="ag"? `<button class="btn ghost small" data-vag="${o.ag.id}">✓ Feito</button>` : o.tipo==="fol"? `<button class="btn ghost small" data-vfol="1">Abrir folha</button>` : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>` : "";
      return `<div class="vitem ${cl}"><div class="vdata"><b>${pad2(o.dt.getDate())}</b><span>${DIAS_SEM[o.dt.getDay()]} · ${mesCurto(o.key)}</span></div>
-       <div class="vmid"><b>${o.emo} ${esc(o.nome)}</b><span>${o.valor?(o.est&&o.tipo==="lemb"?"≈ ":"")+brl(o.valor)+(o.est&&o.tipo==="lemb"?" (mês passado)":""):o.tipo==="par"?"débito automático da parcela":""}</span></div>
-       <div class="vfim"><span class="vbadge ${cl}">${tx}</span>${btn}</div></div>`; }).join("")}</div>`;
+       <div class="vmid"><b>${avatarHtml(favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome),o.nome,o.emo)} ${esc(o.nome)}</b><span>${o.valor?(o.est&&o.tipo==="lemb"?"≈ ":"")+brl(o.valor)+(o.est&&o.tipo==="lemb"?" (mês passado)":""):o.tipo==="par"?"débito automático da parcela":""}</span></div>
+       <div class="vfim"><span class="vbadge ${cl}">${tx}</span>${(()=>{ const f=favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome); return !o.feito&&favTemPix(f)&&!(o.conta&&(o.conta.pix||o.conta.codigo))? `<button class="btn ghost small" data-vfvpix="${esc(f.nome)}" data-v="${o.valor||f.valor||0}">💠 Pix</button>` : ""; })()}${btn}</div></div>`; }).join("")}</div>`;
 }
 function alertasExtras(al){
   const abertos=vencRelevantes().filter(o=>!o.feito), atras=abertos.filter(o=>o.dias<0), prox=abertos.filter(o=>o.dias>=0&&o.dias<=2);
@@ -2302,7 +2324,7 @@ $("lbPadrao").onclick=async()=>{ if(!await uiConfirm("Voltar os lembretes para o
 const snaps={};
 function temDados(){ return Object.values(months).some(m=>(m.lancamentos||[]).length)||SEC.contas.length||(FOL.funcs||[]).length; }
 function diasDesdeBackup(){ if(!cfg.ultimoBackup) return null; return Math.floor((Date.now()-new Date(cfg.ultimoBackup).getTime())/864e5); }
-function pacoteDados(){ return {app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,sec:SEC,folha:FOL,receber:RCB,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}}; }
+function pacoteDados(){ return {app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,sec:SEC,folha:FOL,receber:RCB,fav:FAV,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}}; }
 async function baixarBackup(){
   const ok=await saveBlob(`backup-gestor-${isoD(hojeD())}.json`,new Blob([JSON.stringify(pacoteDados(),null,1)],{type:"application/json"}));
   if(ok){ cfg.ultimoBackup=new Date().toISOString(); save("config",cfg); renderAll(); uiAlert("Backup baixado ✅ Guarde o arquivo num lugar seguro (Google Drive, e-mail ou pendrive)."); }
@@ -2311,7 +2333,7 @@ async function restaurarDocs(docs){
   const n=Object.keys(docs).filter(k=>k.startsWith("m-")).length;
   if(!await uiConfirm(`Restaurar esta cópia? Ela traz ${n} mês(es) de lançamentos e as configurações, e substitui o que estiver nesses meses agora.`)) return false;
   await snapshotAgora("bk-antes","antes de restaurar");
-  Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ const keep=cfg.ultimoBackup; cfg={...DEFAULT_CFG,...v}; if(keep) cfg.ultimoBackup=keep; save("config",cfg); } else if(k==="sec"){ SEC={contas:[],agenda:[],...v}; save("sec",SEC); } else if(k==="folha"){ FOL={funcs:[],meses:{},...v}; save("folha",FOL); } else if(k==="receber"){ RCB={cad:{},cob:{},cfg:{},...v}; save("receber",RCB); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
+  Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ const keep=cfg.ultimoBackup; cfg={...DEFAULT_CFG,...v}; if(keep) cfg.ultimoBackup=keep; save("config",cfg); } else if(k==="sec"){ SEC={contas:[],agenda:[],...v}; save("sec",SEC); } else if(k==="folha"){ FOL={funcs:[],meses:{},...v}; save("folha",FOL); } else if(k==="receber"){ RCB={cad:{},cob:{},cfg:{},...v}; save("receber",RCB); } else if(k==="fav"){ FAV={lista:[],...v}; save("fav",FAV); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
   ensureCash(); renderAll(); uiAlert("Cópia restaurada ✅"); return true;
 }
 async function gz(str){ if(typeof CompressionStream==="undefined") return {gz:false,dados:str};
@@ -2584,8 +2606,9 @@ function renderSec(){
   $("secContas").innerHTML= !C.length? '<div class="empty">Nenhuma conta a pagar. Mande uma mensagem ou um boleto acima. 🙂</div>' :
     `<div class="vgrid one">${C.map(c=>{ const [cl,tx]=statusData(c.venc,!!c.pago), [y,m,d]=c.venc.split("-").map(Number), dt=new Date(y,m-1,d);
       return `<div class="vitem ${cl}"><div class="vdata"><b>${String(d).padStart(2,"0")}</b><span>${DIAS_SEM[dt.getDay()]} · ${mesCurto(c.venc.slice(0,7))}</span></div>
-        <div class="vmid"><b>${catEmo(c.cat)} ${esc(c.desc)}</b><span>${brl(c.valor)} · ${esc(c.cat)} · ${esc(bankName(c.banco))}${c.pago?` · pago em ${dataBR(c.pago.data)}`:""}</span></div>
+        <div class="vmid"><b>${(()=>{ const f=favDe(c.desc); return f? avatarHtml(f,c.desc) : `<button class="avtbtn" data-fvnovo="${esc(c.desc)}" data-cid="${c.id}" title="Salvar foto/logo e Pix deste favorecido">${catEmo(c.cat)}</button>`; })()} ${esc(c.desc)}</b><span>${brl(c.valor)} · ${esc(c.cat)} · ${esc(bankName(c.banco))}${c.pago?` · pago em ${dataBR(c.pago.data)}`:""}</span></div>
         <div class="vfim"><span class="vbadge ${cl}">${tx}</span><div class="acts">
+          ${!c.pix&&!c.codigo&&!c.pago&&favTemPix(favDe(c.desc))?`<button class="btn ghost small" data-vfvpix="${esc(c.desc)}" data-v="${c.valor}" title="Copiar Pix copia e cola com o valor">💠 Pix</button>`:""}
           ${c.pix&&!c.pago?`<button class="btn ghost small" data-spix="${c.id}" title="Copiar Pix copia e cola">💠 Copiar Pix</button>`:""}
           ${c.codigo&&!c.pago?`<button class="btn ghost small" data-scod="${c.id}" title="Copiar código de barras">🔢 Copiar código</button>`:""}
           ${c.anexo?`<button class="ebtn" data-sanx="${c.id}" title="Ver conta">📎</button>`:""}
@@ -2664,7 +2687,7 @@ function renderFolha(){
     const linhas=c.its.map(i=>{ const T=TIPOS_FOL[i.tipo]; return `<li><span>${T.e} ${esc(T.n)}${i.qtd>1?` × ${i.qtd}`:""}${i.desc?` · <span class="status">${esc(i.desc)}</span>`:""}${i.tipo==="vale"?((i.lanc||i.auto)?` <span class="vtag ok">pago ${dataBR(i.data)}</span>`:` <span class="vtag">só descontar</span>`):""}</span><b class="${T.s>0?"pos":"neg"}">${T.s>0?"+":"−"} ${brl(i.valor)}</b><button class="xbtn" data-fidel="${i.id}" aria-label="Remover">×</button></li>`; }).join("");
     const saldoOk=!!c.pg.saldo;
     return `<div class="fcard">
-      <div class="fhead"><div class="fav">${esc((f.nome||"?").trim()[0]||"?").toUpperCase()}</div><div><b>${esc(f.nome)}</b><span class="status">${esc(f.cargo||"")}${f.cargo?" · ":""}Pix ${esc(chaveMask(f.chave))} (${f.tipoChave||tipoChave(f.chave)})</span></div><button class="btn ghost small" data-fchave="${f.id}">📋 Chave</button></div>
+      <div class="fhead"><div class="fav">${f.foto?`<img src="${f.foto}" alt="">`:esc((f.nome||"?").trim()[0]||"?").toUpperCase()}</div><div><b>${esc(f.nome)}</b><span class="status">${esc(f.cargo||"")}${f.cargo?" · ":""}Pix ${esc(chaveMask(f.chave))} (${f.tipoChave||tipoChave(f.chave)})</span></div><button class="btn ghost small" data-fchave="${f.id}">📋 Chave</button></div>
       <div class="fbody">
         <label class="fliq">📄 Líquido do holerite<input data-fliq="${f.id}" inputmode="decimal" value="${c.liq!=null?fmtIn(c.liq):""}" placeholder="do PDF do contador"></label>
         ${linhas?`<ul class="fitens">${linhas}</ul>`:""}
@@ -2682,7 +2705,7 @@ function renderFolha(){
   $("fiPagoL").classList.toggle("hidden",t!=="vale"); $("fiDesc").placeholder={vale:"Ex.: pediu dia 12",desconto:"Ex.: consumo, falta dia 3",cardapio:"Ex.: Padoca, Villa Grill"}[t]||"Ex.: meta batida"; $("fiPix").classList.toggle("hidden",t!=="vale");
   // funcionários
   $("ffList").innerHTML= !(FOL.funcs||[]).length? '<p class="note">Nenhum funcionário cadastrado.</p>' :
-   `<div class="lblist">${FOL.funcs.map(f=>`<div class="lbrow ${f.ativo===false?"off":""}"><span><b>${esc(f.nome)}</b> <span class="status">${esc(f.cargo||"")}</span></span><span class="status">Pix ${esc(chaveMask(f.chave))} · salário ${f.salario?brl(f.salario):"—"}</span><span class="row" style="gap:2px"><button class="ebtn" data-ffed="${f.id}" title="Editar">✎</button><button class="xbtn" data-ffdel="${f.id}" title="Excluir">×</button></span></div>`).join("")}</div>`;
+   `<div class="lblist">${FOL.funcs.map(f=>`<div class="lbrow ${f.ativo===false?"off":""}"><span>${f.foto?`<img class="avt" src="${f.foto}" alt="">`:`<span class="avt" style="background:${corDe(f.nome)}">${esc((f.nome||"?").trim()[0].toUpperCase())}</span>`}<b>${esc(f.nome)}</b> <span class="status">${esc(f.cargo||"")}</span></span><span class="status">Pix ${esc(chaveMask(f.chave))} · salário ${f.salario?brl(f.salario):"—"}</span><span class="row" style="gap:2px"><button class="ebtn" data-ffed="${f.id}" title="Editar">✎</button><button class="xbtn" data-ffdel="${f.id}" title="Excluir">×</button></span></div>`).join("")}</div>`;
   if(document.activeElement!==$("fcCard")) $("fcCard").value=fmtIn(cf.valorCardapio); $("fcCid").value=cf.cidade;
   const fb=$("fcBanco"); fb.innerHTML=bancoOpts(cf.banco||b0()); 
 }
@@ -2793,13 +2816,13 @@ $("folPrev").addEventListener("input",e=>{ const i=e.target.dataset.fpl; if(i!=n
 $("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.holAdiant=false; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
 let ffEdit=null;
 $("ffChave").addEventListener("input",()=>{ $("ffTipo").value=tipoChave($("ffChave").value); });
-$("ffAdd").onclick=()=>{ const nome=$("ffNome").value.trim(), chave=$("ffChave").value.trim(); if(!nome){ $("ffNome").focus(); return; } if(!chave){ $("ffChave").focus(); return; }
+$("ffAdd").onclick=async()=>{ let fotoNova=null; if($("ffFoto").files[0]){ try{ fotoNova=await fotoMini($("ffFoto").files[0]); }catch(e){ uiAlert("Não consegui ler a foto."); return; } } const nome=$("ffNome").value.trim(), chave=$("ffChave").value.trim(); if(!nome){ $("ffNome").focus(); return; } if(!chave){ $("ffChave").focus(); return; }
   const tipo=$("ffTipo").value; if(tipo==="cpf"&&!cpfValido(chave)){ uiAlert("Esse CPF parece inválido. Confira a chave Pix."); return; }
-  const dados={nome,cargo:$("ffCargo").value.trim(),chave,tipoChave:tipo,salario:num($("ffSal").value),ativo:true};
+  const dados={nome,cargo:$("ffCargo").value.trim(),chave,tipoChave:tipo,salario:num($("ffSal").value),ativo:true,...(fotoNova?{foto:fotoNova}:{})};
   FOL.funcs=FOL.funcs||[];
   if(ffEdit){ Object.assign(FOL.funcs.find(f=>f.id===ffEdit),dados); ffEdit=null; $("ffAdd").textContent="Cadastrar funcionário"; }
   else FOL.funcs.push({id:uid(),...dados});
-  ["ffNome","ffCargo","ffChave","ffSal"].forEach(i=>$(i).value=""); saveFol(); renderAll(); uiAlert("👷 Funcionário salvo."); };
+  ["ffNome","ffCargo","ffChave","ffSal"].forEach(i=>$(i).value=""); $("ffFoto").value=""; saveFol(); renderAll(); uiAlert("👷 Funcionário salvo."); };
 $("ffList").addEventListener("click",async e=>{ const ed=e.target.dataset.ffed, dl=e.target.dataset.ffdel;
   if(ed){ const f=FOL.funcs.find(x=>x.id===ed); ffEdit=ed; $("ffNome").value=f.nome; $("ffCargo").value=f.cargo||""; $("ffChave").value=f.chave; $("ffTipo").value=f.tipoChave||tipoChave(f.chave); $("ffSal").value=f.salario?fmtIn(f.salario):""; $("ffAdd").textContent="Salvar alterações"; $("ffNome").scrollIntoView({behavior:"smooth",block:"center"}); }
   if(dl){ const f=FOL.funcs.find(x=>x.id===dl); if(await uiConfirm(`Excluir ${f.nome} do cadastro? Os pagamentos já lançados continuam.`)){ FOL.funcs=FOL.funcs.filter(x=>x!==f); saveFol(); renderAll(); } } });
@@ -2951,6 +2974,48 @@ $("tab-receb").addEventListener("click",async e=>{ const b=e.target.closest("[da
   if(d.rbrec){ $("fab").click(); const bt=document.querySelector('.seg button[data-t="entrada"]'); if(bt) bt.click();
     setTimeout(()=>{ const rc=allCats().find(c=>c[2]==="entrada"&&c[3]==="receita"); if(rc){ $("fCat").value=rc[0]; $("fCat").onchange(); }
       const hoje=isoD(hojeD()); $("fData").value= hoje.slice(0,7)===cur? hoje : r.venc; $("fParc").value=r.nome; $("fVal").value=r.falta||r.esp? fmtIn(r.falta||r.esp) : ""; avisoDup(); $("fVal").focus(); },60); } });
+
+// ================= Favorecidos do Pix e avatares =================
+let FAV={lista:[]}; let fvEdit=null;
+function saveFav(){ save("fav",FAV); }
+const AVCOR=["#F97316","#DB2777","#7C3AED","#2563EB","#0891B2","#16A34A","#CA8A04","#DC2626"];
+function corDe(s){ let h=0; for(const ch of normTxt(s)) h=(h*31+ch.charCodeAt(0))>>>0; return AVCOR[h%AVCOR.length]; }
+function favDe(nome){ const n=normTxt(nome||""); if(!n) return null; const L=FAV.lista||[];
+  return L.find(f=>normTxt(f.nome)===n) || L.find(f=>{ const w=" "+n.replace(/[^a-z0-9]+/g," ")+" "; return [f.nome,...String(f.alias||"").split(",")].map(x=>normTxt(x).replace(/[^a-z0-9]+/g," ").trim()).filter(x=>x.length>=3).some(x=>w.includes(" "+x+" ")); }) || null; }
+function avatarHtml(f,nome,emo){ if(f&&f.foto) return `<img class="avt" src="${f.foto}" alt="">`; if(f) return `<span class="avt" style="background:${corDe(f.nome)}">${esc((f.nome.trim()[0]||"?").toUpperCase())}</span>`; return emo||""; }
+function tlvLista(s){ const o=[]; let i=0; while(i+4<=s.length){ const id=s.slice(i,i+2), n=+s.slice(i+2,i+4); if(isNaN(n)) break; o.push([id,s.slice(i+4,i+4+n)]); i+=4+n; } return o; }
+function pixComValor(code,valor){ const L=tlvLista(code).filter(([id])=>id!=="63"&&id!=="54"); if(!(valor>0)) { const p=L.map(([a,b])=>a+String(b.length).padStart(2,"0")+b).join("")+"6304"; return p+crc16(p); }
+  const i53=L.findIndex(([id])=>id==="53"); L.splice(i53>=0?i53+1:L.length,0,["54",(Math.round(valor*100)/100).toFixed(2)]);
+  const p=L.map(([a,b])=>a+String(b.length).padStart(2,"0")+b).join("")+"6304"; return p+crc16(p); }
+function favTemPix(f){ return !!(f&&(f.copia||f.chave)); }
+function favPix(f,valor){ if(!f) return ""; if(f.copia){ const m=tlvLista(f.copia).find(([id])=>id==="26"); const dinam=m&&tlvLista(m[1]).some(([id])=>id==="25"); return dinam? f.copia : pixComValor(f.copia,valor); }
+  return pixCode(f.chave,f.tipoChave,f.nome,fcfg().cidade,valor,"MD"+isoD(hojeD()).replace(/-/g,"")); }
+function fotoMini(file){ return new Promise((ok,err)=>{ const url=URL.createObjectURL(file), im=new Image(); im.onload=()=>{ const S=112, cv=document.createElement("canvas"); cv.width=cv.height=S; const cx=cv.getContext("2d"); cx.fillStyle="#fff"; cx.fillRect(0,0,S,S);
+  const r=Math.max(S/im.width,S/im.height), w=im.width*r, hh=im.height*r; cx.drawImage(im,(S-w)/2,(S-hh)/2,w,hh); URL.revokeObjectURL(url); ok(cv.toDataURL("image/jpeg",.85)); }; im.onerror=()=>{ URL.revokeObjectURL(url); err(new Error("imagem inválida")); }; im.src=url; }); }
+function renderFav(){ const box=$("favList"); if(!box) return; const L=[...(FAV.lista||[])].sort((a,b)=>a.nome.localeCompare(b.nome,"pt-BR"));
+  box.innerHTML= !L.length? '<p class="note">Nenhum favorecido ainda. Cadastre abaixo, ou toque no ícone de uma conta a pagar para criar a partir dela.</p>' : L.map(f=>`<div class="favitem">${avatarHtml(f,f.nome)}<div><b>${esc(f.nome)}</b><span class="status">${f.cat?catEmo(f.cat)+" "+esc(f.cat)+" · ":""}${f.copia?"Pix copia e cola salvo":"Pix "+esc(chaveMask(f.chave||""))}${f.valor?" · "+brl(f.valor):""}</span></div>
+    <div class="row">${favTemPix(f)?`<button class="btn small" data-fvpix="${f.id}" data-v="${f.valor||0}">💠 Pix${f.valor?" "+brl(f.valor):""}</button>`:""}<button class="ebtn" data-fved="${f.id}" title="Editar">✎</button><button class="xbtn" data-fvdel="${f.id}" title="Excluir">×</button></div></div>`).join("");
+  const cs=$("fvCat"), cv=cs.value; cs.innerHTML='<option value="">— escolha —</option>'+catOptsSaida(cv); if(cv) cs.value=cv; }
+function fvLimpar(){ fvEdit=null; ["fvNome","fvAlias","fvChave","fvCopia","fvVal"].forEach(i=>$(i).value=""); $("fvFoto").value=""; $("fvCat").value=""; $("fvAdd").textContent="Salvar favorecido"; $("fvCancel").classList.add("hidden"); $("favTit").textContent="➕ Novo favorecido"; }
+function fvNovo(nome,cat,valor){ const sec=document.querySelector('[data-tab="sec"]'); if(sec&&$("tab-sec").classList.contains("hidden")) sec.click(); fvLimpar(); $("fvNome").value=nome||""; if(cat) $("fvCat").value=cat; if(valor) $("fvVal").value=fmtIn(valor); $("fvNome").scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>$("fvChave").focus(),300); }
+
+// ---------- eventos Favorecidos ----------
+$("fvChave").addEventListener("input",()=>{ $("fvTipo").value=tipoChave($("fvChave").value); });
+$("fvCancel").onclick=fvLimpar;
+$("fvAdd").onclick=async()=>{ const nome=$("fvNome").value.trim(); if(!nome){ $("fvNome").focus(); return; }
+  let copia=$("fvCopia").value.trim(), chave=$("fvChave").value.trim();
+  if(copia){ const px=acharPix(copia); if(!px){ uiAlert("Esse Pix copia e cola não parece válido. Confira se colou o código inteiro."); return; } copia=px.code; }
+  if(!copia&&!chave){ uiAlert("Coloque a chave Pix ou o Pix copia e cola."); $("fvChave").focus(); return; }
+  if(chave&&!copia&&$("fvTipo").value==="cpf"&&!cpfValido(chave)){ uiAlert("Esse CPF parece inválido. Confira a chave Pix."); return; }
+  let foto=null; if($("fvFoto").files[0]){ try{ foto=await fotoMini($("fvFoto").files[0]); }catch(e){ uiAlert("Não consegui ler a imagem."); return; } }
+  const dados={nome,alias:$("fvAlias").value.trim(),chave:copia?"":chave,tipoChave:$("fvTipo").value,copia,cat:$("fvCat").value,valor:num($("fvVal").value)||0,...(foto?{foto}:{})};
+  FAV.lista=FAV.lista||[]; if(fvEdit){ Object.assign(FAV.lista.find(f=>f.id===fvEdit),dados); } else FAV.lista.push({id:uid(),...dados});
+  saveFav(); fvLimpar(); renderAll(); uiAlert("💠 Favorecido salvo."); };
+document.addEventListener("click",async e=>{ const b=e.target.closest&&e.target.closest("[data-fvpix],[data-fved],[data-fvdel],[data-fvnovo],[data-vfvpix]"); if(!b) return; const d=b.dataset;
+  if(d.fvpix||d.vfvpix){ const f=d.fvpix? FAV.lista.find(x=>x.id===d.fvpix) : favDe(d.vfvpix), v=num(d.v); if(!f) return; copiar(favPix(f,v),`💠 Pix${v?" de "+brl(v):""} para ${f.nome} copiado. No app do banco: Pix > Pix Copia e Cola.`); }
+  if(d.fved){ const f=FAV.lista.find(x=>x.id===d.fved); if(!f) return; fvEdit=f.id; $("fvNome").value=f.nome; $("fvAlias").value=f.alias||""; $("fvChave").value=f.chave||""; $("fvTipo").value=f.tipoChave||tipoChave(f.chave||""); $("fvCopia").value=f.copia||""; $("fvCat").value=f.cat||""; $("fvVal").value=f.valor?fmtIn(f.valor):""; $("fvAdd").textContent="Salvar alterações"; $("fvCancel").classList.remove("hidden"); $("favTit").textContent="✎ Editando "+f.nome; $("fvNome").scrollIntoView({behavior:"smooth",block:"center"}); }
+  if(d.fvdel){ const f=FAV.lista.find(x=>x.id===d.fvdel); if(f&&await uiConfirm(`Excluir o favorecido ${f.nome}?`)){ FAV.lista=FAV.lista.filter(x=>x!==f); saveFav(); renderAll(); } }
+  if(d.fvnovo){ const c=(SEC.contas||[]).find(x=>x.id===d.cid); fvNovo(d.fvnovo,c&&c.cat,c&&c.valor); } });
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
 loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); if($("fiData")) $("fiData").value=isoDeDate(hojeLocal()); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); setTimeout(vencToast,3500); initDb(); getAssets().then(()=>renderAll());
