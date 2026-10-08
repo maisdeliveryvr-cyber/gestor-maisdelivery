@@ -266,6 +266,10 @@ a.ebtn{display:inline-grid;place-items:center;text-decoration:none}
 .vtag.ok{background:var(--ok-bg);color:var(--c-money)}
 #secContas .vfim .acts,#secAgenda .vfim .acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;align-items:center}
 @media (max-width:700px){#secContas .vitem,#secAgenda .vitem{grid-template-columns:52px minmax(0,1fr)}#secContas .vfim,#secAgenda .vfim{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.vmid{min-width:0}.vmid b{overflow-wrap:anywhere}}
+.estlist{display:flex;flex-wrap:wrap;gap:6px}.estlist span{display:inline-flex;align-items:center;gap:4px;background:var(--sunk);border-radius:999px;padding:4px 6px 4px 12px;font-size:13px;font-weight:600}
+.estlist span button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0 4px}
+.vtag.warn{background:#FEF3C7;color:#B45309;border:0;cursor:pointer;font:700 11px inherit}
+.vtag.fm{color:var(--muted)}
 .hidden{display:none!important}
 @media (max-width:1100px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:820px){
@@ -568,7 +572,10 @@ main{padding-bottom:110px}
         <select id="fFiltro" aria-label="Filtrar por banco"></select>
         <select id="fTipoF" aria-label="Filtrar por tipo"><option value="">Entradas e saídas</option><option value="entrada">Só entradas</option><option value="saida">Só saídas</option><option value="transf">Só transferências</option></select>
         <select id="fCatF" aria-label="Filtrar por categoria"></select>
+        <select id="fFormaF" aria-label="Filtrar por forma de recebimento"><option value="">Todas as formas</option><option value="dinheiro">💵 Dinheiro</option><option value="retencao">🔁 Retenção no repasse</option><option value="pix">⚡ Pix / transferência</option><option value="boleto">🧾 Boleto</option><option value="cartao">💳 Cartão / maquininha</option><option value="sem">❔ Entrada sem forma</option></select>
+        <select id="fEstabF" aria-label="Filtrar por estabelecimento"></select>
         <label class="chk"><input type="checkbox" id="fSemComp"> Sem comprovante</label>
+        <label class="chk"><input type="checkbox" id="fRepet"> ⚠️ Possíveis repetidos</label>
       </div>
       <p class="status" id="filtroInfo" style="margin:8px 0 0"></p><div id="lancBox" style="margin-top:10px"></div></section>
   </div>
@@ -824,6 +831,10 @@ main{padding-bottom:110px}
       <p class="note">Antes de zerar, use "Exportar tudo" em Lançamentos se quiser guardar uma cópia.</p>
     </section>
     <section class="card"><h2>👤 Sua conta</h2><p class="sub" id="contaInfo">Conectado.</p><button class="btn ghost" id="sairBtn">Sair do gestor</button></section>
+    <section class="card"><h2>🏪 Estabelecimentos</h2><p class="sub">Aparecem como sugestão no campo Estabelecimento ao lançar comissão. O gestor aprende sozinho a cada lançamento novo.</p>
+      <div id="estList" class="estlist"></div>
+      <div class="row" style="margin-top:10px"><input id="estNovo" placeholder="Nome do estabelecimento" style="flex:1;min-width:180px"><button class="btn small" id="estAdd">Adicionar</button></div>
+    </section>
     <section class="card"><h2>🗓️ Lembretes de vencimento</h2><p class="sub">Aparecem em "Próximos vencimentos" no Dashboard, com aviso 2 dias antes. Quando você lança a categoria ligada ao lembrete, ele some sozinho.</p>
       <div id="lbList"></div>
       <div class="form" style="margin-top:14px">
@@ -867,10 +878,12 @@ main{padding-bottom:110px}
         <label id="fBancoL">Banco<select id="fBanco"></select></label>
         <label id="fDestL" class="hidden">Para o banco<select id="fDest"></select></label>
         <label id="fCatL">Categoria<select id="fCat"></select></label>
-        <label id="parcWrap">Parceiro (opcional)<input id="fParc" placeholder="Ex.: Bella pizzaria"></label>
+        <label id="parcWrap">Estabelecimento<input id="fParc" list="dlEstab" autocomplete="off" placeholder="Digite e escolha da lista"><datalist id="dlEstab"></datalist></label>
+        <label id="fFormaL" class="hidden">Forma de recebimento<select id="fForma"><option value="pix">⚡ Pix / transferência</option><option value="dinheiro">💵 Dinheiro</option><option value="retencao">🔁 Retenção no repasse</option><option value="boleto">🧾 Boleto</option><option value="cartao">💳 Cartão / maquininha</option></select></label>
         <label>Descrição (opcional)<input id="fDesc" placeholder="Ex.: panfletos"></label>
         <label><span id="fValLbl">Valor (R$)</span><input id="fVal" inputmode="decimal" placeholder="0,00"></label>
         <label id="fCompL">Comprovante (opcional)<input type="file" id="fComp" accept="image/*,application/pdf" multiple></label>
+        <p id="fDupAviso" class="note warnt hidden" style="grid-column:1/-1;margin:0"></p>
         <div class="row"><button class="btn" id="fAdd">Lançar</button><button class="btn ghost hidden" id="fCancel">Cancelar</button></div>
       </div>
       <div class="row" style="margin-top:10px"><label class="chk" id="fRepL"><input type="checkbox" id="fRep"> Repetir todo mês (vira uma recorrente)</label>
@@ -1030,7 +1043,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 11.1"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 12"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
@@ -1074,7 +1087,7 @@ function isCash(id){ const b=bancos().find(x=>x.id===id); return !!b && (b.id===
 function ensureCash(){ if(bancos().some(b=>isCash(b.id))) return; cfg.bancos=bancos().concat([{id:"dinheiro",nome:"Dinheiro (caixa)"}]); save("config",cfg); }
 function descAplica(){ const c=allCats().find(x=>x[0]===$("fCat").value); return tipoSel==="entrada" && c && c[3]==="receita" && isCash($("fBanco").value); }
 function pctDin(){ const p=Number(cfg.descDinheiro); return isFinite(p)&&p>=0? p : 3; }
-function updDesc(){ const ap=descAplica(); $("fDescL").classList.toggle("hidden",!ap); $("fValLbl").textContent=ap?"Valor cheio da comissão":"Valor (R$)"; if(!ap) return;
+function updDesc(){ updForma(); if($("fForma")){ if(isCash($("fBanco").value)) $("fForma").value="dinheiro"; else if($("fForma").value==="dinheiro") $("fForma").value="pix"; } const ap=descAplica(); $("fDescL").classList.toggle("hidden",!ap); $("fValLbl").textContent=ap?"Valor cheio da comissão":"Valor (R$)"; if(!ap) return;
   $("fDescPct").textContent=String(pctDin()).replace(".",",");
   const v=num($("fVal").value), d=Math.round(v*pctDin())/100, on=$("fDesc3").checked;
   $("fDescTxt").innerHTML = v&&on? `Comissão ${brl(v)} − desconto ${brl(d)} = <b>recebido em dinheiro ${brl(v-d)}</b>` : v? `Recebido em dinheiro: <b>${brl(v)}</b>` : "Digite o valor cheio da comissão; o desconto é calculado sozinho."; }
@@ -1162,7 +1175,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFolha(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFolha(); renderEstabs(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -1237,7 +1250,7 @@ function renderEquil(s){
   <p class="note">A comissão poderia cair ${f>0?pct(f/s.receita):"0%"} antes de a empresa deixar de ter sobra.</p>`;
 }
 function topParceiros(){ const m={}; let tot=0;
-  lancs(cur).forEach(l=>{ const c=catOf(l); if(c.nat!=="receita") return; const p=(l.parceiro||"").trim(), v=num(l.valor); tot+=v; if(p) m[p]=(m[p]||0)+v; });
+  lancs(cur).forEach(l=>{ const c=catOf(l); if(c.nat!=="receita") return; const p=nomeEstab(l), v=num(l.valor); tot+=v; if(p) m[p]=(m[p]||0)+v; });
   const arr=Object.entries(m).sort((a,b)=>b[1]-a[1]); if(!arr.length||!tot) return null;
   return {arr,tot,share3:arr.slice(0,3).reduce((a,b)=>a+b[1],0)/tot}; }
 function renderTop(){ const t=topParceiros();
@@ -1280,7 +1293,7 @@ function fillBancos(){ const opts=bancos().map(b=>`<option value="${b.id}">${esc
   const f=$("fFiltro"), fv=f.value; f.innerHTML=`<option value="">Todos os bancos</option>`+opts; if([...f.options].some(o=>o.value===fv)) f.value=fv; }
 function renderLanc(){
   fillBancos();
-  const s=sums(cur), fb=$("fFiltro").value, q=normTxt($("fBusca").value.trim()), ft=$("fTipoF").value, fc=$("fCatF").value, sc=$("fSemComp").checked;
+  const s=sums(cur), fb=$("fFiltro").value, q=normTxt($("fBusca").value.trim()), ft=$("fTipoF").value, fc=$("fCatF").value, sc=$("fSemComp").checked, ff=$("fFormaF").value, fe=$("fEstabF").value, fr=$("fRepet").checked;
   $("lancTitle").textContent="Movimentações de "+label(cur);
   $("sIniNote").innerHTML = s.ini==null? 'Informe o saldo inicial de cada banco na aba <b>Bancos</b>.' : 'Saldos iniciais por banco na aba Bancos. Transferências entre contas não contam como entrada nem saída.';
   $("bal").innerHTML=[["Saldo inicial",s.ini!=null?brl(s.ini):"—",""],["Entradas","+ "+brl(s.entradas),"pos"],["Saídas","− "+brl(s.saidas),"neg"],["Saldo atual",s.ini!=null?brl(s.fim):"—",""]]
@@ -1294,11 +1307,17 @@ function renderLanc(){
   if(ft) L=L.filter(l=>catOf(l).t===ft);
   if(fc) L=L.filter(l=>catOf(l).n===fc);
   if(sc) L=L.filter(l=>!(l.comp&&l.comp.length)&&catOf(l).t==="saida");
+  const reps=repetidos(all);
+  { const es=[...new Map(all.map(l=>[normTxt(nomeEstab(l)),nomeEstab(l)]).filter(x=>x[0])).entries()].sort((a,b)=>a[1].localeCompare(b[1],"pt-BR")); const s=$("fEstabF");
+    s.innerHTML='<option value="">Todos os estabelecimentos</option>'+es.map(([k,n])=>`<option value="${esc(k)}"${k===fe?" selected":""}>🏪 ${esc(n)}</option>`).join(""); }
+  if(ff) L=L.filter(l=> ff==="sem"? (catOf(l).t==="entrada"&&!formaDe(l)) : formaDe(l)===ff);
+  if(fe) L=L.filter(l=>normTxt(nomeEstab(l))===fe);
+  if(fr) L=L.filter(l=>reps.has(l.id));
   if(q) L=L.filter(l=>normTxt([catOf(l).n,l.descricao,l.parceiro,bankName(bankOf(l))].join(" ")).includes(q));
-  const filtrado=!!(q||ft||fc||sc);
+  const filtrado=!!(q||ft||fc||sc||ff||fe||fr);
   if(filtrado){ let e=0,sa=0; L.forEach(l=>{ const c=catOf(l),v=num(l.valor); if(c.t==="entrada") e+=v; else if(c.t==="saida") sa+=v; });
     $("filtroInfo").innerHTML=`${L.length} de ${all.length} movimentações · entradas <b class="pos">${brl(e)}</b> · saídas <b class="neg">${brl(sa)}</b> · <a href="#" id="limparF">limpar filtros</a>`; }
-  else $("filtroInfo").textContent="";
+  else $("filtroInfo").innerHTML= reps.size? `⚠️ <b>${reps.size}</b> lançamentos deste mês parecem repetidos (mesmo valor e nome em até 3 dias). <a href="#" id="verRep">Ver quais</a>` : "";
   if(!L.length){ $("lancBox").innerHTML='<div class="empty">'+(filtrado?"Nada encontrado com esses filtros.":"Nenhuma movimentação"+(fb?" neste banco":"")+" neste mês. Toque em ＋ para lançar.")+'</div>'; return; }
   const ini = fb? bankIni(cur,fb) : s.ini, showRun= ini!=null && !filtrado;
   let run=ini==null?0:ini;
@@ -1306,7 +1325,7 @@ function renderLanc(){
     if(c.t==="transf"){ bk=`${esc(bankName(l.banco))} → ${esc(bankName(l.bancoDest))}`;
       if(fb){ if(l.banco===fb){ run-=v; sai=brl(v); sinal=-1;} else { run+=v; ent=brl(v); sinal=1;} } else { ent=`<span class="status">⇄ ${brl(v)}</span>`; } }
     else { bk=esc(bankName(bankOf(l))); if(c.t==="entrada"){ run+=v; ent=brl(v); sinal=1;} else { run-=v; sai=brl(v); sinal=-1;} }
-    const tag=l.virtual?'<span class="vtag">parcela</span>':l.rec?'<span class="vtag">recorrente</span>':"";
+    const fm=formaDe(l), tag=(l.virtual?'<span class="vtag">parcela</span>':l.rec?'<span class="vtag">recorrente</span>':"")+(fm?`<span class="vtag fm">${FORMAS[fm]}</span>`:"")+(reps.has(l.id)?`<button class="vtag warn" data-dupok="${l.id}" title="Toque se não for repetido">⚠️ repetido?</button>`:"");
     const acts=l.virtual?`<span class="status" title="Parcelas são editadas na aba Bancos" style="cursor:help">🏦</span>`:`<div class="acts">${(assetsNS||(l.comp&&l.comp.length))?`<button class="ebtn ${l.comp&&l.comp.length?"has":""}" data-comp="${l.id}" title="Comprovantes" aria-label="Comprovantes">📎${l.comp&&l.comp.length?`<sup>${l.comp.length}</sup>`:""}</button>`:""}<button class="ebtn" data-edit="${l.id}" title="Editar" aria-label="Editar">✎</button><button class="xbtn" data-del="${l.id}" title="Excluir" aria-label="Excluir">×</button></div>`;
     return {l,c,v,ent,sai,bk,sinal,tag,acts,run,desc:esc([l.descricao,l.parceiro].filter(Boolean).join(" · "))}; });
   if(window.innerWidth<700){
@@ -1448,16 +1467,18 @@ function startEdit(id){
   editId=id; editKey=cur; const c=catOf(l);
   setTipo(c.t); $("fData").value=l.data||defaultDate(); fillBancos(); $("fBanco").value=bankOf(l);
   if(c.t==="transf") $("fDest").value=l.bancoDest||b0(); else { fillCats(); $("fCat").value=l.categoria; toggleParc(); }
-  $("fDesc").value=l.descricao||""; $("fParc").value=l.parceiro||""; $("fVal").value=fmtIn(num(l.valor));
-  $("fDesc3").checked=lancsRaw(cur).some(x=>x.de===l.id) || !isCash(bankOf(l)); updDesc();
+  $("fDesc").value=l.descricao||""; $("fParc").value=l.parceiro||""; $("fVal").value=fmtIn(num(l.valor)); if($("fForma")) $("fForma").value=formaDe(l)||"pix";
+  $("fDesc3").checked=lancsRaw(cur).some(x=>x.de===l.id) || !isCash(bankOf(l)); updDesc(); if(l.forma) $("fForma").value=l.forma; avisoDup();
   $("fAdd").textContent="Salvar alteração"; $("fCancel").classList.remove("hidden"); $("formTitle").textContent="Editando movimentação";
   renderLanc(); openM("lancModal");
 }
 function cancelEdit(){ const wasEditing=!!editId; if(wasEditing) closeM("lancModal"); editId=null; editKey=null; $("fAdd").textContent="Lançar"; $("fCancel").classList.add("hidden"); $("formTitle").textContent="Nova movimentação"; $("fDesc").value=""; $("fVal").value=""; $("fParc").value=""; renderLanc(); }
 $("fCancel").onclick=cancelEdit;
 function removeEditing(){ if(!editId) return null; const m=months[editKey]; let o=null; if(m){ o=m.lancamentos.find(x=>x.id===editId)||null; m.lancamentos=m.lancamentos.filter(x=>x.id!==editId&&x.de!==editId); save("m-"+editKey,m); } return o; }
-$("fAdd").onclick=()=>{
+$("fAdd").onclick=async()=>{
   const v=num($("fVal").value); if(!v){ $("fVal").focus(); return; }
+  if(tipoSel!=="transf"){ const c0=allCats().find(x=>x[0]===$("fCat").value); if(c0&&c0[3]==="receita"&&!$("fParc").value.trim()){ const k=normTxt($("fDesc").value); const e0=k&&estabsTodos().find(n=>normTxt(n)===k); if(e0){ $("fParc").value=e0; $("fDesc").value=""; } } }
+  { const d=parecidoCom(lancDoForm()); if(d&&!await uiConfirm(`Parece repetido: já existe ${dataBR(d.data)} · ${catOf(d).n}${nomeEstab(d)?" · "+nomeEstab(d):""} · ${brl(num(d.valor))}. Lançar mesmo assim?`)) return; }
   if(tipoSel==="transf"&&$("fBanco").value===$("fDest").value){ uiAlert("Escolha bancos diferentes para a transferência."); return; }
   const keepId=editId; const orig=removeEditing(); let novoId=null; const arqs=[...$("fComp").files]; const extra=orig? Object.fromEntries(["rec","fitid","comp"].filter(k=>orig[k]!=null).map(k=>[k,orig[k]])) : {};
   if(tipoSel==="transf"){ if($("fBanco").value===$("fDest").value){ uiAlert("Escolha bancos diferentes para a transferência."); return; }
@@ -1466,11 +1487,11 @@ $("fAdd").onclick=()=>{
     let recId=extra.rec;
     if(!keepId&&$("fRep").checked){ const d=$("fData").value||defaultDate(); recId=uid();
       cfg.recorrentes=(cfg.recorrentes||[]).concat([{id:recId,tipo:tipoSel,descricao:$("fDesc").value.trim(),categoria:$("fCat").value,banco:$("fBanco").value||b0(),valor:Math.abs(v),dia:Number(d.slice(8,10))||1,inicio:d.slice(0,7)}]); save("config",cfg); $("fRep").checked=false; uiAlert("Lançado e cadastrado como recorrente."); }
-    novoId=addLanc({...(keepId?{id:keepId}:{}),...extra,...(recId?{rec:recId}:{}),data:$("fData").value||defaultDate(),tipo:tipoSel,categoria:$("fCat").value,descricao:$("fDesc").value.trim(),parceiro:c&&c[3]==="receita"?$("fParc").value.trim():"",banco:$("fBanco").value||b0(),valor:Math.abs(v)}); }
+    novoId=addLanc({...(keepId?{id:keepId}:{}),...extra,...(recId?{rec:recId}:{}),data:$("fData").value||defaultDate(),tipo:tipoSel,categoria:$("fCat").value,descricao:$("fDesc").value.trim(),parceiro:c&&c[3]==="receita"?$("fParc").value.trim():"",banco:$("fBanco").value||b0(),valor:Math.abs(v),...(tipoSel==="entrada"?{forma:$("fForma").value}:{})}); if(c&&c[3]==="receita") aprenderEstab($("fParc").value); }
   if(novoId && tipoSel!=="transf" && descAplica() && $("fDesc3").checked){ const d=Math.round(v*pctDin())/100;
     if(d>0) addLanc({data:$("fData").value||defaultDate(),tipo:"saida",categoria:DESC_CAT,descricao:`${String(pctDin()).replace(".",",")}% sobre ${brl(v)}${$("fParc").value.trim()?" · "+$("fParc").value.trim():""}`,parceiro:"",banco:$("fBanco").value,valor:d,de:novoId}); }
   if(arqs.length&&novoId){ $("fComp").value=""; uiAlert("Enviando comprovante…"); anexar(novoId,arqs).then(n=>{ if(n) uiAlert(n>1?`${n} comprovantes anexados.`:"Comprovante anexado."); renderAll(); }); }
-  $("fDesc").value="";$("fVal").value=""; $("fDesc3").checked=true; updDesc(); if(!keepId&&!arqs.length) uiAlert("Lançado ✅ Pode lançar a próxima ou fechar."); if(keepId){ closeM("lancModal"); uiAlert("Alteração salva ✅"); editId=null; editKey=null; $("fAdd").textContent="Lançar"; $("fCancel").classList.add("hidden"); $("formTitle").textContent="Nova movimentação"; }
+  $("fDesc").value="";$("fVal").value=""; $("fParc").value=""; $("fDesc3").checked=true; updDesc(); avisoDup(); if(!keepId&&!arqs.length) uiAlert("Lançado ✅ Pode lançar a próxima ou fechar."); if(keepId){ closeM("lancModal"); uiAlert("Alteração salva ✅"); editId=null; editKey=null; $("fAdd").textContent="Lançar"; $("fCancel").classList.add("hidden"); $("formTitle").textContent="Nova movimentação"; }
   renderAll(); $("fVal").focus();
 };
 $("fVal").addEventListener("keydown",e=>{ if(e.key==="Enter") $("fAdd").click(); });
@@ -2007,7 +2028,15 @@ $("openImp").onclick=()=>openM("impModal");
 $("navMais").onclick=()=>openM("maisModal");
 ["fBusca"].forEach(id=>$(id).addEventListener("input",renderLanc));
 ["fTipoF","fCatF","fSemComp"].forEach(id=>$(id).addEventListener("change",renderLanc));
-$("filtroInfo").addEventListener("click",e=>{ if(e.target.id==="limparF"){ e.preventDefault(); $("fBusca").value=""; $("fTipoF").value=""; $("fCatF").value=""; $("fSemComp").checked=false; renderLanc(); } });
+$("filtroInfo").addEventListener("click",e=>{ if(e.target.id==="limparF"){ e.preventDefault(); $("fBusca").value=""; $("fTipoF").value=""; $("fCatF").value=""; $("fSemComp").checked=false; $("fFormaF").value=""; $("fEstabF").value=""; $("fRepet").checked=false; renderLanc(); } if(e.target.id==="verRep"){ e.preventDefault(); $("fRepet").checked=true; renderLanc(); } });
+["fFormaF","fEstabF","fRepet"].forEach(id=>$(id).addEventListener("change",renderLanc));
+document.addEventListener("click",async e=>{ const b=e.target.closest&&e.target.closest("[data-dupok],[data-estdel]"); if(!b) return;
+  if(b.dataset.dupok){ const m=mes(cur), l=m.lancamentos.find(x=>x.id===b.dataset.dupok); if(!l) return; if(!await uiConfirm("Este lançamento não é repetido? O aviso some.")) return; l.dupOk=true; save("m-"+cur,m); renderAll(); }
+  if(b.dataset.estdel){ const n=b.dataset.estdel, k=normTxt(n); cfg.estabs=(cfg.estabs||[]).filter(x=>normTxt(x)!==k); cfg.estabOff=(cfg.estabOff||[]).concat([n]); save("config",cfg); renderEstabs(); } });
+$("estAdd").onclick=()=>{ const n=$("estNovo").value.trim(); if(!n){ $("estNovo").focus(); return; } aprenderEstab(n); $("estNovo").value=""; renderEstabs(); uiAlert("🏪 Estabelecimento salvo."); };
+$("estNovo").addEventListener("keydown",e=>{ if(e.key==="Enter") $("estAdd").click(); });
+["fVal","fParc","fDesc","fData"].forEach(id=>$(id).addEventListener("input",avisoDup));
+$("fForma").onchange=()=>{ const cx=bancos().find(b=>isCash(b.id)); if($("fForma").value==="dinheiro"&&cx){ $("fBanco").value=cx.id; } else if($("fForma").value!=="dinheiro"&&isCash($("fBanco").value)){ const o=bancos().find(b=>!isCash(b.id)); if(o) $("fBanco").value=o.id; } updDesc(); };
 function aplicarOlho(){ const eb=$("eyeBtn"); if(!eb) return; eb.innerHTML=ocultar?'<span aria-hidden="true">🙈</span><span class="eyl">Mostrar</span>':'<span aria-hidden="true">👁️</span><span class="eyl">Ocultar</span>'; $("eyeBtn").title=ocultar?"Mostrar valores":"Esconder valores"; $("eyeBtn").setAttribute("aria-pressed",ocultar); document.body.classList.toggle("privado",ocultar); }
 $("eyeBtn").onclick=e=>{ e.preventDefault(); ocultar=!ocultar; try{ localStorage.setItem("gfmd-ocultar",ocultar?"1":"0"); }catch(e){} aplicarOlho(); renderAll(); };
 let lastNarrow=window.innerWidth<700; window.addEventListener("resize",()=>{ const n=window.innerWidth<700; if(n!==lastNarrow){ lastNarrow=n; renderLanc(); } });
@@ -2636,27 +2665,15 @@ function liqDoHolerite(seg){
   if(liq==null&&venc!=null&&desc!=null&&venc>desc) liq=Math.round((venc-desc)*100)/100;
   return {liq,venc,desc,ok};
 }
-// acha o nome do funcionário no texto já normalizado (posição ou -1)
-function idxNome(N,f){ const tk=nomeTokens(f.nome); if(!tk.length) return -1; const primeiro=tk[0], ultimo=tk[tk.length-1];
-  const re=new RegExp("\\b"+primeiro+"\\b","g"); let mm; while((mm=re.exec(N))){ const trecho=N.slice(mm.index,mm.index+80); if(tk.length===1||trecho.includes(ultimo)||tk.slice(1).some(w=>trecho.includes(w))) return mm.index; }
-  return -1; }
-// holerite: "Total de Vencimentos", "Total de Descontos" e o "Valor Líquido" (a seta) vêm em sequência e líquido = vencimentos − descontos
-function trincaLiquido(txt){ const ns=numsDe(txt).map(n=>n.v), ig=(a,b)=>Math.abs(a-b)<0.015; let best=null;
-  for(let i=0;i+2<ns.length;i++){ const a=ns[i],b=ns[i+1],c=ns[i+2]; if(a>0&&b>0&&c>0&&ig(a-b,c)&&(!best||a>best.venc)) best={venc:a,desc:b,liq:c}; }
-  return best; }
-// texto de cada página separado (o PDF do contador costuma ter um holerite por página)
-async function paginasPDF(pdf,maxPag){ const out=[]; for(let i=1;i<=Math.min(pdf.numPages,maxPag||5);i++){ const tc=await (await pdf.getPage(i)).getTextContent(); out.push(tc.items.map(it=>it.str).join("\n")); } return out; }
-function lerHolerites(texto,paginas){
+function lerHolerites(texto){
   const T=String(texto), N=normTxt(T); const achados=[];
-  // 1º: página com um só funcionário -> pega a trinca vencimentos / descontos / líquido daquela página
-  const viaPag={}, pags=(paginas||[]).map(t=>({t,N:normTxt(t)}));
-  funcsAtivos().forEach(f=>{ for(const pg of pags){ if(idxNome(pg.N,f)<0||!/liquido/.test(pg.N)) continue; if(funcsAtivos().some(o=>o.id!==f.id&&idxNome(pg.N,o)>=0)) continue; const r=trincaLiquido(pg.t); if(r){ viaPag[f.id]={...r,ok:true}; break; } } });
-  funcsAtivos().forEach(f=>{ const idx=idxNome(N,f); if(idx>=0) achados.push({f,idx}); });
+  funcsAtivos().forEach(f=>{ const tk=nomeTokens(f.nome); if(!tk.length) return; const primeiro=tk[0], ultimo=tk[tk.length-1];
+    let idx=-1; const re=new RegExp("\\b"+primeiro+"\\b","g"); let mm; while((mm=re.exec(N))){ const trecho=N.slice(mm.index,mm.index+80); if(tk.length===1||trecho.includes(ultimo)||tk.slice(1).some(w=>trecho.includes(w))){ idx=mm.index; break; } }
+    if(idx>=0) achados.push({f,idx}); });
   achados.sort((a,b)=>a.idx-b.idx);
   return achados.map((a,i)=>{ const ini=i>0? Math.max(achados[i-1].idx+1,a.idx-1500) : Math.max(0,a.idx-1500);
     // o nome pode vir antes ou depois dos valores: usa o trecho entre um funcionário e o próximo
     const fim=i+1<achados.length? achados[i+1].idx : Math.min(N.length,a.idx+4000);
-    if(viaPag[a.f.id]) return {fid:a.f.id,nome:a.f.nome,...viaPag[a.f.id]};
     let r=liqDoHolerite(T.slice(a.idx,fim)); if(!r.ok){ const r2=liqDoHolerite(T.slice(i>0?achados[i-1].idx+60:0,fim)); if(r2.ok) r=r2; }
     return {fid:a.f.id,nome:a.f.nome,...r}; });
 }
@@ -2730,8 +2747,7 @@ $("fiPix").onclick=()=>{ const f=FOL.funcs.find(x=>x.id===$("fiFunc").value), v=
 $("folPdf").onchange=async e=>{ const f=e.target.files[0]; e.target.value=""; if(!f) return; if(!funcsAtivos().length){ uiAlert("Cadastre os funcionários antes de importar a folha."); return; }
   $("folPdfSt").textContent="📄 Lendo o PDF…";
   try{ let {texto,pdf}=await textoPDF(f,30); if(texto.replace(/\s/g,"").length<50){ $("folPdfSt").textContent="🔎 PDF escaneado, lendo as letras…"; texto=await ocr(await pdfParaImagem(pdf)); }
-    let paginas=null; try{ paginas=await paginasPDF(pdf,30); }catch(_){}
-    folPrev={itens:lerHolerites(texto,paginas)}; $("folPdfSt").textContent=""; renderFolPrev(); }catch(err){ $("folPdfSt").textContent="Não consegui ler o PDF: "+err.message; } };
+    folPrev={itens:lerHolerites(texto)}; $("folPdfSt").textContent=""; renderFolPrev(); }catch(err){ $("folPdfSt").textContent="Não consegui ler o PDF: "+err.message; } };
 $("folPrev").addEventListener("input",e=>{ const i=e.target.dataset.fpl; if(i!=null) folPrev.itens[+i].liq=num(e.target.value); });
 $("folPrev").addEventListener("click",e=>{ if(e.target.id==="fpNo"){ folPrev=null; renderFolPrev(); } if(e.target.id==="fpOk"){ const m=fmes(); folPrev.itens.forEach(x=>{ if(x.liq!=null) m.liq[x.fid]=x.liq; }); m.holAdiant=false; folPrev=null; renderFolPrev(); saveFol(); renderAll(); uiAlert("📄 Líquidos da folha atualizados."); } });
 let ffEdit=null;
@@ -2749,6 +2765,29 @@ $("ffList").addEventListener("click",async e=>{ const ed=e.target.dataset.ffed, 
 ["fcCard","fcCid","fcBanco"].forEach(id=>$(id).addEventListener("change",()=>{ FOL.cfg={...fcfg(),valorCardapio:num($("fcCard").value)||0,cidade:$("fcCid").value.trim()||"VILA RICA",banco:$("fcBanco").value}; saveFol(); renderAll(); }));
 window.__gestorTeste={liqDoHolerite,acharPix,parseTexto,parseDocumento,acharBoleto,pixCode,crc16,lerHolerites,tipoChave,calcFunc};
 
+
+// ---------- Forma de recebimento, estabelecimentos e repetidos ----------
+const FORMAS={dinheiro:"💵 dinheiro",retencao:"🔁 retenção",pix:"⚡ pix",boleto:"🧾 boleto",cartao:"💳 cartão"};
+function formaDe(l){ if(catOf(l).t!=="entrada") return ""; if(l.forma) return l.forma; if(isCash(bankOf(l))) return "dinheiro"; if(/reten/i.test(normTxt(l.descricao||""))) return "retencao"; return ""; }
+function nomeEstab(l){ const p=(l.parceiro||"").trim(); if(p) return p; const c=catOf(l); return c.nat==="receita"? (l.descricao||"").trim() : ""; }
+function estabsTodos(){ const off=new Set((cfg.estabOff||[]).map(normTxt)), mp=new Map();
+  (cfg.estabs||[]).forEach(n=>{ const k=normTxt(n); if(k&&!mp.has(k)) mp.set(k,n); });
+  Object.keys(months).forEach(k=>lancsRaw(k).forEach(l=>{ if(catOf(l).nat!=="receita") return; const n=nomeEstab(l), k2=normTxt(n); if(k2&&!off.has(k2)&&!mp.has(k2)) mp.set(k2,n); }));
+  return [...mp.values()].sort((a,b)=>a.localeCompare(b,"pt-BR")); }
+function aprenderEstab(n){ n=(n||"").trim(); if(!n) return; const k=normTxt(n); cfg.estabOff=(cfg.estabOff||[]).filter(x=>normTxt(x)!==k); if(!(cfg.estabs||[]).some(x=>normTxt(x)===k)){ cfg.estabs=(cfg.estabs||[]).concat([n]); save("config",cfg); } }
+function chaveDup(l){ const c=catOf(l); return [c.t,Math.round(num(l.valor)*100),normTxt(nomeEstab(l)||l.descricao||"")||("cat:"+c.n),c.t==="transf"?(l.banco+">"+l.bancoDest):""].join("|"); }
+function diasEntre(a,b){ return Math.abs((new Date(a+"T12:00")-new Date(b+"T12:00"))/864e5); }
+function repetidos(L){ const g={}, out=new Set(); L.forEach(l=>{ if(l.virtual||l.dupOk||l.de) return; (g[chaveDup(l)]=g[chaveDup(l)]||[]).push(l); });
+  Object.values(g).forEach(arr=>{ if(arr.length<2) return; for(let i=0;i<arr.length;i++) for(let j=i+1;j<arr.length;j++) if(diasEntre(arr[i].data,arr[j].data)<=3){ out.add(arr[i].id); out.add(arr[j].id); } });
+  return out; }
+function parecidoCom(novo){ const key=(novo.data||"").slice(0,7); const k=chaveDup(novo);
+  return [key,shift(key,-1),shift(key,1)].flatMap(m=>months[m]?lancsRaw(m):[]).find(l=>l.id!==editId&&!l.de&&chaveDup(l)===k&&diasEntre(l.data,novo.data)<=3); }
+function lancDoForm(){ const c=allCats().find(x=>x[0]===$("fCat").value); return {data:$("fData").value||defaultDate(),tipo:tipoSel,categoria:tipoSel==="transf"?"":$("fCat").value,descricao:$("fDesc").value.trim(),parceiro:c&&c[3]==="receita"?$("fParc").value.trim():"",banco:$("fBanco").value,bancoDest:$("fDest").value,valor:num($("fVal").value)}; }
+function avisoDup(){ const el=$("fDupAviso"); if(!el) return null; const n=lancDoForm(); const d=n.valor? parecidoCom(n) : null;
+  el.classList.toggle("hidden",!d); if(d) el.innerHTML=`⚠️ Parece repetido: já existe <b>${dataBR(d.data)} · ${esc(catOf(d).n)}${nomeEstab(d)?" · "+esc(nomeEstab(d)):""} · ${brl(num(d.valor))}</b>.`; return d; }
+function updForma(){ const L=$("fFormaL"); if(!L) return; L.classList.toggle("hidden",tipoSel!=="entrada"); }
+function renderEstabs(){ const dl=$("dlEstab"), E=estabsTodos(); if(dl) dl.innerHTML=E.map(n=>`<option value="${esc(n)}">`).join("");
+  const box=$("estList"); if(box) box.innerHTML= E.length? E.map(n=>`<span>${esc(n)}<button data-estdel="${esc(n)}" title="Tirar da lista" aria-label="Tirar ${esc(n)} da lista">×</button></span>`).join("") : '<p class="note">Nenhum estabelecimento ainda. Eles aparecem aqui conforme você lança comissões.</p>'; }
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
 loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); if($("fiData")) $("fiData").value=isoDeDate(hojeLocal()); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); setTimeout(vencToast,3500); initDb(); getAssets().then(()=>renderAll());
