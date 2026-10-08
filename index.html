@@ -270,6 +270,20 @@ a.ebtn{display:inline-grid;place-items:center;text-decoration:none}
 .estlist span button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0 4px}
 .vtag.warn{background:#FEF3C7;color:#B45309;border:0;cursor:pointer;font:700 11px inherit}
 .vtag.fm{color:var(--muted)}
+.rbrow{display:grid;grid-template-columns:58px minmax(0,1fr) 150px auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:8px 12px;background:var(--surface)}
+.rbrow+.rbrow{margin-top:8px}.rbrow.pago{opacity:.6}.rbrow.atras{border-color:var(--c-coral);background:var(--bad-bg)}.rbrow.parc{background:var(--warn-bg)}
+.rbrow .vmid b{display:block}.rbrow .vmid span{font-size:12.5px;color:var(--muted)}
+.rbval input{width:100%;text-align:right}.rbval small{display:block;text-align:right;font-size:11.5px;color:var(--muted);margin-top:2px}
+.rbacts{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.rbcad{display:grid;grid-template-columns:minmax(0,1.4fr) 140px minmax(0,1fr) 70px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.rbcad.head{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.rbcad.off b{opacity:.5}
+.prevgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.prevchart{position:relative;margin-top:14px}.prevchart svg{display:block;width:100%;height:190px}
+.prevtip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;border-radius:8px;padding:6px 9px;white-space:nowrap;transform:translate(-50%,-110%)}
+.prevcols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.prevcols ul{list-style:none;margin:6px 0 0;padding:0}.prevcols li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+@media (max-width:800px){.prevgrid{grid-template-columns:1fr 1fr}.prevcols{grid-template-columns:1fr}.rbrow{grid-template-columns:52px minmax(0,1fr)}.rbrow .rbval,.rbrow .rbacts{grid-column:1/-1}.rbcad{grid-template-columns:1fr 1fr}.rbcad.head{display:none}}
 .hidden{display:none!important}
 @media (max-width:1100px){.s8,.s7,.s6,.s5,.s4{grid-column:span 12}.kpis{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:820px){
@@ -508,6 +522,7 @@ main{padding-bottom:110px}
     <button data-tab="lanc" data-title="📝 Lançamentos" aria-current="false"><span class="nemo" aria-hidden="true">📝</span><span>Lançamentos</span></button>
     <button data-tab="contas" data-title="🏦 Bancos, parcelas e recorrentes" aria-current="false"><span class="nemo" aria-hidden="true">🏦</span><span>Bancos</span></button>
     <button data-tab="res" data-title="📈 Resultado do mês" aria-current="false"><span class="nemo" aria-hidden="true">📈</span><span>Resultado</span></button>
+    <button class="navx" data-tab="receb" data-title="💰 A receber" aria-current="false"><span class="nemo" aria-hidden="true">💰</span><span>A receber</span></button>
     <button class="navx" data-tab="sec" data-title="🤖 Secretária" aria-current="false"><span class="nemo" aria-hidden="true">🤖</span><span>Secretária</span></button>
     <button class="navx" data-tab="folha" data-title="👷 Folha de pagamento" aria-current="false"><span class="nemo" aria-hidden="true">👷</span><span>Folha</span></button>
     <button class="navx" data-tab="cons" data-title="🧠 Consultor" aria-current="false"><span class="nemo" aria-hidden="true">🧠</span><span>Consultor</span></button>
@@ -535,6 +550,8 @@ main{padding-bottom:110px}
       <div class="parts" id="hParts"></div>
     </section>
     <div class="kpis s12" id="kpis"></div>
+    <section class="card s12" id="prevCard"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>🔮 Previsão de caixa</h2><span class="status" id="prevInfo"></span></div>
+      <div id="prevBox" style="margin-top:10px"></div></section>
     <section class="card s12" id="vencCard"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>🗓️ Próximos vencimentos</h2><span class="status" id="vencResumo"></span></div><div id="vencBox" style="margin-top:10px"></div></section>
     <section class="card s8"><h2>📈 <span id="comboT">Evolução em 12 meses</span></h2><p class="sub">Comissão, gastos e sobra mês a mês.</p><div id="combo"></div></section>
     <section class="card s4"><h2>🛟 Reserva da empresa</h2><p class="sub">Quantos meses o caixa livre sustenta.</p><div id="gauge"></div></section>
@@ -661,6 +678,21 @@ main{padding-bottom:110px}
     </section>
   </div>
 
+  <div id="tab-receb" class="stack hidden">
+    <div class="grid4" id="rbTiles"></div>
+    <section class="card rbcard"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>💰 Comissões a receber em <span class="rbMes"></span></h2><label class="chk"><input type="checkbox" id="rbVerPagos"> Mostrar os já recebidos</label></div>
+      <p class="sub">O gestor confere sozinho: quando você lança a comissão de um estabelecimento (em Lançamentos), ela sai daqui como recebida. Valores com "≈" são estimativa pela média dos últimos meses; digite o valor da cobrança para ficar exato.</p>
+      <div id="rbLista"></div></section>
+    <section class="card"><h2>🏪 Cadastro de cobrança</h2><p class="sub">Defina quem acerta por mês ou por quinzena e o WhatsApp para mandar a cobrança pronta. Desmarque quem não deve ser cobrado.</p>
+      <div id="rbCad"></div>
+      <h3 class="h3">⚙️ Regras</h3>
+      <div class="form">
+        <label>Mensais vencem no dia<input id="rbDiaM" inputmode="numeric"></label>
+        <label>Quinzenais: 2ª quinzena do mês anterior vence dia<input id="rbDiaQ1" inputmode="numeric"></label>
+        <label>Quinzenais: 1ª quinzena vence dia<input id="rbDiaQ2" inputmode="numeric"></label>
+        <label>Sua chave Pix (vai na mensagem)<input id="rbPix" placeholder="CNPJ, celular ou e-mail"></label>
+      </div></section>
+  </div>
   <div id="tab-sec" class="stack hidden">
     <section class="card secbox">
       <h2>🤖 Fale com a Secretária</h2>
@@ -917,6 +949,7 @@ main{padding-bottom:110px}
   <div class="mbox"><button class="xbtn mclose" data-close="maisModal" aria-label="Fechar">×</button>
     <h2 style="margin:0 0 12px;font:700 18px var(--display)">Mais opções</h2>
     <div class="maisgrid">
+      <button data-tab="receb" data-title="💰 A receber" aria-current="false"><span>💰</span>A receber</button>
       <button data-tab="sec" data-title="🤖 Secretária" aria-current="false"><span>🤖</span>Secretária</button>
       <button data-tab="folha" data-title="👷 Folha de pagamento" aria-current="false"><span>👷</span>Folha</button>
       <button data-tab="cons" data-title="🧠 Consultor" aria-current="false"><span>🧠</span>Consultor</button>
@@ -1043,10 +1076,10 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 12"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 13"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
-  const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0};
+  const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0};
   try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("gfmd:m-")) months[k.slice(7)]=JSON.parse(localStorage.getItem(k)); } }catch(e){}
 }
 async function initDb(){
@@ -1056,16 +1089,16 @@ async function initDb(){
     const id=await u.id(); if(!id){ setStatus(); return; }
     db=d; uidUser=id; mode="db";
     const snap=await db.collection("data/users/"+uidUser).get();
-    if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); if(SEC.contas.length||SEC.agenda.length) save("sec",SEC); if((FOL.funcs||[]).length) save("folha",FOL); }
+    if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); if(SEC.contas.length||SEC.agenda.length) save("sec",SEC); if((FOL.funcs||[]).length) save("folha",FOL); if(Object.keys(RCB.cad).length||Object.keys(RCB.cob).length) save("receber",RCB); }
     else { Object.keys(months).forEach(k=>delete months[k]);
-      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id==="sec") SEC={contas:[],agenda:[],...x}; else if(doc.id==="folha") FOL={funcs:[],meses:{},...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
+      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id==="sec") SEC={contas:[],agenda:[],...x}; else if(doc.id==="folha") FOL={funcs:[],meses:{},...x}; else if(doc.id==="receber") RCB={cad:{},cob:{},cfg:{},...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
     ensureCash(); setStatus(); renderAll(); setTimeout(autoSnapshot,4000); setTimeout(vencToast,2500);
     // mantém aberto em vários aparelhos sem um desfazer o que o outro apagou
     db.collection("data/users/"+uidUser).onSnapshot(s2=>{
       let changed=false;
       s2.docChanges().forEach(ch=>{ const id=ch.doc.id, q=queues[id]; if(q&&(q.running||q.pending)) return;
         if(ch.type==="removed"){ if(id.startsWith("m-")){ delete months[id.slice(2)]; changed=true; } return; }
-        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id==="sec"){ SEC={contas:[],agenda:[],...x}; changed=true; } else if(id==="folha"){ FOL={funcs:[],meses:{},...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
+        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id==="sec"){ SEC={contas:[],agenda:[],...x}; changed=true; } else if(id==="folha"){ FOL={funcs:[],meses:{},...x}; changed=true; } else if(id==="receber"){ RCB={cad:{},cob:{},cfg:{},...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
       if(changed && $("modal").classList.contains("hidden") && !editId) renderAll();
     }, err=>{ setStatus("Sincronização pausada ("+(err.code||"erro")+"). Recarregue a página."); });
   }catch(e){ mode="local"; setStatus("("+(e.message||e.code||"sem conexão")+")"); }
@@ -1175,7 +1208,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFolha(); renderEstabs(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFolha(); renderEstabs(); renderReceber(); renderPrevisao(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -1564,8 +1597,8 @@ $("prevM").onclick=()=>{cur=shift(cur,-1); $("dData").value=""; $("fData").value
 $("nextM").onclick=()=>{cur=shift(cur,1); $("dData").value=""; $("fData").value=defaultDate(); renderAll(); fillImpostos(true);};
 document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("[data-tab]").forEach(x=>x.setAttribute("aria-current",x.dataset.tab===b.dataset.tab?"page":"false"));
-  ["painel","lanc","contas","res","sec","folha","cons","imp","aj"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==b.dataset.tab));
-  { const t=b.dataset.title, i=t.indexOf(" "); closeM("maisModal"); $("navMais").setAttribute("aria-current",["sec","folha","cons","imp","aj"].includes(b.dataset.tab)?"page":"false"); $("pageTitle").innerHTML=`<span class="pe">${t.slice(0,i)}</span> <span class="pt">${esc(t.slice(i+1))}</span>`; } window.scrollTo(0,0); if(b.dataset.tab==="painel") renderCombo();
+  ["painel","lanc","contas","res","receb","sec","folha","cons","imp","aj"].forEach(t=>$("tab-"+t).classList.toggle("hidden",t!==b.dataset.tab));
+  { const t=b.dataset.title, i=t.indexOf(" "); closeM("maisModal"); $("navMais").setAttribute("aria-current",["receb","sec","folha","cons","imp","aj"].includes(b.dataset.tab)?"page":"false"); $("pageTitle").innerHTML=`<span class="pe">${t.slice(0,i)}</span> <span class="pt">${esc(t.slice(i+1))}</span>`; } window.scrollTo(0,0); if(b.dataset.tab==="painel") renderCombo();
 });
 
 // ---------- Excel ----------
@@ -2164,8 +2197,8 @@ function feitoAuto(lb,dt){
     return [ia.slice(0,7),ib.slice(0,7)].filter((v,i,x)=>x.indexOf(v)===i).some(k=>lancs(k).some(l=>catOf(l).n===lb.cat&&l.data>=ia&&l.data<=ib)); }
   return catNoMes(lb.cat,ds.slice(0,7))>0;
 }
-function ocorrencias(){
-  const hoje=hojeD(), ini=new Date(hoje), fim=new Date(hoje); ini.setDate(ini.getDate()-31); fim.setDate(fim.getDate()+21);
+function ocorrencias(diasFim){
+  const hoje=hojeD(), ini=new Date(hoje), fim=new Date(hoje); ini.setDate(ini.getDate()-31); fim.setDate(fim.getDate()+(diasFim||21));
   if(!cfg.vencInicio){ cfg.vencInicio=isoD(hoje); save("config",cfg); }
   const [vy,vm,vd]=cfg.vencInicio.split("-").map(Number), comeco=new Date(vy,vm-1,vd); if(comeco>ini) ini.setTime(comeco.getTime());
   const out=[], push=o=>{ if(o.dt>=ini&&o.dt<=fim) out.push(o); };
@@ -2261,7 +2294,7 @@ $("lbPadrao").onclick=async()=>{ if(!await uiConfirm("Voltar os lembretes para o
 const snaps={};
 function temDados(){ return Object.values(months).some(m=>(m.lancamentos||[]).length)||SEC.contas.length||(FOL.funcs||[]).length; }
 function diasDesdeBackup(){ if(!cfg.ultimoBackup) return null; return Math.floor((Date.now()-new Date(cfg.ultimoBackup).getTime())/864e5); }
-function pacoteDados(){ return {app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,sec:SEC,folha:FOL,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}}; }
+function pacoteDados(){ return {app:"gestor-financeiro-md",versao:1,gerado:new Date().toISOString(),docs:{config:cfg,sec:SEC,folha:FOL,receber:RCB,...Object.fromEntries(Object.keys(months).map(k=>["m-"+k,months[k]]))}}; }
 async function baixarBackup(){
   const ok=await saveBlob(`backup-gestor-${isoD(hojeD())}.json`,new Blob([JSON.stringify(pacoteDados(),null,1)],{type:"application/json"}));
   if(ok){ cfg.ultimoBackup=new Date().toISOString(); save("config",cfg); renderAll(); uiAlert("Backup baixado ✅ Guarde o arquivo num lugar seguro (Google Drive, e-mail ou pendrive)."); }
@@ -2270,7 +2303,7 @@ async function restaurarDocs(docs){
   const n=Object.keys(docs).filter(k=>k.startsWith("m-")).length;
   if(!await uiConfirm(`Restaurar esta cópia? Ela traz ${n} mês(es) de lançamentos e as configurações, e substitui o que estiver nesses meses agora.`)) return false;
   await snapshotAgora("bk-antes","antes de restaurar");
-  Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ const keep=cfg.ultimoBackup; cfg={...DEFAULT_CFG,...v}; if(keep) cfg.ultimoBackup=keep; save("config",cfg); } else if(k==="sec"){ SEC={contas:[],agenda:[],...v}; save("sec",SEC); } else if(k==="folha"){ FOL={funcs:[],meses:{},...v}; save("folha",FOL); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
+  Object.entries(docs).forEach(([k,v])=>{ if(k==="config"){ const keep=cfg.ultimoBackup; cfg={...DEFAULT_CFG,...v}; if(keep) cfg.ultimoBackup=keep; save("config",cfg); } else if(k==="sec"){ SEC={contas:[],agenda:[],...v}; save("sec",SEC); } else if(k==="folha"){ FOL={funcs:[],meses:{},...v}; save("folha",FOL); } else if(k==="receber"){ RCB={cad:{},cob:{},cfg:{},...v}; save("receber",RCB); } else if(k.startsWith("m-")){ months[k.slice(2)]=v; save(k,v); } });
   ensureCash(); renderAll(); uiAlert("Cópia restaurada ✅"); return true;
 }
 async function gz(str){ if(typeof CompressionStream==="undefined") return {gz:false,dados:str};
@@ -2788,6 +2821,122 @@ function avisoDup(){ const el=$("fDupAviso"); if(!el) return null; const n=lancD
 function updForma(){ const L=$("fFormaL"); if(!L) return; L.classList.toggle("hidden",tipoSel!=="entrada"); }
 function renderEstabs(){ const dl=$("dlEstab"), E=estabsTodos(); if(dl) dl.innerHTML=E.map(n=>`<option value="${esc(n)}">`).join("");
   const box=$("estList"); if(box) box.innerHTML= E.length? E.map(n=>`<span>${esc(n)}<button data-estdel="${esc(n)}" title="Tirar da lista" aria-label="Tirar ${esc(n)} da lista">×</button></span>`).join("") : '<p class="note">Nenhum estabelecimento ainda. Eles aparecem aqui conforme você lança comissões.</p>'; }
+
+// ================= A receber (cobrança dos estabelecimentos) =================
+let RCB={cad:{},cob:{},cfg:{}};
+function saveRcb(){ save("receber",RCB); }
+const RCB_CFG_DEF={diaM:5,diaQ1:5,diaQ2:20,pix:""};
+function rcfg(){ return {...RCB_CFG_DEF,...(RCB.cfg||{})}; }
+const QUINZ_PADRAO=["pastelar","bia lanches","corujao","drogaria economize"];
+function cadDe(nome){ const k=normTxt(nome), c=RCB.cad[k]||{}; return {k,nome:c.nome||nome,ciclo:c.ciclo||(QUINZ_PADRAO.some(q=>k.includes(q))?"quinzenal":"mensal"),whats:c.whats||"",ativo:c.ativo!==false}; }
+function recebidoEstab(k,key){ return lancsRaw(key).filter(l=>catOf(l).nat==="receita"&&normTxt(nomeEstab(l))===k).reduce((a,l)=>a+num(l.valor),0); }
+function mediaEstab(k,key){ const v=[]; for(let i=1;i<=6&&v.length<3;i++){ const r=recebidoEstab(k,shift(key,-i)); if(r>0) v.push(r); } return v.length? Math.round(v.reduce((a,b)=>a+b,0)/v.length*100)/100 : 0; }
+function mesNome(key){ return label(key).split(" ")[0].toLowerCase(); }
+function linhasReceber(key){ const cf=rcfg(), [y,m]=key.split("-").map(Number), ant=shift(key,-1), cob=(RCB.cob||{})[key]||{}, hoje=hojeD(), out=[];
+  const vData=d=>{ const dt=diaNoMes(y,m-1,d); return isoD(dt); };
+  estabsTodos().map(cadDe).filter(c=>c.ativo).forEach(c=>{
+    const media=mediaEstab(c.k,key), rec=recebidoEstab(c.k,key);
+    const partes= c.ciclo==="quinzenal"? [{id:c.k+"#2",ref:"2ª quinzena de "+mesNome(ant),venc:vData(cf.diaQ1),fator:.5},{id:c.k+"#1",ref:"1ª quinzena de "+mesNome(key),venc:vData(cf.diaQ2),fator:.5}] : [{id:c.k,ref:"comissão de "+mesNome(ant),venc:vData(cf.diaM),fator:1}];
+    let sobra=rec;
+    partes.forEach(pt=>{ const o=cob[pt.id]||{}; if(o.pulo) return; const manual=o.valor!=null&&o.valor!==""? num(o.valor) : null, esp=manual!=null? manual : Math.round(media*pt.fator*100)/100;
+      const pago=Math.min(sobra, esp>0? esp : sobra); sobra-=pago; const falta=Math.max(0,Math.round((esp-pago)*100)/100);
+      const [vy,vm,vd]=pt.venc.split("-").map(Number), dias=Math.round((new Date(vy,vm-1,vd)-hoje)/864e5);
+      const st= esp>0&&falta<=0.009? "pago" : (pago>0? "parc" : (esp<=0? "sem" : (dias<0&&key<=isoD(hoje).slice(0,7)? "atras" : "aberto")));
+      out.push({...pt,nome:c.nome,k:c.k,whats:c.whats,esp,estimado:manual==null,pago,falta,dias,st}); });
+  });
+  return out.sort((a,b)=>({atras:0,parc:1,aberto:2,sem:3,pago:4}[a.st]-{atras:0,parc:1,aberto:2,sem:3,pago:4}[b.st])||a.venc.localeCompare(b.venc)||a.nome.localeCompare(b.nome,"pt-BR"));
+}
+function msgCobranca(r){ const cf=rcfg(); return `Olá, ${r.nome}! Tudo bem? 😊\nSegue a ${r.ref} do Mais Delivery: *${brl(r.falta||r.esp)}*.\nVencimento: ${dataBR(r.venc)}.${cf.pix?`\nPix: ${cf.pix}`:""}\nQualquer dúvida estou à disposição. Obrigado pela parceria! 🛵`; }
+function linkWhats(r){ let d=soDig(r.whats); if(!d) return ""; if(!d.startsWith("55")) d="55"+d; return "https://wa.me/"+d+"?text="+encodeURIComponent(msgCobranca(r)); }
+function renderReceber(){
+  if(!$("tab-receb")) return; const key=cur, L=linhasReceber(key), ver=$("rbVerPagos").checked;
+  document.querySelectorAll(".rbMes").forEach(e=>e.textContent=label(key));
+  const tot=L.reduce((a,r)=>a+r.esp,0), rec=L.reduce((a,r)=>a+r.pago,0), aberto=L.filter(r=>r.st!=="pago").reduce((a,r)=>a+r.falta,0), atr=L.filter(r=>r.st==="atras");
+  $("rbTiles").innerHTML=[["🎯 Previsto no mês",brl(tot),""],["✅ Recebido",brl(rec),"posv"],["⏳ Falta receber",brl(aberto),aberto?"warnv":""],["⏰ Atrasados",String(atr.length)+(atr.length?" · "+brl(atr.reduce((a,r)=>a+r.falta,0)):""),atr.length?"negv":""]]
+    .map(([k,v,c])=>`<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`).join("");
+  const V=L.filter(r=>ver||r.st!=="pago");
+  const ST={pago:"✅ recebido",parc:"🟡 parcial",aberto:"em aberto",atras:"⏰ atrasado",sem:"sem valor"};
+  $("rbLista").innerHTML= !estabsTodos().length? '<div class="empty">Nenhum estabelecimento ainda. Lance as comissões em Lançamentos (campo Estabelecimento) que eles aparecem aqui.</div>' : !V.length? '<div class="empty">Tudo recebido neste mês 🎉</div>' :
+    V.map(r=>{ const [y,m,d]=r.venc.split("-"); const wl=linkWhats(r);
+      return `<div class="rbrow ${r.st}"><div class="vdata"><b>${d}</b><span>${DIAS_SEM[new Date(+y,+m-1,+d).getDay()]} · ${mesCurto(r.venc.slice(0,7))}</span></div>
+        <div class="vmid"><b>🏪 ${esc(r.nome)}</b><span>${esc(r.ref)} · ${ST[r.st]}${r.pago>0&&r.st!=="pago"?` · recebido ${brl(r.pago)}`:""}${r.st==="atras"?` há ${-r.dias} dia${r.dias<-1?"s":""}`:""}</span></div>
+        <div class="rbval"><input data-rbval="${esc(r.id)}" inputmode="decimal" value="${r.estimado?"":fmtIn(r.esp)}" placeholder="${r.esp?"≈ "+fmtIn(r.esp):"valor"}"><small>${r.estimado? (r.esp?"estimativa pela média":"digite o valor da cobrança") : "valor da cobrança"}</small></div>
+        <div class="rbacts">${r.st!=="pago"?`${wl?`<a class="btn ghost small" href="${wl}" target="_blank" rel="noopener">💬 WhatsApp</a>`:`<button class="btn ghost small" data-rbmsg="${esc(r.id)}" title="Copiar mensagem de cobrança">💬 Copiar cobrança</button>`}<button class="btn small" data-rbrec="${esc(r.id)}">✅ Recebi</button>`:""}<button class="xbtn" data-rbpulo="${esc(r.id)}" title="Não cobrar este mês">×</button></div></div>`; }).join("")
+    + (Object.values((RCB.cob||{})[key]||{}).some(o=>o.pulo)?`<p class="note" style="margin-top:10px">Alguns estabelecimentos foram tirados da cobrança deste mês. <a href="#" id="rbVoltarPulos">Mostrar de novo</a></p>`:"");
+  // cadastro
+  const E=estabsTodos().map(cadDe);
+  $("rbCad").innerHTML= !E.length? '<p class="note">Os estabelecimentos aparecem aqui conforme você lança comissões.</p>' :
+    `<div class="rbcad head"><span>Estabelecimento</span><span>Acerto</span><span>WhatsApp</span><span>Cobrar</span></div>`+E.map(c=>`<div class="rbcad ${c.ativo?"":"off"}"><b>${esc(c.nome)}</b>
+      <select data-rbciclo="${esc(c.k)}" data-nome="${esc(c.nome)}"><option value="mensal"${c.ciclo==="mensal"?" selected":""}>Mensal</option><option value="quinzenal"${c.ciclo==="quinzenal"?" selected":""}>Quinzenal</option></select>
+      <input data-rbwhats="${esc(c.k)}" data-nome="${esc(c.nome)}" value="${esc(c.whats)}" placeholder="(66) 99999-0000" inputmode="tel">
+      <label class="chk"><input type="checkbox" data-rbativo="${esc(c.k)}" data-nome="${esc(c.nome)}"${c.ativo?" checked":""}></label></div>`).join("");
+  const cf=rcfg(); [["rbDiaM",cf.diaM],["rbDiaQ1",cf.diaQ1],["rbDiaQ2",cf.diaQ2],["rbPix",cf.pix]].forEach(([id,v])=>{ if(document.activeElement!==$(id)) $(id).value=v; });
+}
+function setCad(k,nome,campo,valor){ RCB.cad=RCB.cad||{}; RCB.cad[k]={...(RCB.cad[k]||{}),nome,[campo]:valor}; saveRcb(); }
+function rbCob(key,id){ RCB.cob=RCB.cob||{}; RCB.cob[key]=RCB.cob[key]||{}; return RCB.cob[key][id]=RCB.cob[key][id]||{}; }
+// ================= Previsão de caixa =================
+function aRepassarAte(key){ const m=months[key]||{}; if(m.aRepassar!=null) return num(m.aRepassar); let t=0; Object.keys(months).filter(k=>k<=key).forEach(k=>{ const s=sums(k); t+=s.terceirosIn-s.terceirosOut; }); return Math.max(0,t); }
+function previsaoCaixa(dias){ dias=dias||30; const hoje=hojeD(), kH=isoD(hoje).slice(0,7), s=sums(kH);
+  if(s.ini==null) return null;
+  const m=months[kH]||{}, base=s.fim-aRepassarAte(kH)-(m.provisoes||0);
+  const ev=[]; const dIdx=iso=>{ const [y,mo,d]=iso.split("-").map(Number); return Math.max(0,Math.round((new Date(y,mo-1,d)-hoje)/864e5)); };
+  ocorrencias(dias+5).forEach(o=>{ if(o.feito||!(num(o.valor)>0)||o.dias>dias||o.tipo==="ag") return; ev.push({d:Math.max(0,o.dias),v:-num(o.valor),nome:o.nome,emo:o.emo,est:!!o.est,atras:o.dias<0}); });
+  [kH,shift(kH,1)].forEach(k=>linhasReceber(k).forEach(r=>{ if(r.falta<=0) return; const d=dIdx(r.venc); if(d>dias) return; ev.push({d,v:r.falta,nome:r.nome,emo:"🏪",est:r.estimado,atras:r.st==="atras"}); }));
+  const serie=[]; let run=base; for(let i=0;i<=dias;i++){ ev.filter(e=>e.d===i).forEach(e=>run+=e.v); const dt=new Date(hoje); dt.setDate(dt.getDate()+i); serie.push({i,dt,v:Math.round(run*100)/100}); }
+  const fimMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0), iFim=Math.min(dias,Math.round((fimMes-hoje)/864e5));
+  let min=serie[0]; serie.forEach(p=>{ if(p.v<min.v) min=p; });
+  return {base,saldoBanco:s.fim,serie,ev,fimMes:serie[iFim],fim:serie[dias],min,entradas:ev.filter(e=>e.v>0).reduce((a,e)=>a+e.v,0),saidas:-ev.filter(e=>e.v<0).reduce((a,e)=>a+e.v,0)}; }
+function renderPrevisao(){
+  const box=$("prevBox"); if(!box) return; const P=previsaoCaixa(30);
+  if(!P){ $("prevInfo").textContent=""; box.innerHTML='<div class="empty">Informe o saldo dos bancos (aba Bancos) para ver a previsão dos próximos 30 dias.</div>'; return; }
+  const dm=d=>d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+  $("prevInfo").textContent=`próximos 30 dias · ${P.ev.length} movimentos previstos`;
+  const cls=v=>v<0?"negv":"";
+  const tiles=[["💼 Caixa livre hoje",brl(P.base),cls(P.base),"saldo nos bancos menos valores de terceiros"],["📅 Fim do mês ("+dm(P.fimMes.dt)+")",brl(P.fimMes.v),cls(P.fimMes.v),""],["🔭 Em 30 dias ("+dm(P.fim.dt)+")",brl(P.fim.v),cls(P.fim.v),""],["📉 Menor saldo previsto",brl(P.min.v),P.min.v<0?"negv":"warnv","em "+dm(P.min.dt)]];
+  // gráfico
+  const W=900,H=190,pl=8,pr=8,pt=14,pb=24, vs=P.serie.map(p=>p.v), lo=Math.min(0,...vs), hi=Math.max(...vs,1), sx=i=>pl+(W-pl-pr)*i/30, sy=v=>pt+(H-pt-pb)*(1-(v-lo)/((hi-lo)||1));
+  const path=P.serie.map((p,i)=>(i?"L":"M")+sx(i).toFixed(1)+" "+sy(p.v).toFixed(1)).join(" ");
+  const area=path+` L${sx(30).toFixed(1)} ${sy(lo).toFixed(1)} L${sx(0).toFixed(1)} ${sy(lo).toFixed(1)} Z`;
+  const ticks=[0,7,14,21,30].map(i=>`<text x="${sx(i)}" y="${H-6}" text-anchor="${i===0?"start":i===30?"end":"middle"}" font-size="11" fill="var(--muted)">${dm(P.serie[i].dt)}</text>`).join("");
+  const zero=lo<0? `<line x1="${pl}" x2="${W-pr}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--c-coral)" stroke-width="1" stroke-dasharray="4 4"/><text x="${W-pr}" y="${sy(0)-4}" text-anchor="end" font-size="11" fill="var(--c-coral)">R$ 0</text>` : "";
+  const svg=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Saldo previsto dia a dia nos próximos 30 dias">
+    <path d="${area}" fill="var(--c-blue)" opacity=".10"/>${zero}<path d="${path}" fill="none" stroke="var(--c-blue)" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+    <circle cx="${sx(P.min.i)}" cy="${sy(P.min.v)}" r="4" fill="var(--surface)" stroke="${P.min.v<0?"var(--c-coral)":"var(--c-blue)"}" stroke-width="2" vector-effect="non-scaling-stroke"/>
+    <line id="prevCross" x1="0" x2="0" y1="${pt}" y2="${H-pb}" stroke="var(--muted)" stroke-width="1" opacity="0"/>${ticks}
+    <rect id="prevHit" x="0" y="0" width="${W}" height="${H}" fill="transparent"/></svg>`;
+  const saidas=P.ev.filter(e=>e.v<0).sort((a,b)=>a.v-b.v).slice(0,6), ents=P.ev.filter(e=>e.v>0).sort((a,b)=>b.v-a.v).slice(0,6);
+  const li=e=>`<li><span>${e.emo||""} ${esc(e.nome)}${e.atras?' <span class="vtag warn">atrasado</span>':""}${e.est?' <span class="vtag">≈</span>':""}</span><b class="${e.v<0?"neg":"pos"}">${e.v<0?"−":"+"} ${brl(Math.abs(e.v))}</b></li>`;
+  box.innerHTML=`<div class="prevgrid">${tiles.map(([k,v,c,s])=>`<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v}</div>${s?`<div class="status" style="font-size:12px">${s}</div>`:""}</div>`).join("")}</div>
+    ${P.min.v<0?`<p class="note warnt" style="margin-top:10px">⚠️ O caixa livre fica negativo em ${dm(P.min.dt)}. Antecipe cobranças ou adie algum pagamento.</p>`:""}
+    <div class="prevchart">${svg}<div class="prevtip hidden" id="prevTip"></div></div>
+    <div class="prevcols"><div><b>⬇️ Maiores saídas previstas · ${brl(P.saidas)}</b><ul>${saidas.map(li).join("")||'<li><span class="status">nenhuma</span></li>'}</ul></div>
+    <div><b>⬆️ Comissões a receber · ${brl(P.entradas)}</b><ul>${ents.map(li).join("")||'<li><span class="status">nenhuma</span></li>'}</ul></div></div>
+    <p class="note">Usa as contas da Secretária, a folha, as recorrentes, as parcelas, os lembretes (≈ valor do mês passado) e as comissões da aba A receber. Repasses a estabelecimentos e entregadores não entram: esse dinheiro é de terceiros e já foi descontado do caixa livre.</p>`;
+  const hit=$("prevHit"), tip=$("prevTip"), cross=$("prevCross"), sv=hit.ownerSVGElement;
+  const mostra=ev=>{ const r=sv.getBoundingClientRect(), x=((ev.touches?ev.touches[0].clientX:ev.clientX)-r.left)/r.width*W; const i=Math.max(0,Math.min(30,Math.round((x-pl)/(W-pl-pr)*30))), p=P.serie[i];
+    cross.setAttribute("x1",sx(i)); cross.setAttribute("x2",sx(i)); cross.setAttribute("opacity",".6");
+    tip.classList.remove("hidden"); tip.style.left=(sx(i)/W*r.width)+"px"; tip.style.top=(sy(p.v)/H*r.height)+"px";
+    const doDia=P.ev.filter(e=>e.d===i); tip.innerHTML=`<b>${p.dt.toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"})}</b> · ${brl(p.v)}${doDia.length?"<br>"+doDia.slice(0,3).map(e=>`${e.v<0?"−":"+"} ${brl(Math.abs(e.v))} ${esc(e.nome)}`).join("<br>"):""}`; };
+  const esconde=()=>{ tip.classList.add("hidden"); cross.setAttribute("opacity","0"); };
+  hit.addEventListener("mousemove",mostra); hit.addEventListener("touchstart",mostra,{passive:true}); hit.addEventListener("touchmove",mostra,{passive:true}); hit.addEventListener("mouseleave",esconde);
+}
+
+// ---------- eventos A receber ----------
+$("rbVerPagos").onchange=renderReceber;
+$("tab-receb").addEventListener("change",e=>{ const t=e.target, d=t.dataset;
+  if(d.rbval){ const o=rbCob(cur,d.rbval), v=t.value.trim(); if(v==="") delete o.valor; else o.valor=num(v); saveRcb(); renderAll(); }
+  if(d.rbciclo){ setCad(d.rbciclo,d.nome,"ciclo",t.value); renderAll(); }
+  if(d.rbwhats){ setCad(d.rbwhats,d.nome,"whats",t.value.trim()); renderAll(); }
+  if(d.rbativo){ setCad(d.rbativo,d.nome,"ativo",t.checked); renderAll(); }
+  if(["rbDiaM","rbDiaQ1","rbDiaQ2","rbPix"].includes(t.id)){ const dia=x=>Math.min(31,Math.max(1,parseInt(x,10)||1)); RCB.cfg={...rcfg(),diaM:dia($("rbDiaM").value),diaQ1:dia($("rbDiaQ1").value),diaQ2:dia($("rbDiaQ2").value),pix:$("rbPix").value.trim()}; saveRcb(); renderAll(); } });
+$("tab-receb").addEventListener("click",async e=>{ const b=e.target.closest("[data-rbmsg],[data-rbrec],[data-rbpulo],#rbVoltarPulos"); if(!b) return; const d=b.dataset, L=linhasReceber(cur);
+  if(b.id==="rbVoltarPulos"){ e.preventDefault(); Object.values((RCB.cob||{})[cur]||{}).forEach(o=>delete o.pulo); saveRcb(); renderAll(); return; }
+  const r=L.find(x=>x.id===(d.rbmsg||d.rbrec||d.rbpulo)); if(!r) return;
+  if(d.rbmsg) copiar(msgCobranca(r),"💬 Mensagem de cobrança copiada. Cole no WhatsApp do "+r.nome+".");
+  if(d.rbpulo){ if(await uiConfirm(`Não cobrar ${r.nome} (${r.ref}) em ${label(cur)}?`)){ rbCob(cur,r.id).pulo=true; saveRcb(); renderAll(); } }
+  if(d.rbrec){ $("fab").click(); const bt=document.querySelector('.seg button[data-t="entrada"]'); if(bt) bt.click();
+    setTimeout(()=>{ const rc=allCats().find(c=>c[2]==="entrada"&&c[3]==="receita"); if(rc){ $("fCat").value=rc[0]; $("fCat").onchange(); }
+      const hoje=isoD(hojeD()); $("fData").value= hoje.slice(0,7)===cur? hoje : r.venc; $("fParc").value=r.nome; $("fVal").value=r.falta||r.esp? fmtIn(r.falta||r.esp) : ""; avisoDup(); $("fVal").focus(); },60); } });
 // ---------- Início ----------
 let rzT; window.addEventListener("resize",()=>{clearTimeout(rzT); rzT=setTimeout(renderCombo,200);});
 loadLocal(); ensureCash(); fillBancos(); setTipo("saida"); setPTipo("compra"); if($("fiData")) $("fiData").value=isoDeDate(hojeLocal()); $("pData").value=defaultDate(); $("pRecD").value=defaultDate(); $("fData").value=defaultDate(); renderAll(); setStatus(); setTimeout(vencToast,3500); initDb(); getAssets().then(()=>renderAll());
