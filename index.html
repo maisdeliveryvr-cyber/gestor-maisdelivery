@@ -338,7 +338,9 @@ a.ebtn{display:inline-grid;place-items:center;text-decoration:none}
 .dretab tr.t1 td{background:rgba(34,197,94,.10)}.dretab tr.t2 td{background:rgba(59,130,246,.10)}.dretab tr.t3 td{background:rgba(168,85,247,.12)}.dretab tr.t4 td{background:rgba(249,115,22,.12)}
 .dretab td.neg{color:var(--c-coral)}.dretab td.pos{color:var(--c-money)}.dretab td.cur{font-weight:700}
 .dretab .pctc{color:var(--muted);font-size:12px}
-.catsug{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(168,85,247,.1);border-radius:10px;padding:6px 10px;color:var(--ink)}
+.catsug{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-radius:14px;padding:12px 16px;margin-top:4px}
+.cs-ico{font-size:26px;line-height:1}.cs-txt{flex:1;min-width:220px;display:grid;gap:4px;font-size:14px}.cs-txt>b{font-size:15px}
+.cs-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}.cs-item{border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600}.cs-item i{font-style:normal;opacity:.7}
 .rvrow{display:grid;grid-template-columns:24px 64px minmax(0,1fr) 110px minmax(0,220px);gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
 @media (max-width:640px){.rvrow{grid-template-columns:24px minmax(0,1fr) 100px}.rvrow .rvd{display:none}.rvrow select{grid-column:2/-1}}
 .hidden{display:none!important}
@@ -643,7 +645,9 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 .dretab tr.t1 td{background:#E3F8EC}.dretab tr.t2 td{background:#E1EBFF}.dretab tr.t3 td{background:#FFF6D6}.dretab tr.t4 td{background:#0B0B0F;color:#FFC400!important}.dretab tr.t4 td.pos{color:#FFC400!important}
 :root[data-theme="dark"] .dretab tr.t1 td{background:#0B2A18}:root[data-theme="dark"] .dretab tr.t2 td{background:#0A1B40}:root[data-theme="dark"] .dretab tr.t3 td{background:#2E2606}
 .restrack span{background:#00A651!important}.resbox.low .restrack span{background:#E50914!important}
-.catsug{background:#FFF6D6!important}
+.catsug,:root[data-theme="dark"] .catsug{background:#FFC400!important;color:#0B0B0F!important;box-shadow:inset 6px 0 0 #0B0B0F}
+.catsug .cs-txt span{color:#0B0B0F}.catsug .cs-item{background:#fff;color:#0B0B0F;border:1px solid rgba(0,0,0,.15)}
+.catsug .btn{background:#0B0B0F!important;color:#FFC400!important;box-shadow:none!important}
 :root[data-theme="dark"] .kpis .kpi:nth-child(1),:root:not([data-theme="light"]) .kpis .kpi:nth-child(1){background:#0055FF!important;color:#fff!important}
 :root[data-theme="dark"] .kpis .kpi:nth-child(2),:root:not([data-theme="light"]) .kpis .kpi:nth-child(2){background:#00A651!important;color:#fff!important}
 :root[data-theme="dark"] .kpis .kpi:nth-child(3),:root:not([data-theme="light"]) .kpis .kpi:nth-child(3){background:#E50914!important;color:#fff!important}
@@ -1290,7 +1294,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 19"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 20"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0};
@@ -3327,8 +3331,8 @@ $("pgOk").onclick=()=>{ const c=(SEC.contas||[]).find(x=>x.id===pgId); if(!c) re
 // revisão das categorias genéricas
 function sugestoesCat(key){ return lancsRaw(key).filter(l=>l.tipo==="saida"&&GENERICAS.includes(l.categoria||"")&&!l.virtual).map(l=>({l,s:catInteligente([l.descricao,l.parceiro].filter(Boolean).join(" "),l.categoria)})).filter(x=>x.s&&x.s!==x.l.categoria); }
 function renderCatSug(){ const el=$("catSug"); if(!el) return; const S=sugestoesCat(cur);
-  el.innerHTML= S.length? `<span class="catsug">🧠 <b>${S.length}</b> lançamento${S.length>1?"s":""} em "Outra despesa" ${S.length>1?"parecem":"parece"} ser de outra categoria (${S.slice(0,3).map(x=>esc(x.l.descricao||"")+" → "+esc(x.s)).join(", ")}${S.length>3?"…":""}). <a href="#" id="abrirRev">Revisar</a></span>` : ""; }
-document.addEventListener("click",e=>{ if(e.target.id!=="abrirRev") return; e.preventDefault(); const S=sugestoesCat(cur);
+  el.innerHTML= S.length? `<div class="catsug"><div class="cs-ico" aria-hidden="true">🏷️</div><div class="cs-txt"><b>${S.length} lançamento${S.length>1?"s":""} com categoria para revisar</b><span>Estão em "Outra despesa", mas parecem ser de outra categoria:</span><div class="cs-list">${S.slice(0,4).map(x=>`<span class="cs-item">${esc(x.l.descricao||"sem descrição")} <i>→</i> <b>${esc(x.s)}</b></span>`).join("")}${S.length>4?`<span class="cs-item">+ ${S.length-4}</span>`:""}</div></div><button class="btn small" id="abrirRev" type="button">Revisar e corrigir</button></div>` : ""; }
+document.addEventListener("click",e=>{ if(!(e.target.closest&&e.target.closest("#abrirRev"))) return; e.preventDefault(); const S=sugestoesCat(cur);
   $("rvList").innerHTML=S.map((x,i)=>`<div class="rvrow"><input type="checkbox" data-rvi="${i}" checked aria-label="Aplicar"><span>${x.l.data.split("-").reverse().slice(0,2).join("/")}</span><span class="rvn">${esc(x.l.descricao||x.l.categoria)}</span><b>${brl(num(x.l.valor))}</b><select data-rvc="${i}">${catOptsSaida(x.s)}</select></div>`).join("");
   $("rvList").dataset.ids=JSON.stringify(S.map(x=>x.l.id)); openM("revModal"); });
 $("rvOk").onclick=()=>{ const ids=JSON.parse($("rvList").dataset.ids||"[]"), m=mes(cur); let n=0;
