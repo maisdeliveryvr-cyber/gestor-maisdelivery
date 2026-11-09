@@ -656,6 +656,14 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 :root[data-theme="dark"] .hero2{box-shadow:inset 8px 0 0 #FFC400,0 0 0 2px #FFC400}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .hero2{box-shadow:inset 8px 0 0 #FFC400,0 0 0 2px #FFC400} }
 </style>
+<style id="v20">
+.previnf{margin:10px 0 0;padding:10px 12px;border:2px dashed #FFD000;border-radius:12px;font-size:13.5px;line-height:1.45}
+.previnf ul{margin:6px 0 0;padding:0;list-style:none}.previnf li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0}
+.previnf input{width:120px;padding:6px 8px}
+.vmid input.lbval{width:150px;padding:5px 8px;margin-top:4px;font-size:13px;border:2px dashed #FFD000}
+#vencCard.flash{animation:vflash 1s 4}@keyframes vflash{50%{box-shadow:0 0 0 5px #FFD000}}
+.zphow{margin-top:12px}.zphow summary{cursor:pointer;font-weight:700}.zphow ol{margin:8px 0 0 20px;line-height:1.75}
+</style>
 </head>
 <body>
 <div class="app">
@@ -894,6 +902,25 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
       <p class="sub">🔢 copia o código de barras · 📅 adiciona ao Google Agenda · 🔔 baixa o lembrete para a agenda do celular · ✅ lança o pagamento.</p>
       <div id="secContas"></div></section>
     <section class="card"><h2>📆 Agenda de compromissos</h2><p class="sub">Reuniões, visitas a parceiros, treinamentos e o que mais você mandar.</p><div id="secAgenda"></div></section>
+    <section class="card" id="zapCard"><h2>📲 Lembretes no WhatsApp</h2>
+      <p class="sub">A Secretária te manda no WhatsApp as contas do dia às <b class="zpH1t">9h</b> e, se você não confirmar o pagamento, cobra de novo às <b class="zpH2t">15h</b>. Para ela parar de cobrar, marque <b>✓ Feito</b> ou <b>✅ Paguei</b> no gestor.</p>
+      <div id="zapAviso"></div>
+      <div class="form">
+        <label>Seu WhatsApp<input id="zpFone" inputmode="tel" placeholder="(66) 99999-0000"></label>
+        <label>Chave do CallMeBot (apikey)<input id="zpKey" placeholder="ex.: 1234567" autocomplete="off"></label>
+        <label>Como a Secretária te chama<input id="zpNome" placeholder="Lucas"></label>
+        <label>Relatório da manhã<select id="zpH1"></select></label>
+        <label>Cobrança se não confirmar<select id="zpH2"></select></label>
+        <label class="chk" style="align-self:end"><input type="checkbox" id="zpAtivo"> Lembretes ligados</label>
+        <div class="row" style="grid-column:1/-1;gap:10px"><button class="btn" id="zpSalvar">Salvar</button><button class="btn ghost" id="zpTeste">📤 Mandar mensagem de teste</button></div>
+      </div>
+      <details class="zphow"><summary>Como ligar (uma vez só, uns 3 minutos)</summary><ol>
+        <li>Salve no celular o contato <b>+34 644 91 07 79</b> (é o robô CallMeBot, gratuito).</li>
+        <li>Mande para ele pelo WhatsApp: <b>I allow callmebot to send me messages</b></li>
+        <li>Ele responde com a sua <b>apikey</b>. Cole aqui em cima junto com o seu número, marque <b>Lembretes ligados</b> e clique em Salvar.</li>
+        <li>Clique em <b>📤 Mandar mensagem de teste</b> e veja se chegou no seu WhatsApp.</li>
+        <li>No Supabase, abra <b>SQL Editor → New query</b>, cole o arquivo <b>lembretes-whatsapp.sql</b> e clique em <b>Run</b>. Pronto: daí em diante o envio é automático, mesmo com o gestor fechado.</li></ol></details>
+      <p class="status" id="zpStatus" style="margin-top:8px"></p></section>
     <section class="card" id="favCard"><h2>💠 Favorecidos do Pix</h2><p class="sub">Quem você paga por Pix (influenciadoras, Alô Vila Rica, prestadores…). Salve a chave ou o Pix copia e cola e uma foto ou logo: as contas e os vencimentos com esse nome mostram o avatar e o botão 💠 Pix já com o valor.</p>
       <div id="favList" class="favlist"></div>
       <h3 class="h3" id="favTit">➕ Novo favorecido</h3>
@@ -1294,10 +1321,10 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 20"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 21"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
-  const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0};
+  const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
   try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("gfmd:m-")) months[k.slice(7)]=JSON.parse(localStorage.getItem(k)); } }catch(e){}
 }
 async function initDb(){
@@ -1309,14 +1336,14 @@ async function initDb(){
     const snap=await db.collection("data/users/"+uidUser).get();
     if(snap.empty){ save("config",cfg); Object.keys(months).forEach(k=>save("m-"+k,months[k])); if(SEC.contas.length||SEC.agenda.length) save("sec",SEC); if((FOL.funcs||[]).length) save("folha",FOL); if(Object.keys(RCB.cad).length||Object.keys(RCB.cob).length) save("receber",RCB); if(FAV.lista.length) save("fav",FAV); if(INV.lista.length) save("inv",INV); }
     else { Object.keys(months).forEach(k=>delete months[k]);
-      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id==="sec") SEC={contas:[],agenda:[],...x}; else if(doc.id==="folha") FOL={funcs:[],meses:{},...x}; else if(doc.id==="receber") RCB={cad:{},cob:{},cfg:{},...x}; else if(doc.id==="fav") FAV={lista:[],...x}; else if(doc.id==="inv") INV={lista:[],...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
+      snap.docs.forEach(doc=>{ const x=JSON.parse(JSON.stringify(doc.data())); if(doc.id==="config") cfg={...DEFAULT_CFG,...x}; else if(doc.id==="sec") SEC={contas:[],agenda:[],...x}; else if(doc.id==="folha") FOL={funcs:[],meses:{},...x}; else if(doc.id==="receber") RCB={cad:{},cob:{},cfg:{},...x}; else if(doc.id==="fav") FAV={lista:[],...x}; else if(doc.id==="inv") INV={lista:[],...x}; else if(doc.id==="zap") ZAP={cfg:{},itens:[],...x}; else if(doc.id.startsWith("m-")){ months[doc.id.slice(2)]=x; lsSet(doc.id,x); } else if(doc.id.startsWith("bk-")) snaps[doc.id]=x; }); }
     ensureCash(); setStatus(); renderAll(); setTimeout(autoSnapshot,4000); setTimeout(vencToast,2500);
     // mantém aberto em vários aparelhos sem um desfazer o que o outro apagou
     db.collection("data/users/"+uidUser).onSnapshot(s2=>{
       let changed=false;
       s2.docChanges().forEach(ch=>{ const id=ch.doc.id, q=queues[id]; if(q&&(q.running||q.pending)) return;
         if(ch.type==="removed"){ if(id.startsWith("m-")){ delete months[id.slice(2)]; changed=true; } return; }
-        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id==="sec"){ SEC={contas:[],agenda:[],...x}; changed=true; } else if(id==="folha"){ FOL={funcs:[],meses:{},...x}; changed=true; } else if(id==="receber"){ RCB={cad:{},cob:{},cfg:{},...x}; changed=true; } else if(id==="fav"){ FAV={lista:[],...x}; changed=true; } else if(id==="inv"){ INV={lista:[],...x}; changed=true; } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
+        const x=JSON.parse(JSON.stringify(ch.doc.data())); if(id==="config"){ cfg={...DEFAULT_CFG,...x}; changed=true; } else if(id==="sec"){ SEC={contas:[],agenda:[],...x}; changed=true; } else if(id==="folha"){ FOL={funcs:[],meses:{},...x}; changed=true; } else if(id==="receber"){ RCB={cad:{},cob:{},cfg:{},...x}; changed=true; } else if(id==="fav"){ FAV={lista:[],...x}; changed=true; } else if(id==="inv"){ INV={lista:[],...x}; changed=true; } else if(id==="zap"){ ZAP={cfg:{},itens:[],...x}; renderZap(); } else if(id.startsWith("m-")){ months[id.slice(2)]=x; lsSet(id,x); changed=true; } else if(id.startsWith("bk-")){ snaps[id]=x; renderBackup(); } });
       if(changed && $("modal").classList.contains("hidden") && !editId) renderAll();
     }, err=>{ setStatus("Sincronização pausada ("+(err.code||"erro")+"). Recarregue a página."); });
   }catch(e){ mode="local"; setStatus("("+(e.message||e.code||"sem conexão")+")"); }
@@ -1426,7 +1453,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); renderZap(); agendarZap(); irHoje(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -2425,8 +2452,8 @@ function ocorrencias(diasFim){
   lembretes().filter(lb=>lb.ativo!==false).forEach(lb=>{
     const add=dt=>{ const ds=isoD(dt), key=ds.slice(0,7), id=lb.id+"@"+ds, m=months[key];
       const manual=!!(m&&m.feitos&&m.feitos.includes(id));
-      let est=0; if(lb.cat){ est=catNoMes(lb.cat,shift(key,-1)); if(lb.freq==="semanal") est=0; }
-      push({id,dt,ds,key,emo:lb.emo||"🔔",nome:lb.nome,tipo:"lemb",lb,feito:manual||feitoAuto(lb,dt),valor:est,est:true}); };
+      const est=num(((m&&m.lembVal)||{})[id]||0), pede=!!lb.cat&&lb.freq!=="semanal";
+      push({id,dt,ds,key,emo:lb.emo||"🔔",nome:lb.nome,tipo:"lemb",lb,feito:manual||feitoAuto(lb,dt),valor:est,est:false,pedeValor:pede,semValor:pede&&!(est>0)}); };
     if(lb.freq==="semanal"){ const d=new Date(ini); while(d<=fim){ if(d.getDay()===Number(lb.dia)) add(new Date(d)); d.setDate(d.getDate()+1); } }
     else meses.forEach(m0=>{ const y=m0.getFullYear(), mo=m0.getMonth();
       if(lb.freq==="quinzenal"){ add(ajustarFds(diaNoMes(y,mo,15),lb.ajuste)); add(ajustarFds(diaNoMes(y,mo,"ultimo"),lb.ajuste)); }
@@ -2470,7 +2497,7 @@ function renderVenc(){
    `<div class="vgrid">${L.slice(0,14).map(o=>{ const [cl,tx]=quando(o);
      const btn=o.feito? "" : o.tipo==="conta"? `<button class="btn small" data-vpag="${o.conta.id}">✅ Paguei</button>` : o.tipo==="ag"? `<button class="btn ghost small" data-vag="${o.ag.id}">✓ Feito</button>` : o.tipo==="fol"? `<button class="btn ghost small" data-vfol="1">Abrir folha</button>` : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>` : "";
      return `<div class="vitem ${cl}"><div class="vdata"><b>${pad2(o.dt.getDate())}</b><span>${DIAS_SEM[o.dt.getDay()]} · ${mesCurto(o.key)}</span></div>
-       <div class="vmid"><b>${avatarHtml(favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome),o.nome,o.emo)} ${esc(o.nome)}</b><span>${o.valor?(o.est&&o.tipo==="lemb"?"≈ ":"")+brl(o.valor)+(o.est&&o.tipo==="lemb"?" (mês passado)":""):o.tipo==="par"?"débito automático da parcela":""}</span></div>
+       <div class="vmid"><b>${avatarHtml(favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome),o.nome,o.emo)} ${esc(o.nome)}</b><span>${o.pedeValor&&!o.feito?`<input class="lbval" data-lbval="${esc(o.id)}" data-vkey="${o.key}" inputmode="decimal" value="${o.valor?fmtIn(o.valor):""}" placeholder="✏️ valor deste mês">`:o.valor?brl(o.valor):o.tipo==="par"?"débito automático da parcela":""}</span></div>
        <div class="vfim"><span class="vbadge ${cl}">${tx}</span>${(()=>{ const f=favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome); return !o.feito&&favTemPix(f)&&!(o.conta&&(o.conta.pix||o.conta.codigo))? `<button class="btn ghost small" data-vfvpix="${esc(f.nome)}" data-v="${o.valor||f.valor||0}">💠 Pix</button>` : ""; })()}${btn}</div></div>`; }).join("")}</div>`;
 }
 function alertasExtras(al){
@@ -3071,11 +3098,11 @@ function linhasReceberTodas(key){ const cf=rcfg(), [y,m]=key.split("-").map(Numb
     const partes= c.ciclo==="quinzenal"? [{id:c.k+"#2",ref:"2ª quinzena de "+mesNome(ant),dia:ds[0]||cf.diaQ1,fator:.5},{id:c.k+"#1",ref:"1ª quinzena de "+mesNome(key),dia:ds[1]||cf.diaQ2,fator:.5}] : [{id:c.k,ref:"comissão de "+mesNome(ant),dia:ds[0]||cf.diaM,fator:1}];
     let sobra=rec;
     partes.forEach(pt=>{ const o=cob[pt.id]||{}; if(o.pulo) return; const manual=o.valor!=null&&o.valor!==""? num(o.valor) : null;
-      let esp=manual!=null? manual : Math.round(media*pt.fator*100)/100;
+      const mref=Math.round(media*pt.fator*100)/100; let esp=manual!=null? manual : 0;
       let pago=Math.min(sobra, esp>0? esp : sobra); sobra-=pago;
       if(manual==null&&pago>0) esp=Math.max(pago,0);   // já entrou e não há valor de cobrança: considera recebido
       const falta=Math.max(0,Math.round((esp-pago)*100)/100);
-      fin({id:pt.id,ref:o.ref||pt.ref,venc:o.venc||vData(pt.dia),nome:c.nome,k:c.k,whats:c.whats,esp,estimado:manual==null,pago,falta},c); });
+      fin({id:pt.id,ref:o.ref||pt.ref,venc:o.venc||vData(pt.dia),nome:c.nome,k:c.k,whats:c.whats,esp,estimado:manual==null,pago,falta,media:mref},c); });
   });
   Object.entries(cob).filter(([id,o])=>o.manual&&!o.pulo).forEach(([id,o])=>{ const c=cadDe(o.nome), pg=o.pago? num(o.pago.valor) : 0, esp=num(o.valor);
     fin({id,ref:o.ref||"cobrança avulsa",venc:o.venc||vData(cf.diaM),nome:c.nome,k:c.k,whats:c.whats,esp,estimado:false,pago:o.pago?esp:0,falta:o.pago?0:esp,manual:true,pagoEm:o.pago&&o.pago.data},c); });
@@ -3100,18 +3127,18 @@ function calcPainel(box,r){ const g=k=>box.querySelector(`[data-rp="${k}"]`), ba
   g("calc").innerHTML= e.dias>0? `Vencimento ${dataBR(r.venc)} · <b>${e.dias} dia${e.dias>1?"s":""} de atraso</b> · multa ${String(e.pm).replace(".",",")}% ${brl(e.multa)} + juros ${String(e.pj).replace(".",",")}% a.m. ${brl(e.juros)} = <b>total ${brl(e.total)}</b>` : `Total a lançar: <b>${brl(e.total)}</b>${g("enc").checked&&data<=r.venc?" (pagou em dia, sem encargos)":""}`;
   return {base,data,e}; }
 function renderReceber(){
-  if(!$("tab-receb")) return; const key=cur, L=linhasReceber(key), ver=$("rbVerPagos").checked;
+  if(!$("tab-receb")) return; const key=cur, L=linhasReceberTodas(key), ver=$("rbVerPagos").checked;
   document.querySelectorAll(".rbMes").forEach(e=>e.textContent=label(key));
   const tot=L.reduce((a,r)=>a+r.esp,0), rec=L.reduce((a,r)=>a+r.pago,0), aberto=L.filter(r=>r.st!=="pago").reduce((a,r)=>a+r.falta,0), atr=L.filter(r=>r.st==="atras"), enc=atr.reduce((a,r)=>a+(r.enc.total-r.falta),0);
   $("rbTiles").innerHTML=[["🎯 Previsto no mês",brl(tot),""],["✅ Recebido",brl(rec),"posv"],["⏳ Falta receber",brl(aberto),aberto?"warnv":""],["⏰ Atrasados",String(atr.length)+(atr.length?` · + ${brl(enc)} de encargos`:""),atr.length?"negv":""]]
     .map(([k,v,c])=>`<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`).join("");
   const V=L.filter(r=>ver||r.st!=="pago"), npg=L.filter(r=>r.st==="pago").length;
-  const ST={pago:"✅ recebido",parc:"🟡 parcial",aberto:"em aberto",atras:"⏰ atrasado",sem:"sem valor"};
+  const ST={pago:"✅ recebido",parc:"🟡 parcial",aberto:"em aberto",atras:"⏰ atrasado",sem:"✏️ informe o valor deste mês"};
   $("rbLista").innerHTML= !estabsTodos().length&&!L.length? '<div class="empty">Nenhum estabelecimento ainda. Lance as comissões em Lançamentos (campo Estabelecimento) que eles aparecem aqui.</div>' : (!V.length? `<div class="empty">Tudo recebido neste mês 🎉 (${npg} estabelecimento${npg>1?"s":""}). Marque "Mostrar os já recebidos" para ver a lista.</div>` :
     V.map(r=>{ const [y,m,d]=r.venc.split("-"); const wl=linkWhats(r), f=typeof favDe==="function"? favDe(r.nome):null;
       return `<div class="rbrow ${r.st}"><div class="vdata"><b>${d}</b><span>${DIAS_SEM[new Date(+y,+m-1,+d).getDay()]} · ${mesCurto(r.venc.slice(0,7))}</span></div>
         <div class="vmid"><b>${f&&typeof avatarHtml==="function"?avatarHtml(f,r.nome):"🏪"} ${esc(r.nome)}</b><span>${esc(r.ref)} · ${ST[r.st]}${r.st==="pago"&&r.pago?` ${brl(r.pago)}`:""}${r.pago>0&&r.st==="parc"?` · recebido ${brl(r.pago)}`:""}${r.enc.dias>0?` há ${r.enc.dias} dia${r.enc.dias>1?"s":""} · <b class="neg">atualizado ${brl(r.enc.total)}</b> <span class="status">(multa ${brl(r.enc.multa)} + juros ${brl(r.enc.juros)})</span>`:""}</span></div>
-        <div class="rbval">${r.st==="pago"?`<b class="pos">${brl(r.pago)}</b>`:`<input data-rbval="${esc(r.id)}" inputmode="decimal" value="${r.estimado?"":fmtIn(r.esp)}" placeholder="${r.esp?"≈ "+fmtIn(r.esp):"valor"}"><small>${r.estimado? (r.esp?"estimativa pela média":"digite o valor da cobrança") : "valor da cobrança"}</small>`}</div>
+        <div class="rbval">${r.st==="pago"?`<b class="pos">${brl(r.pago)}</b>`:`<input data-rbval="${esc(r.id)}" inputmode="decimal" value="${r.estimado?"":fmtIn(r.esp)}" placeholder="valor deste mês"><small>${r.estimado? (r.media?"mês passado: "+brl(r.media):"digite o valor da cobrança") : "valor da cobrança"}</small>`}</div>
         <div class="rbacts">${r.st!=="pago"?`${wl?`<a class="btn ghost small" href="${wl}" target="_blank" rel="noopener">💬 WhatsApp</a>`:`<button class="btn ghost small" data-rbmsg="${esc(r.id)}" title="Copiar mensagem de cobrança">💬 Copiar cobrança</button>`}<button class="btn small" data-rbrec="${esc(r.id)}">✅ Recebi</button>`:""}<button class="xbtn" data-rbpulo="${esc(r.id)}" title="${r.manual?"Excluir esta cobrança":"Não cobrar este mês"}">×</button></div>
         ${rbAberto===r.id&&r.st!=="pago"?painelRecebi(r):""}</div>`; }).join("")
     + (Object.values((RCB.cob||{})[key]||{}).some(o=>o.pulo&&!o.manual)?`<p class="note" style="margin-top:10px">Alguns estabelecimentos foram tirados da cobrança deste mês. <a href="#" id="rbVoltarPulos">Mostrar de novo</a></p>`:""));
@@ -3141,15 +3168,15 @@ function gastoMensalRef(key){ const v=[]; for(let i=1;i<=6&&v.length<3;i++){ con
   return {v:c+p,custos:c,prolabore:p,n:v.length}; }
 function previsaoMes(key){ const s=sums(key); if(s.ini==null) return null;
   const kH=isoD(hojeD()).slice(0,7), aRepAnt=aRepassarAte(shift(key,-1)), reserva=Math.max(0,s.ini-aRepAnt);
-  const sai=[], ent=[];
-  if(key>=kH){ ocorrencias(70).forEach(o=>{ if(o.key!==key||o.feito||!(num(o.valor)>0)||o.tipo==="ag") return; const cat=o.tipo==="conta"?o.conta.cat:o.tipo==="rec"?o.rec.categoria:o.tipo==="lemb"?(o.lb&&o.lb.cat):""; const n=natDe(cat); if(n==="terceiros"||n==="distribuicao") return; sai.push({nome:o.nome,emo:o.emo,v:num(o.valor),est:!!o.est,atras:o.dias<0}); });
-    linhasReceber(key).forEach(r=>{ if(r.falta>0) ent.push({nome:r.nome,emo:"🏪",v:r.falta,est:r.estimado,atras:r.st==="atras"}); });
+  const sai=[], ent=[], inf=[], entInf=[];
+  if(key>=kH){ ocorrencias(70).forEach(o=>{ if(o.key===key&&!o.feito&&o.tipo==="lemb"&&o.semValor){ inf.push({id:o.id,key:o.key,nome:o.nome,emo:o.emo,ds:isoD(o.dt)}); return; } if(o.key!==key||o.feito||!(num(o.valor)>0)||o.tipo==="ag") return; const cat=o.tipo==="conta"?o.conta.cat:o.tipo==="rec"?o.rec.categoria:o.tipo==="lemb"?(o.lb&&o.lb.cat):""; const n=natDe(cat); if(n==="terceiros"||n==="distribuicao") return; sai.push({nome:o.nome,emo:o.emo,v:num(o.valor),est:!!o.est,atras:o.dias<0}); });
+    linhasReceberTodas(key).forEach(r=>{ if(r.st==="sem") entInf.push(r); }); linhasReceber(key).forEach(r=>{ if(r.falta>0) ent.push({nome:r.nome,emo:"🏪",v:r.falta,est:r.estimado,atras:r.st==="atras"}); });
     const plFalta=proLabRef()-s.prolabore; if(plFalta>0.009) sai.push({nome:"Pró-labore (ainda não lançado)",emo:"👤",v:Math.round(plFalta*100)/100,est:true,atras:false}); }
   const entP=ent.reduce((a,e)=>a+e.v,0), saiP=sai.reduce((a,e)=>a+e.v,0);
   const receitaPrev=s.receita+entP, gastosPrev=s.gastos+saiP, lucroPrev=receitaPrev-gastosPrev;
   const g=gastoMensalRef(key), meta=cfg.reservaMeses||6, adequada=g.v*meta, sobra=reserva-adequada;
   const podeRetirar=Math.max(0,sobra+lucroPrev-s.distribuicao);
-  return {s,reserva,aRepAnt,ent,sai,entP,saiP,receitaPrev,gastosPrev,lucroPrev,g,meta,adequada,sobra,podeRetirar,jaRetirado:s.distribuicao,meses:g.v>0?reserva/g.v:NaN,fimPrev:s.fim+entP-saiP,futuro:key>=kH};
+  return {s,reserva,aRepAnt,ent,sai,inf,entInf,entP,saiP,receitaPrev,gastosPrev,lucroPrev,g,meta,adequada,sobra,podeRetirar,jaRetirado:s.distribuicao,meses:g.v>0?reserva/g.v:NaN,fimPrev:s.fim+entP-saiP,futuro:key>=kH};
 }
 function renderPrevisao(){
   const box=$("prevBox"); if(!box) return; const P=previsaoMes(cur), [y,m]=cur.split("-");
@@ -3176,8 +3203,8 @@ function renderPrevisao(){
       <p class="note" style="margin:6px 0 0">Gasto mensal de referência: média dos últimos ${P.g.n||1} ${P.g.n>1?"meses":"mês"} de custos (${brl(P.g.custos)}) + pró-labore (${brl(P.g.prolabore)}).
         <label style="display:inline-flex;align-items:center;gap:6px;margin-left:6px">Pró-labore considerado <input id="prevProLab" inputmode="decimal" value="${fmtIn(proLabRef())}" style="width:110px"></label></p>
     </div></details>
-    <div class="prevcols"><div><b>⬆️ Ainda vai entrar · ${brl(P.entP)}</b><ul>${P.ent.sort((a,b)=>b.v-a.v).slice(0,8).map(li).join("")||'<li><span class="status">nada previsto</span></li>'}</ul></div>
-      <div><b>⬇️ Ainda vai sair · ${brl(P.saiP)}</b><ul>${P.sai.sort((a,b)=>b.v-a.v).slice(0,8).map(li).join("")||'<li><span class="status">nada previsto</span></li>'}</ul></div></div>
+    <div class="prevcols"><div><b>⬆️ Ainda vai entrar · ${brl(P.entP)}</b><ul>${P.ent.sort((a,b)=>b.v-a.v).slice(0,8).map(li).join("")||'<li><span class="status">nada informado ainda</span></li>'}</ul>${P.entInf.length?`<p class="previnf">✏️ <b>${P.entInf.length} estabelecimento${P.entInf.length>1?"s":""} sem o valor da comissão deste mês</b> (${P.entInf.slice(0,4).map(r=>esc(r.nome)).join(", ")}${P.entInf.length>4?"…":""}). Eles só entram na previsão quando você informar. <a href="#" data-irreceb="1">Informar em A receber</a></p>`:""}</div>
+      <div><b>⬇️ Ainda vai sair · ${brl(P.saiP)}</b><ul>${P.sai.sort((a,b)=>b.v-a.v).slice(0,8).map(li).join("")||'<li><span class="status">nada informado ainda</span></li>'}</ul>${P.inf.length?`<div class="previnf"><b>✏️ Informe o valor deste mês</b> <span class="status">(ou envie a guia na Secretária)</span><ul>${P.inf.map(i=>`<li><span>${i.emo||""} ${esc(i.nome)} <span class="status">· vence ${dataBR(i.ds)}</span></span><input data-lbval="${esc(i.id)}" data-vkey="${i.key}" inputmode="decimal" placeholder="R$ 0,00"></li>`).join("")}</ul></div>`:""}</div></div>
     <div class="row" style="margin-top:12px;gap:8px"><button class="btn ghost small" data-irbancos="1">🏦 Editar saldos de 01/${m}</button><span class="status">Já entrou ${brl(P.s.receita+P.s.outrasEnt)} e saiu ${brl(P.s.gastos+P.s.investimento)} em gastos neste mês. Repasses a estabelecimentos e entregadores não entram na conta (dinheiro de terceiros).</span></div>`;
 }
 
@@ -3187,7 +3214,7 @@ document.addEventListener("change",e=>{ if(e.target.id==="prevProLab"){ cfg.proL
 // ---------- eventos A receber ----------
 $("rbVerPagos").onchange=renderReceber;
 $("tab-receb").addEventListener("change",e=>{ const t=e.target, d=t.dataset;
-  if(t.closest&&t.closest("[data-rbpanel]")){ const id=t.closest("[data-rbpanel]").dataset.rbpanel, r=linhasReceber(cur).find(x=>x.id===id); if(r) calcPainel(t.closest("[data-rbpanel]"),r); return; }
+  if(t.closest&&t.closest("[data-rbpanel]")){ const id=t.closest("[data-rbpanel]").dataset.rbpanel, r=linhasReceberTodas(cur).find(x=>x.id===id); if(r) calcPainel(t.closest("[data-rbpanel]"),r); return; }
   if(d.rbval){ const o=rbCob(cur,d.rbval), v=t.value.trim(); if(v==="") delete o.valor; else o.valor=num(v); saveRcb(); renderAll(); }
   if(d.rbciclo){ setCad(d.rbciclo,d.nome,"ciclo",t.value); renderAll(); }
   if(d.rbdias){ setCad(d.rbdias,d.nome,"dias",t.value.trim()); renderAll(); }
@@ -3196,13 +3223,13 @@ $("tab-receb").addEventListener("change",e=>{ const t=e.target, d=t.dataset;
   if(d.rbwhats){ setCad(d.rbwhats,d.nome,"whats",t.value.trim()); renderAll(); }
   if(d.rbativo){ setCad(d.rbativo,d.nome,"ativo",t.checked); renderAll(); }
   if(["rbDiaM","rbDiaQ1","rbDiaQ2","rbPix","rbMulta","rbJuros"].includes(t.id)){ const dia=x=>Math.min(31,Math.max(1,parseInt(x,10)||1)); RCB.cfg={...rcfg(),diaM:dia($("rbDiaM").value),diaQ1:dia($("rbDiaQ1").value),diaQ2:dia($("rbDiaQ2").value),pix:$("rbPix").value.trim(),multa:num($("rbMulta").value),juros:num($("rbJuros").value)}; saveRcb(); renderAll(); } });
-$("tab-receb").addEventListener("input",e=>{ const p=e.target.closest&&e.target.closest("[data-rbpanel]"); if(p){ const r=linhasReceber(cur).find(x=>x.id===p.dataset.rbpanel); if(r) calcPainel(p,r); } });
+$("tab-receb").addEventListener("input",e=>{ const p=e.target.closest&&e.target.closest("[data-rbpanel]"); if(p){ const r=linhasReceberTodas(cur).find(x=>x.id===p.dataset.rbpanel); if(r) calcPainel(p,r); } });
 $("rnAdd").onclick=()=>{ const nome=$("rnNome").value.trim(), v=num($("rnVal").value), venc=$("rnVenc").value; if(!nome){ $("rnNome").focus(); return; } if(!v){ $("rnVal").focus(); return; } if(!venc){ $("rnVenc").focus(); return; }
   const k=normTxt(nome), pend=linhasReceberTodas(cur).find(r=>r.k===k&&!r.manual&&r.st!=="pago"&&r.pago===0&&r.estimado);
   if(pend){ const o=rbCob(cur,pend.id); o.valor=v; o.venc=venc; if($("rnRef").value.trim()) o.ref=$("rnRef").value.trim(); }
   else { RCB.cob=RCB.cob||{}; RCB.cob[cur]=RCB.cob[cur]||{}; RCB.cob[cur]["m:"+uid()]={manual:true,nome,valor:v,venc,ref:$("rnRef").value.trim()}; }
   aprenderEstab(nome); saveRcb(); ["rnNome","rnVal","rnRef"].forEach(i=>$(i).value=""); renderAll(); uiAlert("💰 Cobrança adicionada."); };
-$("tab-receb").addEventListener("click",async e=>{ const b=e.target.closest("[data-rbmsg],[data-rbrec],[data-rbpulo],[data-rpok],[data-rpno],#rbVoltarPulos"); if(!b) return; const d=b.dataset, L=linhasReceber(cur);
+$("tab-receb").addEventListener("click",async e=>{ const b=e.target.closest("[data-rbmsg],[data-rbrec],[data-rbpulo],[data-rpok],[data-rpno],#rbVoltarPulos"); if(!b) return; const d=b.dataset, L=linhasReceberTodas(cur);
   if(b.id==="rbVoltarPulos"){ e.preventDefault(); Object.values((RCB.cob||{})[cur]||{}).forEach(o=>{ if(!o.manual) delete o.pulo; }); saveRcb(); renderAll(); return; }
   if(d.rpno){ rbAberto=null; renderReceber(); return; }
   const r=L.find(x=>x.id===(d.rbmsg||d.rbrec||d.rbpulo||d.rpok)); if(!r) return;
@@ -3217,6 +3244,35 @@ $("tab-receb").addEventListener("click",async e=>{ const b=e.target.closest("[da
 
 // ================= Favorecidos do Pix e avatares =================
 let FAV={lista:[]}; let fvEdit=null;
+// ================= Valores do mês informados e lembretes no WhatsApp =================
+var ZAP={cfg:{},itens:[]};
+const ZAP_WEB=!!window.__sb;
+function zcfg(){ return {ativo:false,fone:"",apikey:"",nome:"",h1:9,h2:15,...(ZAP.cfg||{})}; }
+function zapItens(){ return ocorrencias(30).filter(o=>o.dias>=-31).map(o=>({id:o.id,ds:isoD(o.dt),feito:!!o.feito,txt:(o.emo?o.emo+" ":"")+o.nome+(num(o.valor)>0?" — "+brl(num(o.valor)):o.semValor?" — valor a informar":"")})); }
+let zapT=null;
+function agendarZap(){ clearTimeout(zapT); zapT=setTimeout(syncZap,2500); }
+function syncZap(){ const c=zcfg(); if(!ZAP_WEB||!c.ativo||mode!=="db") return; const it=zapItens();
+  if(JSON.stringify(it)===JSON.stringify(ZAP.itens||[])&&ZAP.cfg&&ZAP.cfg.tz) return;
+  ZAP={...ZAP,cfg:{...c,tz:(Intl.DateTimeFormat().resolvedOptions().timeZone)||"America/Sao_Paulo",link:location.origin+location.pathname},itens:it,atualizado:new Date().toISOString()}; save("zap",ZAP); }
+function renderZap(){ if(!$("zapCard")) return; const c=zcfg(), H=[...Array(15)].map((_,i)=>i+6);
+  ["zpH1","zpH2"].forEach((id,j)=>{ const el=$(id); if(!el.options.length) el.innerHTML=H.map(h=>`<option value="${h}">${h}h</option>`).join(""); if(document.activeElement!==el) el.value=String(j?c.h2:c.h1); });
+  [["zpFone",c.fone],["zpKey",c.apikey],["zpNome",c.nome]].forEach(([id,v])=>{ if(document.activeElement!==$(id)) $(id).value=v||""; });
+  $("zpAtivo").checked=!!c.ativo; document.querySelectorAll(".zpH1t").forEach(e=>e.textContent=c.h1+"h"); document.querySelectorAll(".zpH2t").forEach(e=>e.textContent=c.h2+"h");
+  $("zapAviso").innerHTML=ZAP_WEB? "" : '<p class="note">Os lembretes no WhatsApp funcionam na versão web do gestor (o site), porque ela fica ligada no Supabase mesmo com a página fechada.</p>';
+  const pend=(ZAP.itens||[]).filter(i=>!i.feito&&i.ds<=isoD(new Date(Date.now()+864e5)));
+  $("zpStatus").innerHTML= !c.ativo? "Lembretes desligados." : `✅ Ligado para ${esc(c.fone)} · ${pend.length} conta${pend.length!==1?"s":""} para hoje, amanhã ou atrasada${pend.length!==1?"s":""}${ZAP.atualizado?` · lista atualizada ${new Date(ZAP.atualizado).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:""}`; }
+let irHojeFeito=false;
+function irHoje(){ if(irHojeFeito||location.hash!=="#hoje") return; irHojeFeito=true;
+  setTimeout(()=>{ const t=document.querySelector('[data-tab="painel"]'); if(t) t.click(); const v=$("vencCard"); if(v){ v.scrollIntoView({behavior:"smooth",block:"start"}); v.classList.add("flash"); setTimeout(()=>v.classList.remove("flash"),4000); } try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){} },500); }
+document.addEventListener("change",e=>{ const t=e.target; if(!t.dataset||!t.dataset.lbval) return; const m=mes(t.dataset.vkey); m.lembVal=m.lembVal||{}; const v=num(t.value);
+  if(v>0) m.lembVal[t.dataset.lbval]=Math.round(v*100)/100; else delete m.lembVal[t.dataset.lbval]; save("m-"+t.dataset.vkey,m); renderAll(); if(v>0) uiAlert("💾 Valor de "+brl(v)+" guardado para este mês."); });
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-irreceb]"); if(b){ e.preventDefault(); const t=document.querySelector('[data-tab="receb"]'); if(t) t.click(); } });
+$("zpSalvar").onclick=()=>{ const c={...zcfg(),fone:$("zpFone").value.trim(),apikey:$("zpKey").value.trim(),nome:$("zpNome").value.trim(),h1:+$("zpH1").value,h2:+$("zpH2").value,ativo:$("zpAtivo").checked};
+  if(c.ativo&&(soDig(c.fone).length<10||!c.apikey)){ uiAlert("Preencha o seu WhatsApp com DDD e a apikey que o CallMeBot mandou."); return; }
+  if(c.h2<=c.h1){ uiAlert("O horário da cobrança precisa ser depois do relatório da manhã."); return; }
+  ZAP={...ZAP,cfg:c,itens:[]}; save("zap",ZAP); syncZap(); renderZap(); uiAlert(c.ativo?`📲 Lembretes ligados: relatório às ${c.h1}h e cobrança às ${c.h2}h.`:"Lembretes desligados."); };
+$("zpTeste").onclick=()=>{ let d=soDig($("zpFone").value); const k=$("zpKey").value.trim(); if(d.length<10||!k){ uiAlert("Preencha o seu WhatsApp e a apikey primeiro."); return; } if(!d.startsWith("55")) d="55"+d;
+  window.open("https://api.callmebot.com/whatsapp.php?phone=%2B"+d+"&apikey="+encodeURIComponent(k)+"&text="+encodeURIComponent("✅ Teste do Gestor MD: os lembretes de vencimento vão chegar aqui!"),"_blank","noopener"); };
 function saveFav(){ save("fav",FAV); }
 const AVCOR=["#FF6A00","#DB2777","#7C3AED","#2563EB","#0891B2","#16A34A","#CA8A04","#DC2626"];
 function corDe(s){ let h=0; for(const ch of normTxt(s)) h=(h*31+ch.charCodeAt(0))>>>0; return AVCOR[h%AVCOR.length]; }
