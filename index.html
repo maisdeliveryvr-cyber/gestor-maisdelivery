@@ -661,7 +661,7 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 .previnf ul{margin:6px 0 0;padding:0;list-style:none}.previnf li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0}
 .previnf input{width:120px;padding:6px 8px}
 .vmid input.lbval{width:150px;padding:5px 8px;margin-top:4px;font-size:13px;border:2px dashed #FFD000}
-#vencCard.flash{animation:vflash 1s 4}@keyframes vflash{50%{box-shadow:0 0 0 5px #FFD000}}
+#filaCard.flash,#vencCard.flash{animation:vflash 1s 4}@keyframes vflash{50%{box-shadow:0 0 0 5px #FFD000}}
 .zphow{margin-top:12px}.zphow summary{cursor:pointer;font-weight:700}.zphow ol{margin:8px 0 0 20px;line-height:1.75}
 </style>
 <style id="v22-icones">
@@ -678,6 +678,14 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 :root[data-theme="light"] .hic{color:#0055FF;background:rgba(0,85,255,.08)}
 .ptile .ics,.prevtiles .ics{width:18px;height:18px;vertical-align:-4px;margin-right:5px}
 @media (max-width:480px){.kic{width:34px;height:34px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}.kic .ics{width:20px;height:20px}}
+</style>
+<style id="v23-fila">
+.filalist{display:flex;flex-direction:column;gap:10px}
+.filarow{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--sunk);border-left:5px solid #FFD000}
+.filarow.atras{border-left-color:#E50914}
+.filarow .fv{text-align:right}.filarow .fv b{display:block;font-size:17px}.filarow .fv small{color:var(--muted);font-size:12px}
+.filarow .zapbtn{background:#25D366!important;color:#000!important;border-color:#25D366!important}
+@media (max-width:640px){.filarow{grid-template-columns:1fr auto}.filarow .rbacts{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -851,6 +859,11 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 
   <div id="tab-receb" class="stack hidden">
     <div class="grid4" id="rbTiles"></div>
+    <section class="card" id="filaCard"><h2>📣 Fila de cobrança de hoje</h2>
+      <p class="sub">A régua de cobrança separa quem precisa receber mensagem hoje. Clique em <b>💬 Enviar</b>: abre o WhatsApp do estabelecimento com a mensagem pronta, já com multa, juros e o Pix copia e cola no valor atualizado. É só apertar enviar no WhatsApp.</p>
+      <div id="filaBox"></div>
+      <details class="zphow"><summary>⚙️ Régua de cobrança (quando mandar)</summary><div id="reguaBox" class="row" style="gap:18px;flex-wrap:wrap;margin-top:10px"></div>
+        <p class="note" style="margin-top:8px">Para a mensagem levar o Pix copia e cola, preencha "Sua chave Pix" nas Regras padrão, mais abaixo.</p></details></section>
     <section class="card rbcard"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>💰 Comissões a receber em <span class="rbMes"></span></h2><label class="chk"><input type="checkbox" id="rbVerPagos"> Mostrar os já recebidos</label></div>
       <p class="sub">Quem já tem comissão lançada no mês aparece como recebido. Os demais ficam em aberto até o vencimento de cada um; depois disso o gestor soma multa e juros. Valores com "≈" são estimativa pela média; digite o valor da cobrança para ficar exato.</p>
       <details class="rbnovo"><summary>➕ Lançar nova cobrança a receber</summary>
@@ -1337,7 +1350,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 23"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 24"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -1469,7 +1482,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); renderZap(); agendarZap(); irHoje(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); renderFila(); renderZap(); agendarZap(); irHoje(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -3158,7 +3171,7 @@ function renderReceber(){
   $("rbLista").innerHTML= !estabsTodos().length&&!L.length? '<div class="empty">Nenhum estabelecimento ainda. Lance as comissões em Lançamentos (campo Estabelecimento) que eles aparecem aqui.</div>' : (!V.length? `<div class="empty">Tudo recebido neste mês 🎉 (${npg} estabelecimento${npg>1?"s":""}). Marque "Mostrar os já recebidos" para ver a lista.</div>` :
     V.map(r=>{ const [y,m,d]=r.venc.split("-"); const wl=linkWhats(r), f=typeof favDe==="function"? favDe(r.nome):null;
       return `<div class="rbrow ${r.st}"><div class="vdata"><b>${d}</b><span>${DIAS_SEM[new Date(+y,+m-1,+d).getDay()]} · ${mesCurto(r.venc.slice(0,7))}</span></div>
-        <div class="vmid"><b>${f&&typeof avatarHtml==="function"?avatarHtml(f,r.nome):"🏪"} ${esc(r.nome)}</b><span>${esc(r.ref)} · ${ST[r.st]}${r.st==="pago"&&r.pago?` ${brl(r.pago)}`:""}${r.pago>0&&r.st==="parc"?` · recebido ${brl(r.pago)}`:""}${r.enc.dias>0?` há ${r.enc.dias} dia${r.enc.dias>1?"s":""} · <b class="neg">atualizado ${brl(r.enc.total)}</b> <span class="status">(multa ${brl(r.enc.multa)} + juros ${brl(r.enc.juros)})</span>`:""}</span></div>
+        <div class="vmid"><b>${f&&typeof avatarHtml==="function"?avatarHtml(f,r.nome):"🏪"} ${esc(r.nome)}</b><span>${esc(r.ref)} · ${ST[r.st]}${envTxt(cur,r.id)}${r.st==="pago"&&r.pago?` ${brl(r.pago)}`:""}${r.pago>0&&r.st==="parc"?` · recebido ${brl(r.pago)}`:""}${r.enc.dias>0?` há ${r.enc.dias} dia${r.enc.dias>1?"s":""} · <b class="neg">atualizado ${brl(r.enc.total)}</b> <span class="status">(multa ${brl(r.enc.multa)} + juros ${brl(r.enc.juros)})</span>`:""}</span></div>
         <div class="rbval">${r.st==="pago"?`<b class="pos">${brl(r.pago)}</b>`:`<input data-rbval="${esc(r.id)}" inputmode="decimal" value="${r.estimado?"":fmtIn(r.esp)}" placeholder="valor deste mês"><small>${r.estimado? (r.media?"mês passado: "+brl(r.media):"digite o valor da cobrança") : "valor da cobrança"}</small>`}</div>
         <div class="rbacts">${r.st!=="pago"?`${wl?`<a class="btn ghost small" href="${wl}" target="_blank" rel="noopener">💬 WhatsApp</a>`:`<button class="btn ghost small" data-rbmsg="${esc(r.id)}" title="Copiar mensagem de cobrança">💬 Copiar cobrança</button>`}<button class="btn small" data-rbrec="${esc(r.id)}">✅ Recebi</button>`:""}<button class="xbtn" data-rbpulo="${esc(r.id)}" title="${r.manual?"Excluir esta cobrança":"Não cobrar este mês"}">×</button></div>
         ${rbAberto===r.id&&r.st!=="pago"?painelRecebi(r):""}</div>`; }).join("")
@@ -3177,6 +3190,46 @@ function renderReceber(){
   [["rbDiaM",cf.diaM],["rbDiaQ1",cf.diaQ1],["rbDiaQ2",cf.diaQ2],["rbPix",cf.pix],["rbMulta",String(cf.multa).replace(".",",")],["rbJuros",String(cf.juros).replace(".",",")]].forEach(([id,v])=>{ if(document.activeElement!==$(id)) $(id).value=v; });
   if(!$("rnVenc").value) $("rnVenc").value=isoD(hojeD());
 }
+// ---------- régua e fila de cobrança ----------
+const REGUA_DEF=[{d:-1,on:true,nome:"Lembrete 1 dia antes"},{d:0,on:true,nome:"No dia do vencimento"},{d:3,on:true,nome:"3 dias de atraso"},{d:7,on:true,nome:"7 dias de atraso"}];
+function regua(){ const r=rcfg().regua; return REGUA_DEF.map((e,i)=>({...e,i,on:r&&r[i]!=null? !!r[i] : e.on})); }
+function addDias(iso,n){ const d=new Date(iso+"T12:00"); d.setDate(d.getDate()+n); return isoD(d); }
+function envios(key,id){ return (((RCB.env||{})[key]||{})[id])||[]; }
+function envTxt(key,id){ const v=envios(key,id); if(!v.length) return ""; const u=v[v.length-1]; return ` · 📣 cobrado ${dataBR(u.data).slice(0,5)}`; }
+function marcarEnvio(key,id,i){ RCB.env=RCB.env||{}; RCB.env[key]=RCB.env[key]||{}; const L=RCB.env[key][id]=RCB.env[key][id]||[]; if(!L.some(x=>x.i===i)) L.push({i,data:isoD(hojeD())}); saveRcb(); }
+function mesReal(){ return isoD(hojeD()).slice(0,7); }
+function linhasCobraveis(){ const key=mesReal(); return linhasReceberTodas(key).filter(r=>(r.st==="aberto"||r.st==="atras"||r.st==="parc")&&r.falta>0).map(r=>({r,key})); }
+function filaCobranca(){ const hoje=isoD(hojeD()), R=regua().filter(e=>e.on), out=[];
+  linhasCobraveis().forEach(({r,key})=>{ const due=R.filter(e=>addDias(r.venc,e.d)<=hoje); if(!due.length) return; const e=due[due.length-1];
+    if(envios(key,r.id).some(x=>x.i===e.i)) return; out.push({r,key,e,data:addDias(r.venc,e.d)}); });
+  return out.sort((a,b)=>b.e.d-a.e.d||a.r.nome.localeCompare(b.r.nome,"pt-BR")); }
+function tipoChaveDe(k){ const s=String(k||"").trim(), d=soDig(s); if(s.includes("@")) return "email"; if(/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(s)) return "aleatoria";
+  if(d.length===14) return "cnpj"; if(s.startsWith("+")||d.length===13||(d.length===11&&!/\d{3}\.\d{3}/.test(s)&&/^\(?\d{2}\)?\s*9/.test(s))) return "telefone"; if(d.length===11) return "cpf"; return "aleatoria"; }
+function pixReceber(valor,r){ const k=rcfg().pix; if(!k) return ""; try{ return pixCode(k,tipoChaveDe(k),"MAIS DELIVERY VILA RICA",fcfg().cidade,valor,"COB"+soDig(r.venc)+String(r.nome).replace(/[^A-Za-z0-9]/g,"").slice(0,10)); }catch(e){ return ""; } }
+function msgEtapa(r,e,ate){ const c=cadDe(r.nome), en=(ate&&ate>r.venc)? encargos(c,r.falta,r.venc,ate) : (r.enc||{dias:0,total:r.falta}), tot=en.total||r.falta, px=pixReceber(tot,r), pm=x=>String(x).replace(".",",");
+  let t;
+  if(e.d<0) t=`Olá, ${r.nome}! Tudo bem? 😊\nPassando para lembrar que *amanhã (${dataBR(r.venc)})* vence a ${r.ref} do Mais Delivery: *${brl(r.falta)}*.`;
+  else if(e.d===0||!(en.dias>0)) t=`Olá, ${r.nome}! Tudo bem? 😊\nHoje (${dataBR(r.venc)}) é o vencimento da ${r.ref} do Mais Delivery: *${brl(r.falta)}*.`;
+  else t=`Olá, ${r.nome}! Tudo bem?\nA ${r.ref} do Mais Delivery, que venceu em ${dataBR(r.venc)}, ainda está em aberto${e.d>=7?` há ${en.dias} dias`:""}.\nValor: ${brl(r.falta)} + multa de ${pm(en.pm)}% (${brl(en.multa)}) + juros de ${pm(en.pj)}% ao mês (${brl(en.juros)}).\n*Total atualizado: ${brl(tot)}*`+(e.d>=7?`\nPodemos contar com o pagamento ainda esta semana? Se já pagou, por favor me mande o comprovante.`:"");
+  return t+(px?`\n\nPix copia e cola (já no valor certo):\n${px}`:rcfg().pix?`\nPix: ${rcfg().pix}`:"")+`\n\nObrigado pela parceria! 🧡`; }
+function linkEtapa(r,e){ let d=soDig(r.whats); if(!d) return ""; if(!d.startsWith("55")) d="55"+d; return "https://wa.me/"+d+"?text="+encodeURIComponent(msgEtapa(r,e)); }
+function zapCobrar(){ const out=[], R=regua().filter(e=>e.on), lim=addDias(isoD(hojeD()),35);
+  linhasCobraveis().forEach(({r,key})=>R.forEach(e=>{ const ds=addDias(r.venc,e.d); if(ds>lim||envios(key,r.id).some(x=>x.i>=e.i)) return;
+    const en=e.d>0? encargos(cadDe(r.nome),r.falta,r.venc,ds) : {total:r.falta}; out.push({k:r.id,ds,txt:`🏪 ${r.nome} — ${brl(en.total)} (${e.nome.toLowerCase()})`}); }));
+  return out; }
+function renderFila(){ if(!$("filaBox")) return; const F=filaCobranca();
+  $("filaBox").innerHTML= !F.length? '<div class="empty">Nenhuma cobrança para enviar hoje ✅</div>' : `<div class="filalist">${F.map(x=>{ const r=x.r, sem=!soDig(r.whats);
+    return `<div class="filarow ${x.e.d>0?"atras":""}"><div class="vmid"><b>🏪 ${esc(r.nome)}</b><span>${esc(x.e.nome)} · ${esc(r.ref)} · vence ${dataBR(r.venc)}</span></div>
+      <div class="fv"><b>${brl(r.enc.total||r.falta)}</b>${r.enc.dias>0?`<small>com multa e juros</small>`:""}</div>
+      <div class="rbacts">${sem?`<button class="btn ghost small" data-filawhats="${esc(r.k)}">📱 Cadastrar WhatsApp</button>`:`<button class="btn small zapbtn" data-filaenv="${esc(r.id)}" data-e="${x.e.i}">💬 Enviar</button>`}<button class="btn ghost small" data-filacopy="${esc(r.id)}" data-e="${x.e.i}">Copiar</button><button class="xbtn" data-filaok="${esc(r.id)}" data-e="${x.e.i}" title="Já cobrei por outro meio / pular" aria-label="Marcar como cobrado">✓</button></div></div>`; }).join("")}</div>`;
+  $("reguaBox").innerHTML=regua().map(e=>`<label class="chk"><input type="checkbox" data-regua="${e.i}"${e.on?" checked":""}> ${e.nome}</label>`).join(""); }
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-filaenv],[data-filacopy],[data-filaok],[data-filawhats]"); if(!b) return; const d=b.dataset;
+  if(d.filawhats){ const i=document.querySelector(`[data-rbwhats="${CSS.escape(d.filawhats)}"]`); if(i){ i.scrollIntoView({behavior:"smooth",block:"center"}); setTimeout(()=>i.focus(),400); } return; }
+  const id=d.filaenv||d.filacopy||d.filaok, x=filaCobranca().find(f=>f.r.id===id&&String(f.e.i)===d.e); if(!x) return;
+  if(d.filaenv){ const u=linkEtapa(x.r,x.e); if(u) window.open(u,"_blank","noopener"); }
+  if(d.filacopy) copiar(msgEtapa(x.r,x.e),"💬 Mensagem copiada. Cole no WhatsApp de "+x.r.nome+".");
+  marcarEnvio(x.key,x.r.id,x.e.i); renderAll(); });
+document.addEventListener("change",e=>{ const t=e.target; if(!t.dataset||t.dataset.regua==null) return; const arr=regua().map(x=>x.on); arr[+t.dataset.regua]=t.checked; RCB.cfg={...rcfg(),regua:arr}; saveRcb(); renderAll(); });
 function setCad(k,nome,campo,valor){ RCB.cad=RCB.cad||{}; RCB.cad[k]={...(RCB.cad[k]||{}),nome,[campo]:valor}; saveRcb(); }
 function rbCob(key,id){ RCB.cob=RCB.cob||{}; RCB.cob[key]=RCB.cob[key]||{}; return RCB.cob[key][id]=RCB.cob[key][id]||{}; }
 // ================= Previsão do mês e reserva =================
@@ -3273,8 +3326,8 @@ function zapItens(){ return ocorrencias(30).filter(o=>o.dias>=-31).map(o=>({id:o
 let zapT=null;
 function agendarZap(){ clearTimeout(zapT); zapT=setTimeout(syncZap,2500); }
 function syncZap(){ const c=zcfg(); if(!ZAP_WEB||!c.ativo||mode!=="db") return; const it=zapItens();
-  if(JSON.stringify(it)===JSON.stringify(ZAP.itens||[])&&ZAP.cfg&&ZAP.cfg.tz) return;
-  ZAP={...ZAP,cfg:{...c,tz:(Intl.DateTimeFormat().resolvedOptions().timeZone)||"America/Sao_Paulo",link:location.origin+location.pathname},itens:it,atualizado:new Date().toISOString()}; save("zap",ZAP); }
+  const cb=zapCobrar(); if(JSON.stringify([it,cb])===JSON.stringify([ZAP.itens||[],ZAP.cobrar||[]])&&ZAP.cfg&&ZAP.cfg.tz) return;
+  ZAP={...ZAP,cfg:{...c,tz:(Intl.DateTimeFormat().resolvedOptions().timeZone)||"America/Sao_Paulo",link:location.origin+location.pathname},itens:it,cobrar:cb,atualizado:new Date().toISOString()}; save("zap",ZAP); }
 function renderZap(){ if(!$("zapCard")) return; const c=zcfg(), H=[...Array(15)].map((_,i)=>i+6);
   ["zpH1","zpH2"].forEach((id,j)=>{ const el=$(id); if(!el.options.length) el.innerHTML=H.map(h=>`<option value="${h}">${h}h</option>`).join(""); if(document.activeElement!==el) el.value=String(j?c.h2:c.h1); });
   [["zpFone",c.fone],["zpKey",c.apikey],["zpNome",c.nome]].forEach(([id,v])=>{ if(document.activeElement!==$(id)) $(id).value=v||""; });
@@ -3283,8 +3336,8 @@ function renderZap(){ if(!$("zapCard")) return; const c=zcfg(), H=[...Array(15)]
   const pend=(ZAP.itens||[]).filter(i=>!i.feito&&i.ds<=isoD(new Date(Date.now()+864e5)));
   $("zpStatus").innerHTML= !c.ativo? "Lembretes desligados." : `✅ Ligado para ${esc(c.fone)} · ${pend.length} conta${pend.length!==1?"s":""} para hoje, amanhã ou atrasada${pend.length!==1?"s":""}${ZAP.atualizado?` · lista atualizada ${new Date(ZAP.atualizado).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:""}`; }
 let irHojeFeito=false;
-function irHoje(){ if(irHojeFeito||location.hash!=="#hoje") return; irHojeFeito=true;
-  setTimeout(()=>{ const t=document.querySelector('[data-tab="painel"]'); if(t) t.click(); const v=$("vencCard"); if(v){ v.scrollIntoView({behavior:"smooth",block:"start"}); v.classList.add("flash"); setTimeout(()=>v.classList.remove("flash"),4000); } try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){} },500); }
+function irHoje(){ if(irHojeFeito||(location.hash!=="#hoje"&&location.hash!=="#cobrar")) return; irHojeFeito=true; const cob=location.hash==="#cobrar";
+  setTimeout(()=>{ const t=document.querySelector(cob?'[data-tab="receb"]':'[data-tab="painel"]'); if(t) t.click(); const v=$(cob?"filaCard":"vencCard"); if(v){ v.scrollIntoView({behavior:"smooth",block:"start"}); v.classList.add("flash"); setTimeout(()=>v.classList.remove("flash"),4000); } try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){} },500); }
 document.addEventListener("change",e=>{ const t=e.target; if(!t.dataset||!t.dataset.lbval) return; const m=mes(t.dataset.vkey); m.lembVal=m.lembVal||{}; const v=num(t.value);
   if(v>0) m.lembVal[t.dataset.lbval]=Math.round(v*100)/100; else delete m.lembVal[t.dataset.lbval]; save("m-"+t.dataset.vkey,m); renderAll(); if(v>0) uiAlert("💾 Valor de "+brl(v)+" guardado para este mês."); });
 document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-irreceb]"); if(b){ e.preventDefault(); const t=document.querySelector('[data-tab="receb"]'); if(t) t.click(); } });

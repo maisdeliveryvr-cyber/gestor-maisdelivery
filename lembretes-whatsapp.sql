@@ -21,7 +21,7 @@ language sql immutable as $$
 
 create or replace function public.zap_montar(z jsonb, rod text, hoje date) returns text
 language plpgsql stable as $$
-declare it jsonb; d date; l_hoje text := ''; l_atr text := ''; l_ama text := ''; msg text; nome text;
+declare it jsonb; d date; l_hoje text := ''; l_atr text := ''; l_ama text := ''; l_cob text := ''; msg text; nome text; lk text;
 begin
   for it in select value from jsonb_array_elements(coalesce(z->'itens','[]'::jsonb)) order by value->>'ds' loop
     if coalesce((it->>'feito')::boolean, false) then continue; end if;
@@ -31,22 +31,29 @@ begin
     elsif d = hoje + 1 then l_ama := l_ama || E'\n• ' || (it->>'txt');
     end if;
   end loop;
+  for it in select distinct on (value->>'k') value from jsonb_array_elements(coalesce(z->'cobrar','[]'::jsonb))
+             where (value->>'ds')::date <= hoje order by value->>'k', value->>'ds' desc loop
+    l_cob := l_cob || E'\n• ' || (it->>'txt');
+  end loop;
+  lk := coalesce(nullif(z->'cfg'->>'link',''), 'https://maisdeliveryvr-cyber.github.io/gestor-maisdelivery/');
   nome := coalesce(nullif(z->'cfg'->>'nome',''), 'Lucas');
   if rod = 'manha' then
-    if l_hoje = '' and l_atr = '' and l_ama = '' then return null; end if;
+    if l_hoje = '' and l_atr = '' and l_ama = '' and l_cob = '' then return null; end if;
     msg := '☀️ *Bom dia, ' || nome || '! Contas do dia ' || to_char(hoje,'DD/MM') || '*';
     if l_hoje <> '' then msg := msg || E'\n\n📌 *Vencem hoje*' || l_hoje; end if;
     if l_atr  <> '' then msg := msg || E'\n\n⏰ *Atrasadas*' || l_atr; end if;
     if l_ama  <> '' then msg := msg || E'\n\n📅 *Amanhã*' || l_ama; end if;
+    if l_cob  <> '' then msg := msg || E'\n\n📣 *Cobrar hoje dos parceiros*' || l_cob || E'\nMensagens prontas na Fila de cobrança: ' || lk || '#cobrar'; end if;
     msg := msg || E'\n\n✅ Já pagou? Confirme no gestor (botão Feito/Paguei):';
   else
-    if l_hoje = '' and l_atr = '' then return null; end if;
-    msg := '⚠️ *' || nome || ', ainda falta confirmar estes pagamentos:*';
+    if l_hoje = '' and l_atr = '' and l_cob = '' then return null; end if;
+    msg := '⚠️ *' || nome || ', ainda falta resolver:*';
     if l_hoje <> '' then msg := msg || E'\n\n📌 *Vencem hoje*' || l_hoje; end if;
     if l_atr  <> '' then msg := msg || E'\n\n⏰ *Atrasadas*' || l_atr; end if;
+    if l_cob  <> '' then msg := msg || E'\n\n📣 *Cobranças ainda não enviadas*' || l_cob || E'\nFila de cobrança: ' || lk || '#cobrar'; end if;
     msg := msg || E'\n\nSe já pagou, é só marcar no gestor que eu paro de cobrar:';
   end if;
-  return msg || E'\n' || coalesce(nullif(z->'cfg'->>'link',''), 'https://maisdeliveryvr-cyber.github.io/gestor-maisdelivery/') || '#hoje';
+  return msg || E'\n' || lk || '#hoje';
 end $$;
 
 create or replace function public.zap_rodar(forcar text default null) returns text
