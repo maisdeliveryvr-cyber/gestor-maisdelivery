@@ -664,6 +664,21 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 #vencCard.flash{animation:vflash 1s 4}@keyframes vflash{50%{box-shadow:0 0 0 5px #FFD000}}
 .zphow{margin-top:12px}.zphow summary{cursor:pointer;font-weight:700}.zphow ol{margin:8px 0 0 20px;line-height:1.75}
 </style>
+<style id="v22-icones">
+.kpis .kpi::before{display:none!important;content:none!important}
+.kpis .kpi .kt{display:flex!important;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;padding-right:0!important;margin-right:0!important;width:100%;max-width:none!important}
+.kic{flex:none;width:44px;height:44px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,rgba(255,255,255,.28),rgba(255,255,255,.06));border:1.5px solid rgba(255,255,255,.55);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:inset 0 0 16px rgba(255,255,255,.25)}
+.kic .ics{width:25px;height:25px;filter:drop-shadow(0 0 5px rgba(255,255,255,.85))}
+.kpis .kpi:nth-child(4) .kic{color:#0B0B0F;background:linear-gradient(145deg,rgba(0,0,0,.14),rgba(0,0,0,.03));border-color:rgba(0,0,0,.45)}
+.kpis .kpi:nth-child(4) .kic .ics{filter:none}
+.ics{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.h2chip>span{display:flex;align-items:center;gap:7px}.h2chip .ics{width:18px;height:18px;filter:drop-shadow(0 0 4px rgba(255,255,255,.6))}
+.hic{display:inline-grid;place-items:center;width:30px;height:30px;margin-right:8px;vertical-align:-6px;color:#FFD000;border:1.5px solid currentColor;clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);background:rgba(255,208,0,.12)}
+.hic .ics{width:18px;height:18px;filter:drop-shadow(0 0 4px rgba(255,208,0,.8))}
+:root[data-theme="light"] .hic{color:#0055FF;background:rgba(0,85,255,.08)}
+.ptile .ics,.prevtiles .ics{width:18px;height:18px;vertical-align:-4px;margin-right:5px}
+@media (max-width:480px){.kic{width:34px;height:34px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}.kic .ics{width:20px;height:20px}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -702,13 +717,13 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
       <div id="prevBox" style="margin-top:10px"></div></section>
     <section class="card s12" id="vencCard"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>🗓️ Próximos vencimentos</h2><span class="status" id="vencResumo"></span></div><div id="vencBox" style="margin-top:10px"></div></section>
     <section class="card s8"><h2>📈 <span id="comboT">Evolução em 12 meses</span></h2><p class="sub">Comissão, gastos e sobra mês a mês.</p><div id="combo"></div></section>
-    <section class="card s4"><h2>🛟 Reserva da empresa</h2><p class="sub">Quantos meses o caixa livre sustenta.</p><div id="gauge"></div></section>
+    <section class="card s4"><h2><span class="hic"><svg viewBox="0 0 24 24" class="ics"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></span>Reserva da empresa</h2><p class="sub">Quantos meses o caixa livre sustenta.</p><div id="gauge"></div></section>
     <section class="card s7"><h2>🍩 Para onde vai o dinheiro</h2><p class="sub">Gastos do mês por grupo.</p><div id="donut"></div></section>
     <section class="card s5"><h2>⚖️ Ponto de equilíbrio</h2><p class="sub">Comissão mínima para cobrir as despesas.</p><div id="equil"></div></section>
     <section class="card s6 vivid v1"><h2>📅 Entradas e saídas por semana</h2><p class="sub">Comissão e outras entradas próprias × gastos, semana a semana no mês.</p><div id="gSemana"></div></section>
     <section class="card s6 vivid v2"><h2>🏷️ Onde mais gastou</h2><p class="sub">As 8 maiores categorias de gasto do mês.</p><div id="gTopCat"></div></section>
     <section class="card s6 vivid v3"><h2>💳 Como a comissão entrou</h2><p class="sub">Dinheiro, retenção, Pix, boleto e cartão no mês.</p><div id="gFormas"></div></section>
-    <section class="card s6 vivid v4"><h2>🛟 Saldo em conta × reserva ideal</h2><p class="sub">Saldo no fim de cada mês e a reserva de 6 meses de gastos.</p><div id="gSaldo"></div></section>
+    <section class="card s6 vivid v4"><h2><span class="hic"><svg viewBox="0 0 24 24" class="ics"><path d="M3 9l9-5 9 5"/><path d="M5 10.5v7M9.6 10.5v7M14.4 10.5v7M19 10.5v7M3 20.5h18"/></svg></span>Saldo em conta × reserva ideal</h2><p class="sub">Saldo no fim de cada mês e a reserva de 6 meses de gastos.</p><div id="gSaldo"></div></section>
     <section class="card s6"><h2>🏦 Saldo por banco</h2><p class="sub">Quanto há em cada conta agora.</p><div id="dBancos"></div></section>
     <section class="card s6"><h2>🧾 Parcelas e empréstimos</h2><p class="sub">Compromissos que já estão somados todo mês.</p><div id="dParc"></div></section>
     <section class="card s6"><h2>🏆 Ranking de parceiros</h2><p class="sub">Comissão do mês por estabelecimento.</p><div id="topp"></div></section>
@@ -1322,7 +1337,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 22"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 23"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -1475,9 +1490,10 @@ function renderDash(){
     ["Gastos", brl0(s.gastos), s.n?delta(s.gastos,ps.gastos,true):'<span class="delta flat">sem lançamentos</span>', ss.map(x=>x.gastos),"var(--c-coral)"],
     ["Sobrou no mês", brl0(s.lucro), s.receita? `<span class="delta ${s.lucro>=0?"up":"down"}">margem de ${pct(s.margem)}</span>`:'<span class="delta flat">sem comissão lançada</span>', ss.map(x=>x.lucro),"var(--c-amber)", s.lucro<0],
   ];
-  $("kpis").innerHTML=kp.map(([t,v,d,ser,col,neg])=>`<div class="card kpi"><div class="kt">${t}</div><div class="kv ${neg?"neg":""}">${v}</div>${d}${spark(ser,col)}</div>`).join("");
+  $("kpis").innerHTML=kp.map(([t,v,d,ser,col,neg],i)=>`<div class="card kpi"><div class="kt"><span>${t}</span><span class="kic">${IC(["saldo","comissao","gastos","sobra"][i])}</span></div><div class="kv ${neg?"neg":""}">${v}</div>${d}${spark(ser,col)}</div>`).join("");
   renderCombo(); renderDonut(s); renderGauge(r); renderEquil(s); renderDBancos(); renderDParc(); renderTop(); renderAlerts(r,s,ps);
 }
+function IC(n){ const P={"saldo": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2.5\"/><circle cx=\"11\" cy=\"12\" r=\"4\"/><path d=\"M11 8v1.6M11 14.4V16M7 12h1.6M13.4 12H15M18.2 9v6M6.5 20v1.5M15.5 20v1.5\"/>", "comissao": "<path d=\"M3 16.5l5.5-5.5 4 4L20 7.5\"/><path d=\"M14.5 7.5H20V13\"/><path d=\"M3 21h18\"/>", "gastos": "<path d=\"M3 7.5l5.5 5.5 4-4 7.5 7.5\"/><path d=\"M14.5 16.5H20V11\"/><path d=\"M3 21h18\"/>", "sobra": "<path d=\"M6.5 3.5h11L21.5 9 12 20.5 2.5 9z\"/><path d=\"M2.5 9h19M9 3.5L12 9l3-5.5M12 9v11.5\"/>", "reserva": "<path d=\"M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z\"/><path d=\"M8.5 12l2.5 2.5 4.5-5\"/>", "lucro": "<path d=\"M5.5 14.5c-1.6 1.6-2.3 4.6-2.3 6.3 1.7 0 4.7-.7 6.3-2.3\"/><path d=\"M8.6 15.4L5.6 12.4C7.6 6.3 12.6 2.8 20.8 3.2c.4 8.2-3.1 13.2-9.2 15.2z\"/><circle cx=\"15\" cy=\"9\" r=\"1.9\"/>", "banco": "<path d=\"M3 9l9-5 9 5\"/><path d=\"M5 10.5v7M9.6 10.5v7M14.4 10.5v7M19 10.5v7M3 20.5h18\"/>", "alvo": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1.4\"/>", "reinvest": "<path d=\"M20 12a8 8 0 01-14 5.3M4 12A8 8 0 0118 6.7\"/><path d=\"M18 2.6v4.2h-4.2M6 21.4v-4.2h4.2\"/>", "distr": "<path d=\"M12 3v7M12 10l-6 6.5M12 10l6 6.5\"/><circle cx=\"6\" cy=\"19\" r=\"2.2\"/><circle cx=\"18\" cy=\"19\" r=\"2.2\"/>"}; return P[n]?`<svg viewBox="0 0 24 24" class="ics">${P[n]}</svg>`:""; }
 function renderCombo(){
   const NM=window.innerWidth<640?6:12, ks=lastN(NM), d=ks.map(k=>({k,s:sums(k)}));
   $("comboT").textContent="Evolução em "+NM+" meses";
@@ -3189,7 +3205,7 @@ function renderPrevisao(){
   if(!P){ $("prevInfo").textContent=""; box.innerHTML=`<div class="empty">Informe em Bancos o saldo de cada banco no dia 01/${m} (o dinheiro que veio acumulado dos meses anteriores). Ele vira a sua reserva.<br><button class="btn small" data-irbancos="1" style="margin-top:10px">🏦 Informar saldos</button></div>`; return; }
   $("prevInfo").textContent=P.futuro? "realizado + previsto até o fim do mês" : "mês fechado";
   const ok=P.sobra>=0, pctRes=P.adequada>0? Math.min(1,P.reserva/(P.adequada*1.5)) : 1, marca=1/1.5;
-  const tiles=[[`🛟 Reserva em 01/${m}`,brl(P.reserva),"",P.aRepAnt>0?`saldo nos bancos − ${brl(P.aRepAnt)} de terceiros`:"saldo acumulado dos meses anteriores"],
+  const tiles=[[`${IC("reserva")}Reserva em 01/${m}`,brl(P.reserva),"",P.aRepAnt>0?`saldo nos bancos − ${brl(P.aRepAnt)} de terceiros`:"saldo acumulado dos meses anteriores"],
     ["📈 Lucro previsto do mês",brl(P.lucroPrev),P.lucroPrev<0?"negv":"posv",`receita ${brl(P.receitaPrev)} − gastos ${brl(P.gastosPrev)}`],
     ["🏦 Saldo previsto no fim do mês",brl(P.fimPrev),P.fimPrev<0?"negv":"","nos bancos, contando o que falta entrar e sair"],
     ["🧾 Gasto mensal de referência",brl(P.g.v),"",`${P.meta} meses = reserva ideal de ${brl(P.adequada)}`]];
@@ -3409,8 +3425,8 @@ function renderHero(){ const r=retirada(), P=previsaoMes(cur), teto=num(cfg.teto
   $("hRet").textContent=brl0(pode);
   $("hRetTxt").textContent= !P? "Informe em Bancos o saldo do dia 1º para o gestor calcular a reserva." : (limitado? `Limitado pelo teto mensal de ${brl0(teto)}.` : P.sobra>=0? "Sobra da reserva acima de 6 meses de gastos + lucro previsto do mês." : "A reserva está abaixo do ideal: o lucro do mês completa a reserva primeiro.");
   $("hTeto").innerHTML= teto>0? `<div class="h2bar" role="img" aria-label="Retirado ${brl0(ja)} de ${brl0(teto)}"><span class="a" style="width:${Math.min(100,ja/teto*100)}%"></span><span class="b" style="width:${Math.min(100-Math.min(100,ja/teto*100),pode/teto*100)}%"></span></div><div class="h2leg"><span>🟡 Já retirado ${brl0(ja)}</span><span>⚪ Disponível ${brl0(pode)}</span><span>Teto ${brl0(teto)}</span></div>` : "";
-  const ch=P? [["🛟 Reserva","" + (isFinite(P.meses)? P.meses.toLocaleString("pt-BR",{maximumFractionDigits:1})+" meses":"—"),brl0(P.reserva)+" em 01/"+cur.slice(5)],["📈 Lucro previsto",brl0(P.lucroPrev),"realizado + a vencer"],["🏦 Saldo em conta",brl0(P.s.fim),"hoje, todos os bancos"],["🎯 Saldo no fim do mês",brl0(P.fimPrev),"se tudo entrar e sair"]]
-    : [["🏦 Saldo em conta",r.temSaldo?brl0(r.s.fim):"—",""],["🎉 Sobrou no mês",brl0(r.s.lucro),""],["🌱 Reinvestir",brl0(r.reinvest),""],["🧾 Distribuído",brl0(r.jaDistr),""]];
+  const ch=P? [[IC("reserva")+"Reserva","" + (isFinite(P.meses)? P.meses.toLocaleString("pt-BR",{maximumFractionDigits:1})+" meses":"—"),brl0(P.reserva)+" em 01/"+cur.slice(5)],[IC("lucro")+"Lucro previsto",brl0(P.lucroPrev),"realizado + a vencer"],[IC("banco")+"Saldo em conta",brl0(P.s.fim),"hoje, todos os bancos"],[IC("alvo")+"Saldo no fim do mês",brl0(P.fimPrev),"se tudo entrar e sair"]]
+    : [[IC("banco")+"Saldo em conta",r.temSaldo?brl0(r.s.fim):"—",""],[IC("sobra")+"Sobrou no mês",brl0(r.s.lucro),""],[IC("reinvest")+"Reinvestir",brl0(r.reinvest),""],[IC("distr")+"Distribuído",brl0(r.jaDistr),""]];
   $("hParts").innerHTML=ch.map(([a,b,c])=>`<div class="h2chip"><span>${a}</span><b>${b}</b>${c?`<small>${c}</small>`:""}</div>`).join(""); }
 // gráficos novos
 const VIV=["#00A651","#0055FF","#FF6A00","#6E22F5","#FF1F7A","#14B8A6","#F59E0B","#EF4444"];
