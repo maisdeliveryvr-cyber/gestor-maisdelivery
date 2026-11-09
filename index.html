@@ -2969,8 +2969,19 @@ function nomeTokens(n){ return normTxt(n).split(/\s+/).filter(w=>w.length>2&&!["
 const NUM_RE=/(\d{1,3}(?:\.\d{3})*,\d{2})(?!\d)/g;
 function numsDe(t){ return [...t.matchAll(NUM_RE)].map(x=>({v:valorMoney(x[1]),i:x.index})); }
 // lê totais e líquido de um holerite (o texto do PDF pode vir com rótulos e valores em ordens diferentes)
+// acha os totais do holerite pela conta: vencimentos − descontos = líquido, com os três números próximos no texto
+// (não depende da ordem dos rótulos, que muda conforme o sistema do contador, ex.: Domínio)
+function trioTotais(nums){
+  const igual=(a,b)=>Math.abs(a-b)<0.015, cont=new Map();
+  for(let i=0;i<nums.length;i++) for(let j=i+1;j<=Math.min(i+3,nums.length-1);j++) for(let k=j+1;k<=Math.min(j+3,nums.length-1);k++){
+    const v=nums[i].v, d=nums[j].v, l=nums[k].v;
+    if(d>0&&l>0&&v>l&&v>d&&igual(v-d,l)){ const ch=v.toFixed(2)+"|"+d.toFixed(2); const c=cont.get(ch)||{v,d,l,n:0}; c.n++; cont.set(ch,c); } }
+  let best=null; cont.forEach(c=>{ if(!best||c.n>best.n||(c.n===best.n&&c.v>best.v)) best=c; });
+  return best;
+}
 function liqDoHolerite(seg){
   const N=normTxt(seg), nums=numsDe(seg), igual=(a,b)=>Math.abs(a-b)<0.015;
+  const tri=trioTotais(nums); if(tri) return {liq:Math.round(tri.l*100)/100,venc:tri.v,desc:tri.d,ok:true};
   const pos=re=>{ const m=N.match(re); return m? m.index+m[0].length : -1; };
   const pV=pos(/total\s+(?:de\s+|dos\s+)?(?:vencimentos|proventos)/), pD=pos(/total\s+(?:de\s+|dos\s+)?descontos/), pL=pos(/(?:valor\s+)?liquido(?:\s+a\s+receber)?/);
   let venc=null, desc=null;
