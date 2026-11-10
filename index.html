@@ -660,6 +660,7 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 .previnf{margin:10px 0 0;padding:10px 12px;border:2px dashed #FFD000;border-radius:12px;font-size:13.5px;line-height:1.45}
 .previnf ul{margin:6px 0 0;padding:0;list-style:none}.previnf li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 0}
 .previnf input{width:120px;padding:6px 8px}
+.lbedit{background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px}.lbedit:hover{color:#FFD000}
 .vmid input.lbval{width:150px;padding:5px 8px;margin-top:4px;font-size:13px;border:2px dashed #FFD000}
 #filaCard.flash,#vencCard.flash{animation:vflash 1s 4}@keyframes vflash{50%{box-shadow:0 0 0 5px #FFD000}}
 .zphow{margin-top:12px}.zphow summary{cursor:pointer;font-weight:700}.zphow ol{margin:8px 0 0 20px;line-height:1.75}
@@ -1350,7 +1351,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 26"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 27"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -2531,7 +2532,7 @@ function renderVenc(){
    `<div class="vgrid">${L.slice(0,14).map(o=>{ const [cl,tx]=quando(o);
      const btn=o.feito? "" : o.tipo==="conta"? `<button class="btn small" data-vpag="${o.conta.id}">✅ Paguei</button>` : o.tipo==="ag"? `<button class="btn ghost small" data-vag="${o.ag.id}">✓ Feito</button>` : o.tipo==="fol"? `<button class="btn ghost small" data-vfol="1">Abrir folha</button>` : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? (ehPagavel(o)? `<button class="btn small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✅ Paguei</button>` : `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>`) : "";
      return `<div class="vitem ${cl}"><div class="vdata"><b>${pad2(o.dt.getDate())}</b><span>${DIAS_SEM[o.dt.getDay()]} · ${mesCurto(o.key)}</span></div>
-       <div class="vmid"><b>${avatarHtml(favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome),o.nome,o.emo)} ${esc(o.nome)}</b><span>${o.pedeValor&&!o.feito?`<input class="lbval" data-lbval="${esc(o.id)}" data-vkey="${o.key}" inputmode="decimal" value="${o.valor?fmtIn(o.valor):""}" placeholder="✏️ valor deste mês">`:o.valor?brl(o.valor):o.tipo==="par"?"débito automático da parcela":""}</span></div>
+       <div class="vmid"><b>${avatarHtml(favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome),o.nome,o.emo)} ${esc(o.nome)}</b><span>${o.pedeValor&&!o.feito&&!o.valor?`<input class="lbval" data-lbval="${esc(o.id)}" data-vkey="${o.key}" inputmode="decimal" placeholder="✏️ valor deste mês">`:o.valor?brl(o.valor)+(o.pedeValor&&!o.feito?` <button class="lbedit" type="button" data-lbedit="${esc(o.id)}" data-vkey="${o.key}" data-v="${fmtIn(o.valor)}" title="Mudar o valor" aria-label="Mudar o valor">✎</button>`:""):o.tipo==="par"?"débito automático da parcela":""}</span></div>
        <div class="vfim"><span class="vbadge ${cl}">${tx}</span>${(()=>{ const f=favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome); return !o.feito&&favTemPix(f)&&!(o.conta&&(o.conta.pix||o.conta.codigo))? `<button class="btn ghost small" data-vfvpix="${esc(f.nome)}" data-v="${o.valor||f.valor||0}">💠 Pix</button>` : ""; })()}${btn}</div></div>`; }).join("")}</div>`;
 }
 function alertasExtras(al){
@@ -3356,7 +3357,10 @@ document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==
 function irHoje(){ if(irHojeFeito||(location.hash!=="#hoje"&&location.hash!=="#cobrar")) return; irHojeFeito=true; const cob=location.hash==="#cobrar";
   setTimeout(()=>{ const t=document.querySelector(cob?'[data-tab="receb"]':'[data-tab="painel"]'); if(t) t.click(); const v=$(cob?"filaCard":"vencCard"); if(v){ v.scrollIntoView({behavior:"smooth",block:"start"}); v.classList.add("flash"); setTimeout(()=>v.classList.remove("flash"),4000); } try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){} },500); }
 document.addEventListener("change",e=>{ const t=e.target; if(!t.dataset||!t.dataset.lbval) return; const m=mes(t.dataset.vkey); m.lembVal=m.lembVal||{}; const v=num(t.value);
-  if(v>0) m.lembVal[t.dataset.lbval]=Math.round(v*100)/100; else delete m.lembVal[t.dataset.lbval]; save("m-"+t.dataset.vkey,m); renderAll(); if(v>0) uiAlert("💾 Valor de "+brl(v)+" guardado para este mês."); });
+  if(v>0) m.lembVal[t.dataset.lbval]=Math.round(v*100)/100; else delete m.lembVal[t.dataset.lbval]; save("m-"+t.dataset.vkey,m); renderAll(); if(v>0) uiAlert("💾 Valor de "+brl(v)+" gravado."); });
+document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-lbedit]"); if(!b) return; e.preventDefault(); e.stopPropagation(); const sp=b.parentElement;
+  sp.innerHTML=`<input class="lbval" data-lbval="${esc(b.dataset.lbedit)}" data-vkey="${b.dataset.vkey}" inputmode="decimal" value="${b.dataset.v}">`; const i=sp.querySelector("input"); i.focus(); i.select(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.dataset&&e.target.dataset.lbval) e.target.blur(); });
 document.addEventListener("click",e=>{ const b=e.target.closest&&e.target.closest("[data-irreceb]"); if(b){ e.preventDefault(); const t=document.querySelector('[data-tab="receb"]'); if(t) t.click(); } });
 $("zpSalvar").onclick=()=>{ const c={...zcfg(),fone:$("zpFone").value.trim(),apikey:$("zpKey").value.trim(),nome:$("zpNome").value.trim(),h1:+$("zpH1").value,h2:+$("zpH2").value,ativo:$("zpAtivo").checked};
   if(c.ativo&&(soDig(c.fone).length<10||!c.apikey)){ uiAlert("Preencha o seu WhatsApp com DDD e a apikey que o CallMeBot mandou."); return; }
