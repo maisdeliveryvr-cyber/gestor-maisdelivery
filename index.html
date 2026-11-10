@@ -1351,7 +1351,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 27"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 28"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -1483,7 +1483,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); renderFila(); renderZap(); agendarZap(); irHoje(); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); renderFila(); renderZap(); agendarZap(); irHoje(); setTimeout(lancarFeitos,1500); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -3473,7 +3473,16 @@ function catInteligente(desc,atual){ if(atual&&!GENERICAS.includes(atual)) retur
 function lembrarCat(desc,cat){ const k=chaveDesc(desc||""); if(k.length<3||!cat) return; cfg.regras=(cfg.regras||[]).filter(z=>!(z.exato&&z.t===k)); cfg.regras.unshift({t:k,c:cat,exato:true}); save("config",cfg); }
 let pgId=null;
 let pgOc=null;
-function ehPagavel(o){ return !!(o&&o.tipo==="lemb"&&(o.fav||(o.lb&&o.lb.cat))); }
+function catDaOc(o){ return (o.lb&&o.lb.cat)||(o.fav&&o.fav.cat)||""; }
+function ehTerceiros(cat){ return !!cat&&catOf({categoria:cat}).nat==="terceiros"; }
+function ehPagavel(o){ return !!(o&&o.tipo==="lemb"&&(o.fav||(o.lb&&o.lb.cat))&&!ehTerceiros(catDaOc(o))); }
+let lfFeito=false;
+function lancarFeitos(){ if(lfFeito||mode!=="db") return; lfFeito=true; const hoje=isoD(hojeD()); let n=0, tot=0;
+  ocorrencias(70).forEach(o=>{ if(!ehPagavel(o)||!(num(o.valor)>0)) return; const m=months[o.key]; if(!(m&&m.feitos&&m.feitos.includes(o.id))) return;
+    const cat=catDaOc(o)||catInteligente(o.nome,""), ds=isoD(o.dt), data=ds<=hoje? ds : hoje, v=num(o.valor);
+    const ja=[o.key,data.slice(0,7)].flatMap(k=>lancsRaw(k)).some(l=>l.oc===o.id||(l.tipo==="saida"&&Math.abs(num(l.valor)-v)<0.01&&(l.categoria===cat||normTxt(l.descricao||"").includes(normTxt(o.nome)))));
+    if(ja) return; addLanc({data,tipo:"saida",categoria:cat,descricao:o.nome,parceiro:"",banco:ultBancoCat(cat)||b0(),valor:v,oc:o.id}); n++; tot+=v; });
+  if(n){ renderAll(); uiAlert(`📝 Lancei ${n} saída${n>1?"s":""} que você já tinha marcado como feita${n>1?"s":""} (${brl(tot)}). Confira o banco em Lançamentos.`); } }
 function ultBancoCat(cat){ const l=[cur,shift(cur,-1),shift(cur,-2)].flatMap(k=>lancsRaw(k)).filter(l=>l.tipo==="saida"&&l.categoria===cat&&l.banco).sort((a,b)=>String(b.data).localeCompare(String(a.data)))[0]; return l&&l.banco; }
 function abrirPagarOc(o){ pgOc=o; pgId=null; const nome=o.nome, sug=(o.lb&&o.lb.cat)||(o.fav&&o.fav.cat)||catInteligente(nome,"");
   $("pgDesc").textContent=`${nome} · vence ${dataBR(isoD(o.dt))}${o.valor?" · "+brl(o.valor):""}`; $("pgNome").textContent=nome;
