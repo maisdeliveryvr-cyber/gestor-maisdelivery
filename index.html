@@ -1207,7 +1207,7 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
     </div>
     <p class="note" id="pgSug" style="margin:8px 0 0"></p>
     <label class="chk" style="margin-top:8px"><input type="checkbox" id="pgLembrar" checked><span>Usar sempre esta categoria para "<b id="pgNome"></b>"</span></label>
-    <div class="row" style="margin-top:12px"><button class="btn" id="pgOk">Lançar pagamento</button><button class="btn ghost" data-close="pagModal">Cancelar</button></div>
+    <div class="row" style="margin-top:12px"><button class="btn" id="pgOk">Lançar pagamento</button><button class="btn ghost hidden" id="pgSoFeito" type="button">Só marcar como feito</button><button class="btn ghost" data-close="pagModal">Cancelar</button></div>
   </div>
 </div>
 <div id="revModal" class="modal sheet hidden" role="dialog" aria-modal="true" aria-labelledby="rvTit">
@@ -1350,7 +1350,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 25"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 26"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -2529,7 +2529,7 @@ function renderVenc(){
   $("vencResumo").innerHTML= !abertos.length? "Tudo em dia nos próximos 14 dias 🎉" : `${atras?`<b class="neg">${atras} atrasado${atras>1?"s":""}</b> · `:""}${prox?`<b style="color:var(--c-orange)">${prox} vencendo até 2 dias</b> · `:""}${abertos.length} em aberto nos próximos 14 dias`;
   $("vencBox").innerHTML= !L.length? '<div class="empty">Nenhum vencimento nos próximos 14 dias.</div>' :
    `<div class="vgrid">${L.slice(0,14).map(o=>{ const [cl,tx]=quando(o);
-     const btn=o.feito? "" : o.tipo==="conta"? `<button class="btn small" data-vpag="${o.conta.id}">✅ Paguei</button>` : o.tipo==="ag"? `<button class="btn ghost small" data-vag="${o.ag.id}">✓ Feito</button>` : o.tipo==="fol"? `<button class="btn ghost small" data-vfol="1">Abrir folha</button>` : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>` : "";
+     const btn=o.feito? "" : o.tipo==="conta"? `<button class="btn small" data-vpag="${o.conta.id}">✅ Paguei</button>` : o.tipo==="ag"? `<button class="btn ghost small" data-vag="${o.ag.id}">✓ Feito</button>` : o.tipo==="fol"? `<button class="btn ghost small" data-vfol="1">Abrir folha</button>` : o.tipo==="rec"? `<button class="btn small" data-vrec="${o.rec.id}" data-vkey="${o.key}">Confirmar</button>` : o.tipo==="lemb"? (ehPagavel(o)? `<button class="btn small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✅ Paguei</button>` : `<button class="btn ghost small" data-vok="${esc(o.id)}" data-vkey="${o.key}">✓ Feito</button>`) : "";
      return `<div class="vitem ${cl}"><div class="vdata"><b>${pad2(o.dt.getDate())}</b><span>${DIAS_SEM[o.dt.getDay()]} · ${mesCurto(o.key)}</span></div>
        <div class="vmid"><b>${avatarHtml(favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome),o.nome,o.emo)} ${esc(o.nome)}</b><span>${o.pedeValor&&!o.feito?`<input class="lbval" data-lbval="${esc(o.id)}" data-vkey="${o.key}" inputmode="decimal" value="${o.valor?fmtIn(o.valor):""}" placeholder="✏️ valor deste mês">`:o.valor?brl(o.valor):o.tipo==="par"?"débito automático da parcela":""}</span></div>
        <div class="vfim"><span class="vbadge ${cl}">${tx}</span>${(()=>{ const f=favDe(o.tipo==="rec"?(o.rec.descricao||o.nome):o.nome); return !o.feito&&favTemPix(f)&&!(o.conta&&(o.conta.pix||o.conta.codigo))? `<button class="btn ghost small" data-vfvpix="${esc(f.nome)}" data-v="${o.valor||f.valor||0}">💠 Pix</button>` : ""; })()}${btn}</div></div>`; }).join("")}</div>`;
@@ -2549,6 +2549,7 @@ function vencToast(){ if(vencToastFeito) return; vencToastFeito=true;
   uiAlert(`🔔 ${[at?`${at} vencimento${at>1?"s":""} atrasado${at>1?"s":""}`:"",br?`${br} vencendo até 2 dias`:""].filter(Boolean).join(" e ")}. Veja em "Próximos vencimentos" no Dashboard.`); }
 document.addEventListener("click",e=>{
   const ok=e.target.closest&&e.target.closest("[data-vok]"), rc=e.target.closest&&e.target.closest("[data-vrec]"), bk=e.target.closest&&e.target.closest("[data-bkagora]");
+  if(ok){ const o=ocorrencias(70).find(x=>x.id===ok.dataset.vok); if(o&&ehPagavel(o)){ abrirPagarOc(o); return; } }
   if(ok){ const m=mes(ok.dataset.vkey); m.feitos=(m.feitos||[]).concat([ok.dataset.vok]); save("m-"+ok.dataset.vkey,m); renderAll(); uiAlert("Marcado como feito ✅"); }
   if(rc){ const r=(cfg.recorrentes||[]).find(x=>x.id===rc.dataset.vrec); if(r){ confirmarRec(r,r.valor,rc.dataset.vkey); renderAll(); uiAlert("Lançado ✅"); } }
   if(bk){ e.preventDefault(); baixarBackup(); }
@@ -3467,13 +3468,27 @@ function catInteligente(desc,atual){ if(atual&&!GENERICAS.includes(atual)) retur
   const s=sugerirCat(desc||"",-1); if(s&&!GENERICAS.includes(s.c)) return s.c; return catKw(desc)||atual||"Outra despesa"; }
 function lembrarCat(desc,cat){ const k=chaveDesc(desc||""); if(k.length<3||!cat) return; cfg.regras=(cfg.regras||[]).filter(z=>!(z.exato&&z.t===k)); cfg.regras.unshift({t:k,c:cat,exato:true}); save("config",cfg); }
 let pgId=null;
-function abrirPagar(id){ const c=(SEC.contas||[]).find(x=>x.id===id); if(!c||c.pago) return; pgId=id;
+let pgOc=null;
+function ehPagavel(o){ return !!(o&&o.tipo==="lemb"&&(o.fav||(o.lb&&o.lb.cat))); }
+function ultBancoCat(cat){ const l=[cur,shift(cur,-1),shift(cur,-2)].flatMap(k=>lancsRaw(k)).filter(l=>l.tipo==="saida"&&l.categoria===cat&&l.banco).sort((a,b)=>String(b.data).localeCompare(String(a.data)))[0]; return l&&l.banco; }
+function abrirPagarOc(o){ pgOc=o; pgId=null; const nome=o.nome, sug=(o.lb&&o.lb.cat)||(o.fav&&o.fav.cat)||catInteligente(nome,"");
+  $("pgDesc").textContent=`${nome} · vence ${dataBR(isoD(o.dt))}${o.valor?" · "+brl(o.valor):""}`; $("pgNome").textContent=nome;
+  $("pgData").value=isoD(hojeD()); $("pgVal").value=o.valor?fmtIn(o.valor):""; $("pgCat").innerHTML=catOptsSaida(sug); $("pgCat").value=sug;
+  $("pgBanco").innerHTML=bancoOpts(ultBancoCat(sug)||b0()); $("pgSug").textContent=o.valor?"":"✏️ Digite o valor que você pagou."; $("pgLembrar").checked=false;
+  $("pgSoFeito").classList.remove("hidden"); openM("pagModal"); setTimeout(()=>{ if(!o.valor) $("pgVal").focus(); },60); }
+function marcarFeitoOc(o){ const m=mes(o.key); if(!(m.feitos||[]).includes(o.id)) m.feitos=(m.feitos||[]).concat([o.id]); save("m-"+o.key,m); }
+$("pgSoFeito").onclick=()=>{ if(!pgOc) return; marcarFeitoOc(pgOc); pgOc=null; closeM("pagModal"); renderAll(); uiAlert("Marcado como feito ✅ (sem lançar saída)"); };
+function pagarOc(){ const o=pgOc, v=num($("pgVal").value); if(!v){ $("pgVal").focus(); return; }
+  const cat=$("pgCat").value, data=$("pgData").value||isoD(hojeD()), banco=$("pgBanco").value;
+  addLanc({data,tipo:"saida",categoria:cat,descricao:o.nome,parceiro:"",banco,valor:v,oc:o.id});
+  marcarFeitoOc(o); if($("pgLembrar").checked) lembrarCat(o.nome,cat); pgOc=null; closeM("pagModal"); renderAll(); uiAlert(`✅ Pago: ${brl(v)} em ${cat}, saída de ${bankName(banco)}.`); }
+function abrirPagar(id){ const c=(SEC.contas||[]).find(x=>x.id===id); if(!c||c.pago) return; pgId=id; pgOc=null; $("pgSoFeito").classList.add("hidden");
   const sug=catInteligente(c.desc,c.cat); $("pgDesc").textContent=`${c.desc} · vence ${dataBR(c.venc)} · ${brl(c.valor)}`; $("pgNome").textContent=c.desc;
   $("pgData").value=isoD(hojeD()); $("pgVal").value=fmtIn(c.valor); $("pgCat").innerHTML=catOptsSaida(sug); $("pgCat").value=sug;
   $("pgBanco").innerHTML=bancoOpts(c.banco||b0());
   $("pgSug").textContent= sug!==c.cat? `🧠 Categoria sugerida: ${sug} (a conta estava em "${c.cat||"sem categoria"}").` : "";
   $("pgLembrar").checked=true; openM("pagModal"); }
-$("pgOk").onclick=()=>{ const c=(SEC.contas||[]).find(x=>x.id===pgId); if(!c) return; const v=num($("pgVal").value); if(!v){ $("pgVal").focus(); return; }
+$("pgOk").onclick=()=>{ if(pgOc){ pagarOc(); return; } const c=(SEC.contas||[]).find(x=>x.id===pgId); if(!c) return; const v=num($("pgVal").value); if(!v){ $("pgVal").focus(); return; }
   const cat=$("pgCat").value, data=$("pgData").value||isoD(hojeD()), banco=$("pgBanco").value;
   const lid=addLanc({data,tipo:"saida",categoria:cat,descricao:c.desc,parceiro:"",banco,valor:v,...(c.anexo?{comp:[c.anexo]}:{})});
   c.cat=cat; c.banco=banco; c.pago={data,lanc:lid}; if($("pgLembrar").checked){ lembrarCat(c.desc,cat); const f=typeof favDe==="function"? favDe(c.desc):null; if(f&&!f.cat){ f.cat=cat; saveFav(); } }
