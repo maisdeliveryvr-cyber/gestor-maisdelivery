@@ -12,6 +12,7 @@ create table if not exists public.zap_log(
   dia date not null, rodada text not null, enviado_em timestamptz default now(),
   mensagem text, pedido bigint, primary key(dia, rodada));
 alter table public.zap_log enable row level security;   -- ninguém de fora lê
+alter table public.zap_log add column if not exists tentativas int default 1;
 
 create or replace function public.zap_urlenc(t text) returns text
 language sql immutable as $$
@@ -21,7 +22,7 @@ language sql immutable as $$
 
 create or replace function public.zap_montar(z jsonb, rod text, hoje date) returns text
 language plpgsql stable as $$
-declare it jsonb; d date; l_hoje text := ''; l_atr text := ''; l_ama text := ''; l_cob text := ''; msg text; nome text; lk text;
+declare it jsonb; d date; l_hoje text := ''; l_atr text := ''; l_ama text := ''; l_cob text := ''; n_cob int := 0; msg text; nome text; lk text;
 begin
   for it in select value from jsonb_array_elements(coalesce(z->'itens','[]'::jsonb)) order by value->>'ds' loop
     if coalesce((it->>'feito')::boolean, false) then continue; end if;
@@ -33,8 +34,10 @@ begin
   end loop;
   for it in select distinct on (value->>'k') value from jsonb_array_elements(coalesce(z->'cobrar','[]'::jsonb))
              where (value->>'ds')::date <= hoje order by value->>'k', value->>'ds' desc loop
-    l_cob := l_cob || E'\n• ' || (it->>'txt');
+    n_cob := n_cob + 1;
+    if n_cob <= 8 then l_cob := l_cob || E'\n• ' || (it->>'txt'); end if;
   end loop;
+  if n_cob > 8 then l_cob := l_cob || E'\n• … e mais ' || (n_cob - 8) || ' parceiro(s)'; end if;
   lk := coalesce(nullif(z->'cfg'->>'link',''), 'https://maisdeliveryvr-cyber.github.io/gestor-maisdelivery/');
   nome := coalesce(nullif(z->'cfg'->>'nome',''), 'Lucas');
   if rod = 'manha' then
@@ -56,9 +59,13 @@ begin
   return msg || E'\n' || lk || '#hoje';
 end $$;
 
+create or replace function public.zap_url(fone text, chave text, msg text) returns text
+language sql immutable as $$
+  select 'https://api.callmebot.com/whatsapp.php?phone=%2B' || fone || '&apikey=' || public.zap_urlenc(chave) || '&text=' || public.zap_urlenc(msg) $$;
+
 create or replace function public.zap_rodar(forcar text default null) returns text
 language plpgsql security definer set search_path = public as $$
-declare z jsonb; c jsonb; agora timestamp; hoje date; h int; rod text; msg text; req bigint; fone text;
+declare z jsonb; c jsonb; agora timestamp; hoje date; h int; rod text; msg text; req bigint; fone text; lg record; sc int; refeitos int := 0;
 begin
   select data into z from public.docs where path = 'empresa' and id = 'zap' order by updated_at desc nulls last limit 1;
   if z is null then return 'sem configuração'; end if;
@@ -69,20 +76,28 @@ begin
   if left(fone,2) <> '55' then fone := '55' || fone; end if;
   agora := now() at time zone coalesce(nullif(c->>'tz',''), 'America/Sao_Paulo');
   hoje := agora::date; h := extract(hour from agora);
+  -- reenvia o que falhou (CallMeBot fora do ar ou lento), até 4 tentativas
+  for lg in select * from public.zap_log where dia >= hoje - 1 and pedido is not null and mensagem is not null and coalesce(tentativas,1) < 4 loop
+    select status_code into sc from net._http_response where id = lg.pedido;
+    if found and (sc is null or sc >= 300) then
+      select net.http_get(url := public.zap_url(fone, c->>'apikey', lg.mensagem), timeout_milliseconds := 60000) into req;
+      update public.zap_log set pedido = req, tentativas = coalesce(tentativas,1) + 1 where dia = lg.dia and rodada = lg.rodada;
+      refeitos := refeitos + 1;
+    end if;
+  end loop;
   if forcar is not null then rod := forcar;
   elsif h = coalesce((c->>'h1')::int, 9)  then rod := 'manha';
   elsif h = coalesce((c->>'h2')::int, 15) then rod := 'tarde';
-  else return 'fora do horário (' || h || 'h)'; end if;
+  else return 'fora do horário (' || h || 'h)' || case when refeitos > 0 then ' · reenviei ' || refeitos else '' end; end if;
   if forcar is null and exists(select 1 from public.zap_log where dia = hoje and rodada = rod) then return 'já enviado'; end if;
   msg := public.zap_montar(z, rod, hoje);
   if msg is null then
     insert into public.zap_log(dia, rodada, mensagem) values (hoje, rod, null) on conflict do nothing;
     return 'nada pendente';
   end if;
-  select net.http_get('https://api.callmebot.com/whatsapp.php?phone=%2B' || fone
-         || '&apikey=' || public.zap_urlenc(c->>'apikey') || '&text=' || public.zap_urlenc(msg)) into req;
+  select net.http_get(url := public.zap_url(fone, c->>'apikey', msg), timeout_milliseconds := 60000) into req;
   insert into public.zap_log(dia, rodada, mensagem, pedido) values (hoje, coalesce(forcar,rod), msg, req)
-    on conflict (dia, rodada) do update set mensagem = excluded.mensagem, pedido = excluded.pedido, enviado_em = now();
+    on conflict (dia, rodada) do update set mensagem = excluded.mensagem, pedido = excluded.pedido, enviado_em = now(), tentativas = 1;
   return 'enviado: ' || rod;
 end $$;
 revoke all on function public.zap_rodar(text) from public, anon, authenticated;

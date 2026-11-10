@@ -1350,7 +1350,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 24"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 25"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -2556,7 +2556,10 @@ document.addEventListener("click",e=>{
 // lembretes em Ajustes
 function descFreq(lb){ const aj={antecipa:", antecipa se cair no fim de semana",prorroga:", adia se cair no fim de semana",nenhum:""}[lb.ajuste||"nenhum"];
   return (lb.freq==="semanal"?`Toda ${["domingo","segunda","terça","quarta","quinta","sexta","sábado"][lb.dia]}`:lb.freq==="quinzenal"?"Dia 15 e último dia":lb.dia==="ultimo"?"Último dia do mês":`Todo dia ${lb.dia}`)+aj+(lb.cat?` · some quando lançar "${lb.cat}"`:""); }
-function renderLembretes(){
+function lembSuporte(){ if(mode!=="db"||cfg.suporteV1) return; cfg.suporteV1=true; const L=lembretes();
+  if(!L.some(l=>l.cat==="Suporte do aplicativo"||normTxt(l.nome).includes("suporte"))) cfg.lembretes=L.concat([{id:"l"+uid().slice(0,8),nome:"Suporte do Mais Delivery",emo:"📲",freq:"mensal",dia:10,ajuste:"nenhum",cat:"Suporte do aplicativo",ativo:true}]);
+  save("config",cfg); setTimeout(renderAll,0); }
+function renderLembretes(){ lembSuporte();
   if(!$("lbList")) return;
   const L=lembretes();
   $("lbList").innerHTML=`<div class="lblist">${L.map((lb,i)=>`<div class="lbrow ${lb.ativo===false?"off":""}"><label class="chk"><input type="checkbox" data-lbon="${i}" ${lb.ativo!==false?"checked":""}> <span>${lb.emo||"🔔"} <b>${esc(lb.nome)}</b></span></label><span class="status">${esc(descFreq(lb))}</span><button class="xbtn" data-lbdel="${i}" aria-label="Excluir lembrete">×</button></div>`).join("")||'<p class="note">Nenhum lembrete.</p>'}</div>`;
@@ -3158,13 +3161,13 @@ function msgCobranca(r){ const cf=rcfg(), e=r.enc||{}, tot=e.total||r.falta||r.e
   return `Olá, ${r.nome}! Tudo bem? 😊\nSegue a ${r.ref} do Mais Delivery: *${brl(r.falta||r.esp)}*.\nVencimento: ${dataBR(r.venc)}.`+(e.dias>0?`\nCom ${e.dias} dia${e.dias>1?"s":""} de atraso: multa de ${String(e.pm).replace(".",",")}% (${brl(e.multa)}) e juros de ${String(e.pj).replace(".",",")}% ao mês (${brl(e.juros)}).\nValor atualizado: *${brl(tot)}*.`:"")+`${cf.pix?`\nPix: ${cf.pix}`:""}\nQualquer dúvida estou à disposição. Obrigado pela parceria! 🛵`; }
 function linkWhats(r){ let d=soDig(r.whats); if(!d) return ""; if(!d.startsWith("55")) d="55"+d; return "https://wa.me/"+d+"?text="+encodeURIComponent(msgCobranca(r)); }
 let rbAberto=null;
-function painelRecebi(r){ const hoje=isoD(hojeD()), cx=bancos().find(b=>!isCash(b.id))||bancos()[0];
+function painelRecebi(r){ const hoje=isoD(hojeD()), cx=bancos().find(b=>!isCash(b.id))||bancos()[0], ult=[cur,shift(cur,-1),shift(cur,-2)].flatMap(k=>lancsRaw(k)).filter(l=>l.tipo==="entrada"&&normTxt(nomeEstab(l))===r.k).sort((a,b)=>String(b.data).localeCompare(String(a.data)))[0], bSel=(ult&&ult.banco)||(cx&&cx.id), fSel=(ult&&ult.forma)||"pix";
   return `<div class="rbpay" data-rbpanel="${esc(r.id)}"><div class="form">
     <label>Dia em que pagou<input type="date" data-rp="data" value="${hoje}"></label>
     <label>Valor da comissão<input data-rp="base" inputmode="decimal" value="${fmtIn(r.falta||r.esp)}"></label>
     <label class="chk" style="align-self:end"><input type="checkbox" data-rp="enc" ${r.venc<hoje?"checked":""}> Cobrar multa e juros</label>
-    <label>Forma<select data-rp="forma"><option value="pix">⚡ Pix / transferência</option><option value="retencao">🔁 Retenção no repasse</option><option value="dinheiro">💵 Dinheiro</option><option value="boleto">🧾 Boleto</option><option value="cartao">💳 Cartão</option></select></label>
-    <label>Banco<select data-rp="banco">${bancos().map(b=>`<option value="${b.id}"${cx&&b.id===cx.id?" selected":""}>${esc(b.nome)}</option>`).join("")}</select></label></div>
+    <label>Como recebeu<select data-rp="forma">${[["pix","⚡ Pix / transferência"],["retencao","🔁 Retenção no repasse"],["dinheiro","💵 Dinheiro"],["boleto","🧾 Boleto"],["cartao","💳 Cartão"]].map(([v,t])=>`<option value="${v}"${v===fSel?" selected":""}>${t}</option>`).join("")}</select></label>
+    <label>Em qual banco entrou<select data-rp="banco">${bancos().map(b=>`<option value="${b.id}"${b.id===bSel?" selected":""}>${esc(b.nome)}</option>`).join("")}</select></label></div>
     <p class="rbcalc" data-rp="calc"></p>
     <div class="row"><button class="btn small" data-rpok="${esc(r.id)}">Lançar recebimento</button><button class="btn ghost small" data-rpno="1">Cancelar</button></div></div>`; }
 function calcPainel(box,r){ const g=k=>box.querySelector(`[data-rp="${k}"]`), base=num(g("base").value), data=g("data").value||isoD(hojeD()), c=cadDe(r.nome);
@@ -3346,7 +3349,9 @@ function renderZap(){ if(!$("zapCard")) return; const c=zcfg(), H=[...Array(15)]
   $("zapAviso").innerHTML=ZAP_WEB? "" : '<p class="note">Os lembretes no WhatsApp funcionam na versão web do gestor (o site), porque ela fica ligada no Supabase mesmo com a página fechada.</p>';
   const pend=(ZAP.itens||[]).filter(i=>!i.feito&&i.ds<=isoD(new Date(Date.now()+864e5)));
   $("zpStatus").innerHTML= !c.ativo? "Lembretes desligados." : `✅ Ligado para ${esc(c.fone)} · ${pend.length} conta${pend.length!==1?"s":""} para hoje, amanhã ou atrasada${pend.length!==1?"s":""}${ZAP.atualizado?` · lista atualizada ${new Date(ZAP.atualizado).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`:""}`; }
-let irHojeFeito=false;
+let irHojeFeito=false, diaVisto=isoD(new Date());
+setInterval(()=>{ const d=isoD(new Date()); if(d!==diaVisto){ diaVisto=d; renderAll(); } },60000);
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ const d=isoD(new Date()); if(d!==diaVisto){ diaVisto=d; renderAll(); } } });
 function irHoje(){ if(irHojeFeito||(location.hash!=="#hoje"&&location.hash!=="#cobrar")) return; irHojeFeito=true; const cob=location.hash==="#cobrar";
   setTimeout(()=>{ const t=document.querySelector(cob?'[data-tab="receb"]':'[data-tab="painel"]'); if(t) t.click(); const v=$(cob?"filaCard":"vencCard"); if(v){ v.scrollIntoView({behavior:"smooth",block:"start"}); v.classList.add("flash"); setTimeout(()=>v.classList.remove("flash"),4000); } try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){} },500); }
 document.addEventListener("change",e=>{ const t=e.target; if(!t.dataset||!t.dataset.lbval) return; const m=mes(t.dataset.vkey); m.lembVal=m.lembVal||{}; const v=num(t.value);
