@@ -688,6 +688,7 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
 .filarow .zapbtn{background:#25D366!important;color:#000!important;border-color:#25D366!important}
 @media (max-width:640px){.filarow{grid-template-columns:1fr auto}.filarow .rbacts{grid-column:1/-1}}
 </style>
+<style>.d13val{width:100%;margin:6px 0;font-size:18px;font-weight:800;text-align:right}</style>
 </head>
 <body>
 <div class="app">
@@ -986,6 +987,9 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
     <section class="card fstep s3"><div class="row" style="justify-content:space-between;align-items:baseline"><h2>3️⃣ 💰 Pagamento de <span class="fMes"></span></h2></div>
       <p class="sub">Saldo de cada um = líquido da folha + prêmios − adiantamentos − descontos. Toque em 📋 Pix copia e cola, pague no app do banco (Pix &gt; Pix Copia e Cola) e marque ✅ Paguei.</p>
       <div id="folCards" class="fgrid"></div></section>
+    <section class="card" id="d13Card"><h2>🎄 13º salário de <span id="d13Ano"></span></h2>
+      <p class="sub">1ª parcela até 30/11 (metade, sem descontos) e 2ª até 20/12 (o restante, com INSS e IR: confira o líquido no holerite do 13º). O gestor reconhece o que você já lançou na categoria "13º salário" com o nome do funcionário.</p>
+      <div id="d13Cards" class="fgrid"></div></section>
     <section class="card"><h2>👥 Funcionários</h2><p class="sub">Cadastre a chave Pix uma vez. Ela fica salva para os próximos pagamentos.</p>
       <div id="ffList"></div>
       <div class="form" style="margin-top:14px">
@@ -1351,7 +1355,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 28"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 29"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -1483,7 +1487,7 @@ function delta(c,p,inv){
 }
 
 // ---------- Render ----------
-function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); renderFila(); renderZap(); agendarZap(); irHoje(); setTimeout(lancarFeitos,1500); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
+function renderAll(){ $("mLabel").textContent=label(cur); renderDash(); renderLanc(); renderContas(); renderRecMes(); renderRecList(); fillXSel(); renderRegras(); renderRes(); renderRelatorio(); fillEmpresa(); $("fCompL").classList.toggle("hidden",!assetsNS); renderAjustes(); fillImpostos(false); renderSec(); renderFav(); renderFolha(); renderEstabs(); renderReceber(); renderInv(); renderPrevisao(); renderV17(); renderVenc(); renderLembretes(); renderBackup(); renderConsultor(); renderD13(); renderFila(); renderZap(); agendarZap(); irHoje(); setTimeout(lancarFeitos,1500); document.querySelectorAll(".cMes").forEach(e=>e.textContent=label(cur)); aplicarOlho(); }
 
 function renderDash(){
   const r=retirada(), s=r.s, ps=sums(shift(cur,-1));
@@ -2507,8 +2511,7 @@ function ocorrencias(diasFim){
   if(funcsAtivos().length){ const cf=fcfg(); [-1,0,1].forEach(i=>{ const c0=new Date(hoje.getFullYear(),hoje.getMonth()+i,1), k=mKey(c0.getFullYear(),c0.getMonth()+1), m=fmesRO(k), F=funcsAtivos();
       const ds=quintoDiaUtil(c0.getFullYear(),c0.getMonth()+1);
       if(c0.getMonth()===10||c0.getMonth()===11){ const parc=c0.getMonth()===10?1:2, dia=parc===1?30:20, dt13=ajustarFds(new Date(c0.getFullYear(),c0.getMonth(),dia),"antecipa");
-        const pago13=lancsRaw(k).some(l=>l.categoria==="13º salário");
-        const est=F.reduce((a,f)=>a+num(f.salario||0),0)/2;
+        const C13=F.map(f=>calc13(f,c0.getFullYear())), pago13=C13.every(c=>parc===1?c.p1ok:c.quit), est=C13.reduce((a,c)=>a+(parc===1?c.falta1:c.falta2),0);
         push({id:"f13@"+k,dt:dt13,key:k,emo:"🎄",nome:`13º salário · ${parc}ª parcela`+(parc===1?" (metade, sem descontos)":" (com INSS e IR)"),tipo:"fol",feito:pago13,valor:Math.round(est*100)/100,est:true}); }
       push({id:"fsal@"+k,dt:ds,key:k,emo:"👷",nome:"Salário de "+label(k).split(" ")[0].toLowerCase()+" (5º dia útil)",tipo:"fol",feito:F.every(f=>((m.pagos||{})[f.id]||{}).saldo),valor:F.reduce((a,f)=>a+(calcFunc(f,k).aPagar||0),0)}); }); }
   // conta enviada à Secretária substitui o lembrete/recorrente igual do mesmo mês (evita repetir FGTS, INSS, DAS...)
@@ -2968,6 +2971,38 @@ function renderFolha(){
   if(document.activeElement!==$("fcCard")) $("fcCard").value=fmtIn(cf.valorCardapio); $("fcCid").value=cf.cidade;
   const fb=$("fcBanco"); fb.innerHTML=bancoOpts(cf.banco||b0()); 
 }
+// --- 13º salário ---
+function d13Cfg(ano){ FOL.d13=FOL.d13||{}; FOL.d13[ano]=FOL.d13[ano]||{}; return FOL.d13[ano]; }
+function casaNome13(l,f){ const t=normTxt([l.descricao,l.parceiro].filter(Boolean).join(" ")), tk=nomeTokens(f.nome); if(!tk.length||!t.includes(tk[0])) return false;
+  return tk.length<2||t.includes(tk[1])||!funcsAtivos().some(x=>x.id!==f.id&&nomeTokens(x.nome)[0]===tk[0]); }
+function pagos13(f,ano){ const K=[...Array(12)].map((_,i)=>mKey(ano,i+1)).concat([mKey(ano+1,1)]);
+  return K.flatMap(k=>lancsRaw(k)).filter(l=>l.tipo==="saida"&&l.categoria==="13º salário"&&(l.f13===f.id||(!l.f13&&casaNome13(l,f)))&&(l.f13ano||ano)===ano&&String(l.data).slice(0,4)>=String(ano)); }
+function calc13(f,ano){ const c=(((FOL.d13||{})[ano])||{})[f.id]||{}, total=c.total!=null? num(c.total) : num(f.salario||0), L=pagos13(f,ano), P=L.reduce((a,l)=>a+num(l.valor),0);
+  const quit=!!c.quitado||(total>0&&P>=total*0.85), meia=Math.round(total/2*100)/100, p1ok=quit||P>=meia-0.01;
+  return {total,L,P,quit,p1ok,falta1:p1ok?0:Math.round((meia-P)*100)/100,falta2:quit?0:Math.max(0,Math.round((total-P)*100)/100)}; }
+function renderD13(){ if(!$("d13Cards")) return; const ano=Number(cur.slice(0,4)), mn=Number(cur.slice(5,7)), F=funcsAtivos();
+  const algum=F.some(f=>pagos13(f,ano).length); $("d13Card").classList.toggle("hidden",!(mn>=10||algum)||!F.length); $("d13Ano").textContent=ano;
+  $("d13Cards").innerHTML=F.map(f=>{ const c=calc13(f,ano), parc=c.p1ok?2:1, falta=parc===1?c.falta1:c.falta2;
+    const pagos=c.L.map(l=>`<li><span>✅ pago ${dataBR(l.data).slice(0,5)} <span class="status">${esc((l.descricao||"").slice(0,40))}</span></span><b>${brl(num(l.valor))}</b></li>`).join("");
+    return `<div class="fcard">
+      <div class="fhead"><div class="fav">${f.foto?`<img src="${f.foto}" alt="">`:esc((f.nome||"?").trim()[0]||"?").toUpperCase()}</div><div><b>${esc(f.nome)}</b><span class="status">${esc(f.cargo||"")}</span></div></div>
+      <div class="fbody"><label class="fliq">🎄 Valor do 13º (salário)<input data-d13tot="${f.id}" inputmode="decimal" value="${c.total?fmtIn(c.total):""}" placeholder="salário bruto"></label>
+        ${pagos?`<ul class="fitens">${pagos}</ul>`:""}
+        <div class="ftotal"><span>${c.quit?"🎉 13º quitado":"💰 Já pago"}</span><b>${brl(c.P)}</b></div></div>
+      <div class="fpay one"><div class="fpbox ${c.quit?"ok":""}">${c.quit?`<span>✅ 13º de ${ano} quitado</span>${(((FOL.d13||{})[ano]||{})[f.id]||{}).quitado?`<button class="btn ghost small" data-d13quit="0" data-fid="${f.id}">↩︎ Desfazer quitado</button>`:""}`:
+        `<span>${parc}ª parcela · até ${parc===1?"30/11":"20/12"}${parc===2?" (confira o líquido no holerite)":""}</span>
+         <input class="d13val" data-d13val="${f.id}" inputmode="decimal" value="${fmtIn(falta)}">
+         <div class="row"><button class="btn small" data-d13pix="${parc}" data-fid="${f.id}">📋 Pix copia e cola</button><button class="btn ghost small" data-d13pag="${parc}" data-fid="${f.id}">✅ Paguei</button><button class="btn ghost small" data-d13quit="1" data-fid="${f.id}" title="Já paguei tudo por outro caminho">Quitado</button></div>`}</div></div></div>`; }).join(""); }
+$("d13Cards").addEventListener("change",e=>{ const id=e.target.dataset.d13tot; if(!id) return; const ano=Number(cur.slice(0,4)), d=d13Cfg(ano), v=e.target.value.trim();
+  d[id]={...(d[id]||{})}; if(v==="") delete d[id].total; else d[id].total=num(v); saveFol(); renderAll(); });
+$("d13Cards").addEventListener("click",async e=>{ const b=e.target.closest("button"); if(!b) return; const d=b.dataset, f=(FOL.funcs||[]).find(x=>x.id===d.fid); if(!f) return;
+  const ano=Number(cur.slice(0,4)), cf=fcfg(), inp=$("d13Cards").querySelector(`[data-d13val="${CSS.escape(f.id)}"]`), v=inp? num(inp.value) : 0;
+  if(d.d13quit!=null){ const c=d13Cfg(ano); c[f.id]={...(c[f.id]||{}),quitado:d.d13quit==="1"}; saveFol(); renderAll(); return; }
+  if(d.d13pix){ if(!v){ uiAlert("Digite o valor."); return; } copiar(pixCode(f.chave,f.tipoChave,f.nome,cf.cidade,v,"DECIMO"+d.d13pix+ano),`📋 Pix de ${brl(v)} (13º, ${d.d13pix}ª parcela) para ${f.nome} copiado.`); }
+  if(d.d13pag){ if(!v){ uiAlert("Digite o valor."); return; }
+    if(!await uiConfirm(`Confirmar que você pagou ${brl(v)} de 13º (${d.d13pag}ª parcela) para ${f.nome}? Vira uma saída de "13º salário" em ${bankName(cf.banco||b0())}.`)) return;
+    addLanc({data:isoD(hojeD()),tipo:"saida",categoria:"13º salário",descricao:`13º salário ${d.d13pag}ª parcela · ${f.nome}`,parceiro:"",banco:cf.banco||b0(),valor:v,f13:f.id,f13ano:ano});
+    renderAll(); uiAlert("✅ 13º registrado."); } });
 // --- importação do PDF do contador ---
 let folPrev=null;
 function nomeTokens(n){ return normTxt(n).split(/\s+/).filter(w=>w.length>2&&!["dos","das","de","da","do"].includes(w)); }
