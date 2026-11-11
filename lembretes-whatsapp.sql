@@ -65,7 +65,7 @@ language sql immutable as $$
 
 create or replace function public.zap_rodar(forcar text default null) returns text
 language plpgsql security definer set search_path = public as $$
-declare z jsonb; c jsonb; agora timestamp; hoje date; h int; rod text; msg text; req bigint; fone text; lg record; sc int; refeitos int := 0;
+declare z jsonb; c jsonb; agora timestamp; hoje date; h int; rod text; msg text; req bigint; fone text; lg record; sc int; ct text; refeitos int := 0;
 begin
   select data into z from public.docs where path = 'empresa' and id = 'zap' order by updated_at desc nulls last limit 1;
   if z is null then return 'sem configuração'; end if;
@@ -74,12 +74,14 @@ begin
   fone := regexp_replace(coalesce(c->>'fone',''), '\D', '', 'g');
   if fone = '' or coalesce(c->>'apikey','') = '' then return 'falta telefone ou apikey'; end if;
   if left(fone,2) <> '55' then fone := '55' || fone; end if;
+  -- WhatsApp registra celulares de DDD acima de 30 sem o 9 (ex.: 55 66 8441-6970)
+  if length(fone) = 13 and substr(fone,3,2)::int > 30 and substr(fone,5,1) = '9' then fone := left(fone,4) || substr(fone,6); end if;
   agora := now() at time zone coalesce(nullif(c->>'tz',''), 'America/Sao_Paulo');
   hoje := agora::date; h := extract(hour from agora);
   -- reenvia o que falhou (CallMeBot fora do ar ou lento), até 4 tentativas
   for lg in select * from public.zap_log where dia >= hoje - 1 and pedido is not null and mensagem is not null and coalesce(tentativas,1) < 4 loop
-    select status_code into sc from net._http_response where id = lg.pedido;
-    if found and (sc is null or sc >= 300) then
+    select status_code, content::text into sc, ct from net._http_response where id = lg.pedido;
+    if found and (sc is null or sc >= 300 or coalesce(ct,'') ilike '%invalid%') then
       select net.http_get(url := public.zap_url(fone, c->>'apikey', lg.mensagem), timeout_milliseconds := 60000) into req;
       update public.zap_log set pedido = req, tentativas = coalesce(tentativas,1) + 1 where dia = lg.dia and rodada = lg.rodada;
       refeitos := refeitos + 1;

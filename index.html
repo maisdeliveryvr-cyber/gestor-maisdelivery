@@ -1355,7 +1355,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 29"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 30"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -3401,7 +3401,7 @@ $("zpSalvar").onclick=()=>{ const c={...zcfg(),fone:$("zpFone").value.trim(),api
   if(c.ativo&&(soDig(c.fone).length<10||!c.apikey)){ uiAlert("Preencha o seu WhatsApp com DDD e a apikey que o CallMeBot mandou."); return; }
   if(c.h2<=c.h1){ uiAlert("O horário da cobrança precisa ser depois do relatório da manhã."); return; }
   ZAP={...ZAP,cfg:c,itens:[]}; save("zap",ZAP); syncZap(); renderZap(); uiAlert(c.ativo?`📲 Lembretes ligados: relatório às ${c.h1}h e cobrança às ${c.h2}h.`:"Lembretes desligados."); };
-$("zpTeste").onclick=()=>{ let d=soDig($("zpFone").value); const k=$("zpKey").value.trim(); if(d.length<10||!k){ uiAlert("Preencha o seu WhatsApp e a apikey primeiro."); return; } if(!d.startsWith("55")) d="55"+d;
+$("zpTeste").onclick=()=>{ let d=soDig($("zpFone").value); const k=$("zpKey").value.trim(); if(d.length<10||!k){ uiAlert("Preencha o seu WhatsApp e a apikey primeiro."); return; } if(!d.startsWith("55")) d="55"+d; if(d.length===13&&+d.slice(2,4)>30&&d[4]==="9") d=d.slice(0,4)+d.slice(5);
   window.open("https://api.callmebot.com/whatsapp.php?phone=%2B"+d+"&apikey="+encodeURIComponent(k)+"&text="+encodeURIComponent("✅ Teste do Gestor MD: os lembretes de vencimento vão chegar aqui!"),"_blank","noopener"); };
 function saveFav(){ save("fav",FAV); }
 const AVCOR=["#FF6A00","#DB2777","#7C3AED","#2563EB","#0891B2","#16A34A","#CA8A04","#DC2626"];
