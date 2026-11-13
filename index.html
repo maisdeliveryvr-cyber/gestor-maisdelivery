@@ -1133,6 +1133,7 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
         <label id="lbSemL" class="hidden">Dia da semana<select id="lbSem"><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option><option value="0">Domingo</option></select></label>
         <label>Se cair no fim de semana<select id="lbAj"><option value="nenhum">Mantém a data</option><option value="antecipa">Antecipa para sexta</option><option value="prorroga">Adia para segunda</option></select></label>
         <label>Some quando eu lançar<select id="lbCat"></select></label>
+        <label>Valor fixo (vazio se varia)<input id="lbValor" inputmode="decimal" placeholder="Ex.: 475,00"></label>
         <button class="btn" id="lbAdd">Criar lembrete</button>
       </div>
       <div class="row" style="margin-top:10px"><button class="btn ghost small" id="lbPadrao">Voltar ao padrão</button></div>
@@ -1355,7 +1356,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 31"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 32"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -2487,7 +2488,7 @@ function ocorrencias(diasFim){
   lembretes().filter(lb=>lb.ativo!==false).forEach(lb=>{
     const add=dt=>{ const ds=isoD(dt), key=ds.slice(0,7), id=lb.id+"@"+ds, m=months[key];
       const manual=!!(m&&m.feitos&&m.feitos.includes(id));
-      const est=num(((m&&m.lembVal)||{})[id]||0), pede=!!lb.cat&&lb.freq!=="semanal";
+      const est=num(((m&&m.lembVal)||{})[id]||0)||num(lb.valor||0), pede=!!lb.cat&&lb.freq!=="semanal";
       push({id,dt,ds,key,emo:lb.emo||"🔔",nome:lb.nome,tipo:"lemb",lb,feito:manual||feitoAuto(lb,dt),valor:est,est:false,pedeValor:pede,semValor:pede&&!(est>0)}); };
     if(lb.freq==="semanal"){ const d=new Date(ini); while(d<=fim){ if(d.getDay()===Number(lb.dia)) add(new Date(d)); d.setDate(d.getDate()+1); } }
     else meses.forEach(m0=>{ const y=m0.getFullYear(), mo=m0.getMonth();
@@ -2513,7 +2514,9 @@ function ocorrencias(diasFim){
       if(c0.getMonth()===10||c0.getMonth()===11){ const parc=c0.getMonth()===10?1:2, dia=parc===1?30:20, dt13=ajustarFds(new Date(c0.getFullYear(),c0.getMonth(),dia),"antecipa");
         const C13=F.map(f=>calc13(f,c0.getFullYear())), pago13=C13.every(c=>parc===1?c.p1ok:c.quit), est=C13.reduce((a,c)=>a+(parc===1?c.falta1:c.falta2),0);
         push({id:"f13@"+k,dt:dt13,key:k,emo:"🎄",nome:`13º salário · ${parc}ª parcela`+(parc===1?" (metade, sem descontos)":" (com INSS e IR)"),tipo:"fol",feito:pago13,valor:Math.round(est*100)/100,est:true}); }
-      push({id:"fsal@"+k,dt:ds,key:k,emo:"👷",nome:"Salário de "+label(k).split(" ")[0].toLowerCase()+" (5º dia útil)",tipo:"fol",feito:F.every(f=>((m.pagos||{})[f.id]||{}).saldo),valor:F.reduce((a,f)=>a+(calcFunc(f,k).aPagar||0),0)}); }); }
+      const dSal=ajustarFds(new Date(c0.getFullYear(),c0.getMonth(),Number(cf.diaSalario)||5),"antecipa");
+      F.forEach(f=>{ const pn=String(f.apelido||nomeTokens(f.nome)[0]||f.nome).toLowerCase().replace(/(^|\s)\S/g,x=>x.toUpperCase());
+        push({id:"fsal-"+f.id+"@"+k,dt:dSal,key:k,emo:"👷",nome:"Salário · "+pn,tipo:"fol",feito:!!((m.pagos||{})[f.id]||{}).saldo,valor:Math.round((calcFunc(f,k).aPagar||0)*100)/100,fid:f.id}); }); }); }
   // conta enviada à Secretária substitui o lembrete/recorrente igual do mesmo mês (evita repetir FGTS, INSS, DAS...)
   const KWS=["fgts","inss","dctf","das","simples","aluguel","energia","energisa","internet","contador","contabilidade","cdl","agua"], kwDe=s=>{ const w=normTxt(s).split(/[^a-z0-9]+/); return KWS.filter(k=>w.includes(k)); };
   const contasOc=out.filter(o=>o.tipo==="conta");
@@ -2564,10 +2567,17 @@ function descFreq(lb){ const aj={antecipa:", antecipa se cair no fim de semana",
 function lembSuporte(){ if(mode!=="db"||cfg.suporteV1) return; cfg.suporteV1=true; const L=lembretes();
   if(!L.some(l=>l.cat==="Suporte do aplicativo"||normTxt(l.nome).includes("suporte"))) cfg.lembretes=L.concat([{id:"l"+uid().slice(0,8),nome:"Suporte do Mais Delivery",emo:"📲",freq:"mensal",dia:10,ajuste:"nenhum",cat:"Suporte do aplicativo",ativo:true}]);
   save("config",cfg); setTimeout(renderAll,0); }
-function renderLembretes(){ lembSuporte();
+function lembContasV1(){ if(mode!=="db"||cfg.contasV1) return; cfg.contasV1=true; const L=lembretes().map(x=>({...x}));
+  const set=(cat,o)=>{ const i=L.findIndex(l=>l.cat===cat); if(i>=0) L[i]={...L[i],...o}; else L.push({id:"l"+uid().slice(0,8),freq:"mensal",ajuste:"antecipa",cat,ativo:true,...o}); };
+  set("FGTS",{dia:19}); set("INSS",{dia:19}); set("DAS",{nome:"Simples Nacional (DAS)",dia:20});
+  set("Contador",{nome:"Contador",emo:"🧮",dia:10,valor:475}); set("Internet",{nome:"Skynet (internet)",emo:"📶",dia:10,valor:129.9});
+  set("Seguro dos entregadores",{nome:"IZA Seguro",emo:"🛡️",dia:19,valor:0}); set("Energia",{nome:"Energia",emo:"💡",dia:20,valor:0});
+  set("CDL",{nome:"CDL",emo:"🏛️",dia:20,valor:78}); set("Suporte do aplicativo",{dia:10,...(L.some(l=>l.cat==="Suporte do aplicativo")?{}:{nome:"Suporte do Mais Delivery",emo:"📲"})});
+  cfg.lembretes=L; cfg.suporteV1=true; save("config",cfg); setTimeout(renderAll,0); }
+function renderLembretes(){ lembContasV1(); lembSuporte();
   if(!$("lbList")) return;
   const L=lembretes();
-  $("lbList").innerHTML=`<div class="lblist">${L.map((lb,i)=>`<div class="lbrow ${lb.ativo===false?"off":""}"><label class="chk"><input type="checkbox" data-lbon="${i}" ${lb.ativo!==false?"checked":""}> <span>${lb.emo||"🔔"} <b>${esc(lb.nome)}</b></span></label><span class="status">${esc(descFreq(lb))}</span><button class="xbtn" data-lbdel="${i}" aria-label="Excluir lembrete">×</button></div>`).join("")||'<p class="note">Nenhum lembrete.</p>'}</div>`;
+  $("lbList").innerHTML=`<div class="lblist">${L.map((lb,i)=>`<div class="lbrow ${lb.ativo===false?"off":""}"><label class="chk"><input type="checkbox" data-lbon="${i}" ${lb.ativo!==false?"checked":""}> <span>${lb.emo||"🔔"} <b>${esc(lb.nome)}</b></span></label><span class="status">${esc(descFreq(lb))} · ${num(lb.valor)>0?brl(num(lb.valor)):(lb.cat&&lb.freq!=="semanal"?"valor varia":"")}</span><button class="xbtn" data-lbdel="${i}" aria-label="Excluir lembrete">×</button></div>`).join("")||'<p class="note">Nenhum lembrete.</p>'}</div>`;
   const sel=$("lbCat"), v=sel.value; sel.innerHTML='<option value="">Nenhuma (marco como feito na mão)</option>'+allCats().filter(c=>c[2]==="saida").map(c=>`<option value="${esc(c[0])}">${catEmo(c[0])} ${esc(c[0])}</option>`).join(""); sel.value=v;
   const f=$("lbFreq").value; $("lbDiaL").classList.toggle("hidden",f!=="mensal"); $("lbSemL").classList.toggle("hidden",f!=="semanal");
 }
@@ -2576,8 +2586,8 @@ $("lbFreq").onchange=renderLembretes;
 $("lbAdd").onclick=()=>{ const nome=$("lbNome").value.trim(); if(!nome){ $("lbNome").focus(); return; }
   const f=$("lbFreq").value, d=$("lbDia").value.trim().toLowerCase();
   const dia= f==="semanal"? Number($("lbSem").value) : f==="quinzenal"? 15 : (d.startsWith("u")?"ultimo":Math.min(31,Math.max(1,parseInt(d,10)||1)));
-  salvarLemb(lembretes().concat([{id:"l"+uid().slice(0,8),nome,emo:$("lbEmo").value||"🔔",freq:f,dia,ajuste:$("lbAj").value,cat:$("lbCat").value,ativo:true}]));
-  $("lbNome").value=""; $("lbDia").value=""; uiAlert("Lembrete criado ✅"); };
+  salvarLemb(lembretes().concat([{id:"l"+uid().slice(0,8),nome,emo:$("lbEmo").value||"🔔",freq:f,dia,ajuste:$("lbAj").value,cat:$("lbCat").value,valor:num($("lbValor").value)||0,ativo:true}]));
+  $("lbNome").value=""; $("lbDia").value=""; $("lbValor").value=""; uiAlert("Lembrete criado ✅"); };
 $("lbList").addEventListener("change",e=>{ const i=e.target.dataset.lbon; if(i==null) return; const L=lembretes(); L[+i].ativo=e.target.checked; salvarLemb(L); });
 $("lbList").addEventListener("click",async e=>{ const i=e.target.dataset.lbdel; if(i==null) return; const L=lembretes(); if(!await uiConfirm(`Excluir o lembrete "${L[+i].nome}"?`)) return; L.splice(+i,1); salvarLemb(L); });
 $("lbPadrao").onclick=async()=>{ if(!await uiConfirm("Voltar os lembretes para o padrão (DAS, FGTS, INSS, repasse de segunda e acertos dos parceiros)? Os que você criou serão apagados.")) return; salvarLemb(DEF_LEMB.map(x=>({...x}))); };
