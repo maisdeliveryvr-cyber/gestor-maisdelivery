@@ -886,6 +886,8 @@ aside.side,:root[data-theme="dark"] aside.side{background:#0B0B0F!important;colo
         <label>Quinzenais: 1ª quinzena vence dia<input id="rbDiaQ2" inputmode="numeric"></label>
         <label>Multa por atraso (%)<input id="rbMulta" inputmode="decimal" data-pct></label>
         <label>Juros ao mês (%)<input id="rbJuros" inputmode="decimal" data-pct></label>
+        <label>Feriados locais (dd/mm)<input id="rbFer" placeholder="Ex.: 13/06, 29/09"></label>
+        <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="rbSexta"> Venceu na sexta, no sábado, no domingo ou em feriado: sem multa e juros até o próximo dia útil (sábado, domingo e feriados nacionais sempre contam; marque para incluir a sexta)</label>
         <label>Sua chave Pix (vai na mensagem)<input id="rbPix" placeholder="CNPJ, celular ou e-mail"></label>
       </div></section>
   </div>
@@ -1356,7 +1358,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 32"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 33"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -3171,7 +3173,7 @@ function renderEstabs(){ const dl=$("dlEstab"), E=estabsTodos(); if(dl) dl.inner
 // ================= A receber (cobrança dos estabelecimentos) =================
 let RCB={cad:{},cob:{},cfg:{}};
 function saveRcb(){ save("receber",RCB); }
-const RCB_CFG_DEF={diaM:5,diaQ1:5,diaQ2:20,pix:"",multa:10,juros:1};
+const RCB_CFG_DEF={diaM:5,diaQ1:5,diaQ2:20,pix:"",multa:10,juros:1,sexta:true,feriados:""};
 function rcfg(){ return {...RCB_CFG_DEF,...(RCB.cfg||{})}; }
 const QUINZ_PADRAO=["pastelar","bia lanches","corujao","drogaria economize"];
 function cadDe(nome){ const k=normTxt(nome), c=RCB.cad[k]||{}; return {k,nome:c.nome||nome,ciclo:c.ciclo||(QUINZ_PADRAO.some(q=>k.includes(q))?"quinzenal":"mensal"),whats:c.whats||"",ativo:c.ativo!==false,dias:c.dias||"",multa:c.multa,juros:c.juros}; }
@@ -3179,15 +3181,23 @@ function manuaisIds(key){ return new Set(Object.entries(((RCB.cob||{})[key])||{}
 function recebidoEstab(k,key){ const man=manuaisIds(key); return lancsRaw(key).filter(l=>catOf(l).nat==="receita"&&normTxt(nomeEstab(l))===k&&!(l.rcb&&man.has(l.rcb))).reduce((a,l)=>a+num(l.valor),0); }
 function mediaEstab(k,key){ const v=[]; for(let i=1;i<=6&&v.length<3;i++){ const r=recebidoEstab(k,shift(key,-i)); if(r>0) v.push(r); } return v.length? Math.round(v.reduce((a,b)=>a+b,0)/v.length*100)/100 : 0; }
 function mesNome(key){ return label(key).split(" ")[0].toLowerCase(); }
-function encargos(c,base,venc,ate){ const cf=rcfg(), multa=c&&c.multa!=null&&c.multa!==""? num(c.multa) : num(cf.multa), juros=c&&c.juros!=null&&c.juros!==""? num(c.juros) : num(cf.juros);
+function pascoa(y){ const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mes=Math.floor((h+l-7*m+114)/31),dia=((h+l-7*m+114)%31)+1; return new Date(y,mes-1,dia); }
+const FER_CACHE={};
+function feriados(y){ const k=y+"|"+(rcfg().feriados||""); if(FER_CACHE[k]) return FER_CACHE[k]; const S=new Set(["01-01","04-21","05-01","09-07","10-12","11-02","11-15","11-20","12-25"].map(x=>y+"-"+x));
+  const p=pascoa(y); [-48,-47,-2,60].forEach(n=>{ const d=new Date(p); d.setDate(d.getDate()+n); S.add(isoD(d)); });
+  String(rcfg().feriados||"").split(/[,;\s]+/).forEach(t=>{ const m=t.match(/^(\d{1,2})\/(\d{1,2})$/); if(m) S.add(y+"-"+pad2(+m[2])+"-"+pad2(+m[1])); });
+  return FER_CACHE[k]=S; }
+function ehDiaUtil(d){ const w=d.getDay(); return w!==0&&w!==6&&!feriados(d.getFullYear()).has(isoD(d)); }
+function vencUtil(venc){ if(!venc) return venc; const d=new Date(venc+"T12:00"); if(rcfg().sexta!==false&&d.getDay()===5) d.setDate(d.getDate()+1); while(!ehDiaUtil(d)) d.setDate(d.getDate()+1); return isoD(d); }
+function encargos(c,base,venc,ate){ if(ate&&venc&&ate<=vencUtil(venc)){ const cf0=rcfg(); return {dias:0,multa:0,juros:0,total:base,pm:c&&c.multa!=null&&c.multa!==""?num(c.multa):num(cf0.multa),pj:c&&c.juros!=null&&c.juros!==""?num(c.juros):num(cf0.juros)}; } const cf=rcfg(), multa=c&&c.multa!=null&&c.multa!==""? num(c.multa) : num(cf.multa), juros=c&&c.juros!=null&&c.juros!==""? num(c.juros) : num(cf.juros);
   const d=Math.round((new Date(ate+"T12:00")-new Date(venc+"T12:00"))/864e5); if(!(base>0)||d<=0) return {dias:0,multa:0,juros:0,total:base,pm:multa,pj:juros};
   const m=Math.round(base*multa)/100, j=Math.round(base*juros/100/30*d*100)/100; return {dias:d,multa:m,juros:j,total:Math.round((base+m+j)*100)/100,pm:multa,pj:juros}; }
 function linhasReceber(key){ return linhasReceberTodas(key).filter(r=>r.st!=="sem"); }
 function linhasReceberTodas(key){ const cf=rcfg(), [y,m]=key.split("-").map(Number), ant=shift(key,-1), cob=(RCB.cob||{})[key]||{}, hojeIso=isoD(hojeD()), out=[];
   const vData=d=>isoD(diaNoMes(y,m-1,Math.min(31,Math.max(1,parseInt(d,10)||1))));
   const fin=(r,c)=>{ const [vy,vm,vd]=r.venc.split("-").map(Number); r.dias=Math.round((new Date(vy,vm-1,vd)-hojeD())/864e5);
-    r.st= r.esp>0&&r.falta<=0.009? "pago" : (r.pago>0? "parc" : (r.esp<=0? "sem" : (r.venc<hojeIso? "atras" : "aberto")));
-    r.enc= r.st==="atras"||(r.st==="parc"&&r.venc<hojeIso)? encargos(c,r.falta,r.venc,hojeIso) : {dias:0,multa:0,juros:0,total:r.falta}; out.push(r); };
+    r.st= r.esp>0&&r.falta<=0.009? "pago" : (r.pago>0? "parc" : (r.esp<=0? "sem" : (vencUtil(r.venc)<hojeIso? "atras" : "aberto")));
+    r.enc= r.st==="atras"||(r.st==="parc"&&vencUtil(r.venc)<hojeIso)? encargos(c,r.falta,r.venc,hojeIso) : {dias:0,multa:0,juros:0,total:r.falta}; out.push(r); };
   const comManual=new Set(Object.values(cob).filter(o=>o&&o.manual&&!o.pulo&&o.nome).map(o=>cadDe(o.nome).k));
   estabsTodos().map(cadDe).filter(c=>c.ativo&&!comManual.has(c.k)&&!/\(entregador/i.test(c.nome)).forEach(c=>{
     const media=mediaEstab(c.k,key), rec=recebidoEstab(c.k,key), ds=String(c.dias||"").split(/[\/,;e ]+/).filter(Boolean);
@@ -3249,7 +3259,7 @@ function renderReceber(){
       <input data-rbjuros="${esc(c.k)}" data-nome="${esc(c.nome)}" value="${c.juros!=null&&c.juros!==""?String(c.juros).replace(".",","):""}" placeholder="${String(cf.juros).replace(".",",")}" inputmode="decimal" data-pct aria-label="Juros % ao mês">
       <input data-rbwhats="${esc(c.k)}" data-nome="${esc(c.nome)}" value="${esc(c.whats)}" placeholder="(66) 99999-0000" inputmode="tel">
       <label class="chk"><input type="checkbox" data-rbativo="${esc(c.k)}" data-nome="${esc(c.nome)}"${c.ativo?" checked":""}></label></div>`).join("");
-  [["rbDiaM",cf.diaM],["rbDiaQ1",cf.diaQ1],["rbDiaQ2",cf.diaQ2],["rbPix",cf.pix],["rbMulta",String(cf.multa).replace(".",",")],["rbJuros",String(cf.juros).replace(".",",")]].forEach(([id,v])=>{ if(document.activeElement!==$(id)) $(id).value=v; });
+  [["rbDiaM",cf.diaM],["rbDiaQ1",cf.diaQ1],["rbDiaQ2",cf.diaQ2],["rbPix",cf.pix],["rbMulta",String(cf.multa).replace(".",",")],["rbJuros",String(cf.juros).replace(".",",")],["rbFer",cf.feriados||""]].forEach(([id,v])=>{ if(document.activeElement!==$(id)) $(id).value=v; }); $("rbSexta").checked=cf.sexta!==false;
   if(!$("rnVenc").value) $("rnVenc").value=isoD(hojeD());
 }
 // ---------- régua e fila de cobrança ----------
@@ -3262,8 +3272,8 @@ function marcarEnvio(key,id,i){ RCB.env=RCB.env||{}; RCB.env[key]=RCB.env[key]||
 function mesReal(){ return isoD(hojeD()).slice(0,7); }
 function linhasCobraveis(){ const key=mesReal(); return linhasReceberTodas(key).filter(r=>(r.st==="aberto"||r.st==="atras"||r.st==="parc")&&r.falta>0).map(r=>({r,key})); }
 function filaCobranca(){ const hoje=isoD(hojeD()), R=regua().filter(e=>e.on), out=[];
-  linhasCobraveis().forEach(({r,key})=>{ const due=R.filter(e=>addDias(r.venc,e.d)<=hoje); if(!due.length) return; const e=due[due.length-1];
-    if(envios(key,r.id).some(x=>x.i===e.i)) return; out.push({r,key,e,data:addDias(r.venc,e.d)}); });
+  linhasCobraveis().forEach(({r,key})=>{ const bd=e=>addDias(e.d>=0?vencUtil(r.venc):r.venc,e.d), due=R.filter(e=>bd(e)<=hoje); if(!due.length) return; const e=due[due.length-1];
+    if(envios(key,r.id).some(x=>x.i===e.i)) return; out.push({r,key,e,data:bd(e)}); });
   return out.sort((a,b)=>b.e.d-a.e.d||a.r.nome.localeCompare(b.r.nome,"pt-BR")); }
 function tipoChaveDe(k){ const s=String(k||"").trim(), d=soDig(s); if(s.includes("@")) return "email"; if(/^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(s)) return "aleatoria";
   if(d.length===14) return "cnpj"; if(s.startsWith("+")||d.length===13||(d.length===11&&!/\d{3}\.\d{3}/.test(s)&&/^\(?\d{2}\)?\s*9/.test(s))) return "telefone"; if(d.length===11) return "cpf"; return "aleatoria"; }
@@ -3276,7 +3286,7 @@ function msgEtapa(r,e,ate){ const c=cadDe(r.nome), en=(ate&&ate>r.venc)? encargo
   return t+(px?`\n\nPix copia e cola (já no valor certo):\n${px}`:rcfg().pix?`\nPix: ${rcfg().pix}`:"")+`\n\nObrigado pela parceria! 🧡`; }
 function linkEtapa(r,e){ let d=soDig(r.whats); if(!d) return ""; if(!d.startsWith("55")) d="55"+d; return "https://wa.me/"+d+"?text="+encodeURIComponent(msgEtapa(r,e)); }
 function zapCobrar(){ const out=[], R=regua().filter(e=>e.on), lim=addDias(isoD(hojeD()),35);
-  linhasCobraveis().forEach(({r,key})=>R.forEach(e=>{ const ds=addDias(r.venc,e.d); if(ds>lim||envios(key,r.id).some(x=>x.i>=e.i)) return;
+  linhasCobraveis().forEach(({r,key})=>R.forEach(e=>{ const ds=addDias(e.d>=0?vencUtil(r.venc):r.venc,e.d); if(ds>lim||envios(key,r.id).some(x=>x.i>=e.i)) return;
     const en=e.d>0? encargos(cadDe(r.nome),r.falta,r.venc,ds) : {total:r.falta}; out.push({k:r.id,ds,txt:`🏪 ${r.nome} — ${brl(en.total)} (${e.nome.toLowerCase()})`}); }));
   return out; }
 function renderFila(){ if(!$("filaBox")) return; const F=filaCobranca();
@@ -3358,7 +3368,7 @@ $("tab-receb").addEventListener("change",e=>{ const t=e.target, d=t.dataset;
   if(d.rbjuros){ setCad(d.rbjuros,d.nome,"juros",t.value.trim()===""?"":num(t.value)); renderAll(); }
   if(d.rbwhats){ setCad(d.rbwhats,d.nome,"whats",t.value.trim()); renderAll(); }
   if(d.rbativo){ setCad(d.rbativo,d.nome,"ativo",t.checked); renderAll(); }
-  if(["rbDiaM","rbDiaQ1","rbDiaQ2","rbPix","rbMulta","rbJuros"].includes(t.id)){ const dia=x=>Math.min(31,Math.max(1,parseInt(x,10)||1)); RCB.cfg={...rcfg(),diaM:dia($("rbDiaM").value),diaQ1:dia($("rbDiaQ1").value),diaQ2:dia($("rbDiaQ2").value),pix:$("rbPix").value.trim(),multa:num($("rbMulta").value),juros:num($("rbJuros").value)}; saveRcb(); renderAll(); } });
+  if(["rbDiaM","rbDiaQ1","rbDiaQ2","rbPix","rbMulta","rbJuros","rbFer","rbSexta"].includes(t.id)){ const dia=x=>Math.min(31,Math.max(1,parseInt(x,10)||1)); RCB.cfg={...rcfg(),diaM:dia($("rbDiaM").value),diaQ1:dia($("rbDiaQ1").value),diaQ2:dia($("rbDiaQ2").value),pix:$("rbPix").value.trim(),multa:num($("rbMulta").value),juros:num($("rbJuros").value),feriados:$("rbFer").value.trim(),sexta:$("rbSexta").checked}; saveRcb(); renderAll(); } });
 $("tab-receb").addEventListener("input",e=>{ const p=e.target.closest&&e.target.closest("[data-rbpanel]"); if(p){ const r=linhasReceberTodas(cur).find(x=>x.id===p.dataset.rbpanel); if(r) calcPainel(p,r); } });
 $("rnAdd").onclick=()=>{ const nome=$("rnNome").value.trim(), v=num($("rnVal").value), venc=$("rnVenc").value; if(!nome){ $("rnNome").focus(); return; } if(!v){ $("rnVal").focus(); return; } if(!venc){ $("rnVenc").focus(); return; }
   const k=normTxt(nome), pend=linhasReceberTodas(cur).find(r=>r.k===k&&!r.manual&&r.st!=="pago"&&r.pago===0&&r.estimado);
