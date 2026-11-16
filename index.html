@@ -1358,7 +1358,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 33"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 34"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -2488,7 +2488,7 @@ function ocorrencias(diasFim){
   const out=[], push=o=>{ if(o.dt>=ini&&o.dt<=fim) out.push(o); };
   const meses=[-1,0,1].map(i=>new Date(hoje.getFullYear(),hoje.getMonth()+i,1));
   lembretes().filter(lb=>lb.ativo!==false).forEach(lb=>{
-    const add=dt=>{ const ds=isoD(dt), key=ds.slice(0,7), id=lb.id+"@"+ds, m=months[key];
+    const add=dt=>{ const ds=isoD(dt), key=ds.slice(0,7), id=lb.id+"@"+ds, m=months[key]; if(lb.desde&&key<lb.desde) return;
       const manual=!!(m&&m.feitos&&m.feitos.includes(id));
       const est=num(((m&&m.lembVal)||{})[id]||0)||num(lb.valor||0), pede=!!lb.cat&&lb.freq!=="semanal";
       push({id,dt,ds,key,emo:lb.emo||"🔔",nome:lb.nome,tipo:"lemb",lb,feito:manual||feitoAuto(lb,dt),valor:est,est:false,pedeValor:pede,semValor:pede&&!(est>0)}); };
@@ -2572,11 +2572,13 @@ function lembSuporte(){ if(mode!=="db"||cfg.suporteV1) return; cfg.suporteV1=tru
 function lembContasV1(){ if(mode!=="db"||cfg.contasV1) return; cfg.contasV1=true; const L=lembretes().map(x=>({...x}));
   const set=(cat,o)=>{ const i=L.findIndex(l=>l.cat===cat); if(i>=0) L[i]={...L[i],...o}; else L.push({id:"l"+uid().slice(0,8),freq:"mensal",ajuste:"antecipa",cat,ativo:true,...o}); };
   set("FGTS",{dia:19}); set("INSS",{dia:19}); set("DAS",{nome:"Simples Nacional (DAS)",dia:20});
-  set("Contador",{nome:"Contador",emo:"🧮",dia:10,valor:475}); set("Internet",{nome:"Skynet (internet)",emo:"📶",dia:10,valor:129.9});
+  set("Contador",{nome:"Contador",emo:"🧮",dia:10,valor:475,desde:"2026-11"}); set("Internet",{nome:"Skynet (internet)",emo:"📶",dia:10,valor:129.9});
   set("Seguro dos entregadores",{nome:"IZA Seguro",emo:"🛡️",dia:19,valor:0}); set("Energia",{nome:"Energia",emo:"💡",dia:20,valor:0});
-  set("CDL",{nome:"CDL",emo:"🏛️",dia:20,valor:78}); set("Suporte do aplicativo",{dia:10,...(L.some(l=>l.cat==="Suporte do aplicativo")?{}:{nome:"Suporte do Mais Delivery",emo:"📲"})});
+  set("CDL",{nome:"CDL",emo:"🏛️",dia:20,valor:78,desde:"2026-11"}); set("Suporte do aplicativo",{dia:10,...(L.some(l=>l.cat==="Suporte do aplicativo")?{}:{nome:"Suporte do Mais Delivery",emo:"📲"})});
   cfg.lembretes=L; cfg.suporteV1=true; save("config",cfg); setTimeout(renderAll,0); }
-function renderLembretes(){ lembContasV1(); lembSuporte();
+function lembDesdeV1(){ if(mode!=="db"||cfg.desdeV1) return; cfg.desdeV1=true; const N=["Contador","Internet","Seguro dos entregadores","Energia","CDL"];
+  cfg.lembretes=lembretes().map(l=>N.includes(l.cat)&&!l.desde? {...l,desde:"2026-11"} : l); save("config",cfg); setTimeout(renderAll,0); }
+function renderLembretes(){ lembContasV1(); lembDesdeV1(); lembSuporte();
   if(!$("lbList")) return;
   const L=lembretes();
   $("lbList").innerHTML=`<div class="lblist">${L.map((lb,i)=>`<div class="lbrow ${lb.ativo===false?"off":""}"><label class="chk"><input type="checkbox" data-lbon="${i}" ${lb.ativo!==false?"checked":""}> <span>${lb.emo||"🔔"} <b>${esc(lb.nome)}</b></span></label><span class="status">${esc(descFreq(lb))} · ${num(lb.valor)>0?brl(num(lb.valor)):(lb.cat&&lb.freq!=="semanal"?"valor varia":"")}</span><button class="xbtn" data-lbdel="${i}" aria-label="Excluir lembrete">×</button></div>`).join("")||'<p class="note">Nenhum lembrete.</p>'}</div>`;
@@ -2588,7 +2590,7 @@ $("lbFreq").onchange=renderLembretes;
 $("lbAdd").onclick=()=>{ const nome=$("lbNome").value.trim(); if(!nome){ $("lbNome").focus(); return; }
   const f=$("lbFreq").value, d=$("lbDia").value.trim().toLowerCase();
   const dia= f==="semanal"? Number($("lbSem").value) : f==="quinzenal"? 15 : (d.startsWith("u")?"ultimo":Math.min(31,Math.max(1,parseInt(d,10)||1)));
-  salvarLemb(lembretes().concat([{id:"l"+uid().slice(0,8),nome,emo:$("lbEmo").value||"🔔",freq:f,dia,ajuste:$("lbAj").value,cat:$("lbCat").value,valor:num($("lbValor").value)||0,ativo:true}]));
+  salvarLemb(lembretes().concat([{id:"l"+uid().slice(0,8),nome,emo:$("lbEmo").value||"🔔",freq:f,dia,ajuste:$("lbAj").value,cat:$("lbCat").value,valor:num($("lbValor").value)||0,desde:isoD(hojeD()).slice(0,7),ativo:true}]));
   $("lbNome").value=""; $("lbDia").value=""; $("lbValor").value=""; uiAlert("Lembrete criado ✅"); };
 $("lbList").addEventListener("change",e=>{ const i=e.target.dataset.lbon; if(i==null) return; const L=lembretes(); L[+i].ativo=e.target.checked; salvarLemb(L); });
 $("lbList").addEventListener("click",async e=>{ const i=e.target.dataset.lbdel; if(i==null) return; const L=lembretes(); if(!await uiConfirm(`Excluir o lembrete "${L[+i].nome}"?`)) return; L.splice(+i,1); salvarLemb(L); });
