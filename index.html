@@ -1358,7 +1358,7 @@ function save(docId,data){
         catch(e){ if(e&&e.code==="unavailable"&&t<2){ await new Promise(r=>setTimeout(r,700*(t+1)+Math.random()*500)); continue; } setStatus("Falha ao salvar online: "+(e.message||e.code)); uiAlert("Não consegui salvar online ("+(e.code||"erro")+"). Recarregue a página e tente de novo."); break; } } }
     q.running=false; })();
 }
-function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 34"; }
+function setStatus(t){ const el=$("storeStatus"); if(el) el.textContent=(mode==="db"?"Dados guardados online, disponíveis em qualquer aparelho. ":"Dados guardados só neste navegador. ")+(t||""); const f=$("sideFoot"); if(f) f.textContent=(mode==="db"?"Dados salvos online":"Conectando…")+" · versão web 35"; }
 function loadLocal(){
   const c=lsGet("config"); if(c) cfg={...DEFAULT_CFG,...c};
   const s0=lsGet("sec"); if(s0) SEC={contas:[],agenda:[],...s0}; const f0=lsGet("folha"); if(f0) FOL={funcs:[],meses:{},...f0}; const r0=lsGet("receber"); if(r0) RCB={cad:{},cob:{},cfg:{},...r0}; const v0=lsGet("fav"); if(v0) FAV={lista:[],...v0}; const i0=lsGet("inv"); if(i0) INV={lista:[],...i0}; const z0=lsGet("zap"); if(z0) ZAP={cfg:{},itens:[],...z0};
@@ -2992,7 +2992,7 @@ function casaNome13(l,f){ const t=normTxt([l.descricao,l.parceiro].filter(Boolea
 function pagos13(f,ano){ const K=[...Array(12)].map((_,i)=>mKey(ano,i+1)).concat([mKey(ano+1,1)]);
   return K.flatMap(k=>lancsRaw(k)).filter(l=>l.tipo==="saida"&&l.categoria==="13º salário"&&(l.f13===f.id||(!l.f13&&casaNome13(l,f)))&&(l.f13ano||ano)===ano&&String(l.data).slice(0,4)>=String(ano)); }
 function calc13(f,ano){ const c=(((FOL.d13||{})[ano])||{})[f.id]||{}, total=c.total!=null? num(c.total) : num(f.salario||0), L=pagos13(f,ano), P=L.reduce((a,l)=>a+num(l.valor),0);
-  const quit=!!c.quitado||(total>0&&P>=total*0.85), meia=Math.round(total/2*100)/100, p1ok=quit||P>=meia-0.01;
+  const quit=!!c.quitado||(total>0&&P>=total*0.85), meia=Math.round(total/2*100)/100, p1ok=quit||(total>0&&P>=meia-0.01);
   return {total,L,P,quit,p1ok,falta1:p1ok?0:Math.round((meia-P)*100)/100,falta2:quit?0:Math.max(0,Math.round((total-P)*100)/100)}; }
 function renderD13(){ if(!$("d13Cards")) return; const ano=Number(cur.slice(0,4)), mn=Number(cur.slice(5,7)), F=funcsAtivos();
   const algum=F.some(f=>pagos13(f,ano).length); $("d13Card").classList.toggle("hidden",!(mn>=10||algum)||!F.length); $("d13Ano").textContent=ano;
@@ -3003,7 +3003,7 @@ function renderD13(){ if(!$("d13Cards")) return; const ano=Number(cur.slice(0,4)
       <div class="fbody"><label class="fliq">🎄 Valor do 13º (salário)<input data-d13tot="${f.id}" inputmode="decimal" value="${c.total?fmtIn(c.total):""}" placeholder="salário bruto"></label>
         ${pagos?`<ul class="fitens">${pagos}</ul>`:""}
         <div class="ftotal"><span>${c.quit?"🎉 13º quitado":"💰 Já pago"}</span><b>${brl(c.P)}</b></div></div>
-      <div class="fpay one"><div class="fpbox ${c.quit?"ok":""}">${c.quit?`<span>✅ 13º de ${ano} quitado</span>${(((FOL.d13||{})[ano]||{})[f.id]||{}).quitado?`<button class="btn ghost small" data-d13quit="0" data-fid="${f.id}">↩︎ Desfazer quitado</button>`:""}`:
+      <div class="fpay one"><div class="fpbox ${c.quit?"ok":""}">${!(c.total>0)&&!c.quit?`<span>✏️ Digite acima o valor do 13º (salário bruto) para calcular as parcelas.</span>`:c.quit?`<span>✅ 13º de ${ano} quitado</span>${(((FOL.d13||{})[ano]||{})[f.id]||{}).quitado?`<button class="btn ghost small" data-d13quit="0" data-fid="${f.id}">↩︎ Desfazer quitado</button>`:""}`:
         `<span>${parc}ª parcela · até ${parc===1?"30/11":"20/12"}${parc===2?" (confira o líquido no holerite)":""}</span>
          <input class="d13val" data-d13val="${f.id}" inputmode="decimal" value="${fmtIn(falta)}">
          <div class="row"><button class="btn small" data-d13pix="${parc}" data-fid="${f.id}">📋 Pix copia e cola</button><button class="btn ghost small" data-d13pag="${parc}" data-fid="${f.id}">✅ Paguei</button><button class="btn ghost small" data-d13quit="1" data-fid="${f.id}" title="Já paguei tudo por outro caminho">Quitado</button></div>`}</div></div></div>`; }).join(""); }
